@@ -81,18 +81,30 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     )
     filters.append(f'[bgv]copy[outv0]')
     outv_stream = '[outv0]'
-
-    # 6. Captions: smaller, bold, centered
-    if srt_path:
-        style = 'Fontsize=22' # Bold=1, Alignment=10, OutlineColour=&H80000000, BackColour=&H80000000'
+    
+    # 6. Captions: use ass filter (more reliable than subtitles)
+    if srt_path and os.path.exists(srt_path):
+        # Convert SRT to ASS format (drawtext works better with simple text)
+        ass_path = srt_path.replace('.srt', '.ass')
+        # Simple conversion: SRT to ASS
+        with open(srt_path, 'r') as f:
+            srt_content = f.read()
+        with open(ass_path, 'w') as f:
+            f.write(f"""[Script Info]
+    ScriptType: v4.00+
+    PlayResX: 1080
+    PlayResY: 1920
+    [V4+ Styles]
+    Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+    Style: Default,DejaVu-Sans,22,&H00FFFFFF,&H80000000,&H80000000,1,0,0,0,100,100,0,0,1,2,0,10,20,20,20,0
+    [Events]
+    Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+    {srt_to_ass_events(srt_content)}
+    """)
+        
         filters.append(
             f'{outv_stream}trim=duration={audio_duration},'
-            f'subtitles={srt_path}:force_style=\'{style}\','
-            f'format=yuv420p[outv]'
-        )
-    else:
-        filters.append(
-            f'{outv_stream}trim=duration={audio_duration},'
+            f'ass={ass_path},'
             f'format=yuv420p[outv]'
         )
 
