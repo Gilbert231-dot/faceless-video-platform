@@ -1,8 +1,9 @@
-venv/
-__pycache__/
 *.mp4
+*.mp3
 *.srt
-*.json
 *.png
+*.json
 *.txt
 www.youtube.com_cookies.txt
+venv/
+__pycache__/
