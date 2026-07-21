@@ -1,0 +1,15 @@
+celery
+redis
+openai
+moviepy
+edge-tts
+whisper
+praw
+gdown
+yt-dlp
+requests
+python-dotenv
+fastapi
+uvicorn
+pillow
+numpy
