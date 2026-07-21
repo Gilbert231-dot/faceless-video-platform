@@ -68,5 +68,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: generated-video
-          path: /workspaces/faceless-video-platform/output_*.mp4
+          path: output/output_*.mp4
           retention-days: 7
