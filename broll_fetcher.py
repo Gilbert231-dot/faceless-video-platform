@@ -4,17 +4,19 @@ import tempfile
 import requests
 import gdown
 import yt_dlp
-from config import PEXELS_API_KEY
+from config import PEXELS_API_KEY, PROGRESS_FILE
 
 # --- Progress file for sequential video usage ---
-PROGRESS_FILE = "/workspaces/faceless-video-platform/broll_progress.json"
 
 def load_progress():
-    """Load the B-roll progress tracker."""
+    """Load the B-roll progress tracker. Create it if missing."""
     if os.path.exists(PROGRESS_FILE):
         with open(PROGRESS_FILE, 'r') as f:
             return json.load(f)
-    return {"current_index": 0, "used_files": []}
+    # File doesn't exist, create default
+    default = {"current_index": 0, "used_files": []}
+    save_progress(default)
+    return default
 
 def save_progress(progress):
     """Save the B-roll progress tracker."""
