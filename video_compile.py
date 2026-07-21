@@ -4,7 +4,7 @@ import tempfile
 import json
 import subprocess
 from config import PROJECT_ROOT, FAST_MODE, OUTPUT_DIR
-from captions import whisper_json_to_srt
+from captions import whisper_json_to_srt, generate_fallback_srt
 
 def create_reddit_frame(title, video_size, part_label=None):
     """Stub: No longer used. Returns None to skip intro frame."""
@@ -31,11 +31,26 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     intro_duration = 0
 
     # 3. Generate SRT from Whisper JSON
-    srt_path = None
-    if subtitle_path and os.path.exists(subtitle_path):
+   # 3. Generate SRT from Whisper JSON OR fallback
+srt_path = None
+if subtitle_path and os.path.exists(subtitle_path):
+    try:
         srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
         whisper_json_to_srt(subtitle_path, intro_duration, srt_path)
-        print(f"   ✅ SRT subtitles created: {srt_path}")
+        print(f"   ✅ SRT subtitles created from Whisper: {srt_path}")
+    except Exception as e:
+        print(f"   ⚠️ Whisper SRT generation failed: {e}")
+        srt_path = None
+
+# If Whisper failed, generate fallback SRT from script
+if not srt_path and script:
+    try:
+        srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
+        generate_fallback_srt(script, intro_duration, srt_path)
+        print(f"   ✅ SRT subtitles created from fallback: {srt_path}")
+    except Exception as e:
+        print(f"   ⚠️ Fallback SRT generation failed: {e}")
+        srt_path = None
 
     # 4. Build input list
     inputs = []
