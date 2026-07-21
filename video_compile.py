@@ -3,9 +3,8 @@ import time
 import tempfile
 import json
 import subprocess
-from config import PROJECT_ROOT, FAST_MODE
+from config import PROJECT_ROOT, FAST_MODE, OUTPUT_DIR
 from captions import whisper_json_to_srt
-
 
 def create_reddit_frame(title, video_size, part_label=None):
     """Stub: No longer used. Returns None to skip intro frame."""
@@ -109,17 +108,17 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     filter_graph = ';'.join(filters)
 
     # 8. Output path
-    output_path = output_path = os.path.join(PROJECT_ROOT, f"output_{int(time.time())}.mp4")
+    output_path = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     cmd = (
         ['ffmpeg', '-y'] + inputs +
         ['-filter_complex', filter_graph,
-         '-map', '[outv]', '-map', '[outa]',
-         '-c:v', 'libx264', '-preset', 'veryfast',
-         '-crf', '23',
-         '-c:a', 'aac', '-b:a', '128k',
-         '-shortest',
-         '-movflags', '+faststart',
-         output_path]
+        '-map', '[outv]', '-map', '[outa]',
+        '-c:v', 'libx264', '-preset', 'veryfast',
+        '-crf', '23',
+        '-c:a', 'aac', '-b:a', '128k',
+        '-shortest',
+        '-movflags', '+faststart',
+        output_path]
     )
 
     print("⚡ Running FFmpeg (this may take a few minutes)...")
