@@ -99,3 +99,25 @@ def generate_fallback_srt(script, intro_duration, srt_path):
             f.write(f"{chunk}\n\n")
     
     return srt_path
+
+
+def srt_to_ass_events(srt_content):
+    """Convert SRT content to ASS event format."""
+    import re
+    events = []
+    # Parse SRT format
+    blocks = re.split(r'\n\n+', srt_content.strip())
+    for block in blocks:
+        lines = block.split('\n')
+        if len(lines) >= 3:
+            # Skip the number line
+            # Timecode line: 00:00:00,000 --> 00:00:01,000
+            timecode = lines[1]
+            # Text lines
+            text = ' '.join(lines[2:])
+            # Convert SRT timecode to ASS time format (h:mm:ss.cc)
+            start, end = timecode.split(' --> ')
+            start = start.replace(',', '.')
+            end = end.replace(',', '.')
+            events.append(f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}")
+    return '\n'.join(events)
