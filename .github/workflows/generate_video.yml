@@ -1,7 +1,10 @@
 name: Generate Faceless Video
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
-  workflow_dispatch:  # Allows you to manually trigger the workflow from GitHub
+  workflow_dispatch:
     inputs:
       topic:
         description: 'Topic for the video story'
@@ -51,6 +54,15 @@ jobs:
           result = generate_video(topic='${{ inputs.topic }}', use_reddit=False)
           print(result)
           "
+
+      - name: List files for debugging
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Files in current directory:"
+          ls -la
+          echo "Searching for output_*.mp4 files:"
+          find . -name "output_*.mp4"
 
       - name: Upload the generated video
         uses: actions/upload-artifact@v4
