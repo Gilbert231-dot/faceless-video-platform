@@ -84,7 +84,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
 
     # 6. Captions: smaller, bold, centered
     if srt_path:
-        style = 'Fontsize=20, Bold=1, Alignment=10, OutlineColour=&H80000000, BackColour=&H80000000'
+        style = 'Fontsize=22, Bold=1, Alignment=10, OutlineColour=&H80000000, BackColour=&H80000000'
         filters.append(
             f'{outv_stream}trim=duration={audio_duration},'
             f'subtitles={srt_path}:force_style=\'{style}\','
