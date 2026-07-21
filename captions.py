@@ -48,3 +48,38 @@ def whisper_json_to_srt(subtitle_path, intro_duration, srt_path):
             f.write(f"{text}\n\n")
     
     return srt_path
+
+
+def generate_fallback_srt(script, intro_duration, srt_path):
+    """Generate SRT subtitles from script without Whisper (fallback)."""
+    import re
+    
+    sentences = re.split(r'[.!?]\s+', script)
+    sentences = [s.strip() for s in sentences if s.strip()]
+    
+    if not sentences:
+        return None
+    
+    total_words = sum(len(s.split()) for s in sentences)
+    estimated_duration = total_words / 3
+    if estimated_duration < 30:
+        estimated_duration = 60
+    
+    dur_per_sentence = estimated_duration / len(sentences)
+    
+    with open(srt_path, 'w') as f:
+        for i, sentence in enumerate(sentences, 1):
+            start_time = (i - 1) * dur_per_sentence + intro_duration
+            end_time = i * dur_per_sentence + intro_duration
+            
+            start_s = int(start_time)
+            start_ms = int((start_time - start_s) * 1000)
+            end_s = int(end_time)
+            end_ms = int((end_time - end_s) * 1000)
+            
+            f.write(f"{i}\n")
+            f.write(f"{start_s//3600:02d}:{(start_s%3600)//60:02d}:{start_s%60:02d},{start_ms:03d} --> ")
+            f.write(f"{end_s//3600:02d}:{(end_s%3600)//60:02d}:{end_s%60:02d},{end_ms:03d}\n")
+            f.write(f"{sentence}\n\n")
+    
+    return srt_path
