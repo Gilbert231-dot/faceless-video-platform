@@ -98,10 +98,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
 
     # 7. Audio: boost narrator volume (2x = ~6dB boost) + mix with background music
     if music_index is not None:
-    filters.append(
-        f'[{audio_index}:a]atrim=duration={audio_duration},'
-        f'atempo=1.2,volume=2[voice]'
-        )
+        filters.append(
+            f'[{audio_index}:a]atrim=duration={audio_duration},'
+            f'atempo=1.2,volume=2[voice]'
+            )
         # Music: low volume (15%), trimmed to audio duration
         filters.append(
             f'[{music_index}:a]atrim=duration={audio_duration},'
