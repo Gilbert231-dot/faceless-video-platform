@@ -3,7 +3,7 @@ redis
 openai
 moviepy
 edge-tts
-whisper
+openai-whisper
 praw
 gdown
 yt-dlp
