@@ -72,63 +72,21 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     )
     filters.append(f'[bgv]copy[outv0]')
     outv_stream = '[outv0]'
-
-    # 5. Captions: burn using drawtext (center, large, bold, word-by-word)
+    
+    # 5. Captions: use subtitles filter with style
     if srt_path and os.path.exists(srt_path):
-        # Read SRT and generate drawtext filters
-        drawtext_filters = []
-        with open(srt_path, 'r') as f:
-            content = f.read()
-        
-        blocks = content.strip().split('\n\n')
-        for block in blocks:
-            lines = block.split('\n')
-            if len(lines) >= 3:
-                timecode = lines[1]
-                text = ' '.join(lines[2:])
-                # Parse timecode
-                start_str, end_str = timecode.split(' --> ')
-                start_parts = start_str.replace(',', '.').split(':')
-                end_parts = end_str.replace(',', '.').split(':')
-                start_sec = float(start_parts[0])*3600 + float(start_parts[1])*60 + float(start_parts[2])
-                end_sec = float(end_parts[0])*3600 + float(end_parts[1])*60 + float(end_parts[2])
-                duration = end_sec - start_sec
-                # Escape text
-                text = text.replace("'", "'\\''").replace(':', '\\:')
-                
-                # --- UPDATED: Bigger, bolder font ---
-                # Choose bold font
-                font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-                if not os.path.exists(font_path):
-                    font_path = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
-                
-                # Add drawtext filter with larger font (50), bold, with outline
-                drawtext_filters.append(
-                    f"drawtext=text='{text}':fontcolor=white:fontsize=65:"  # <-- 50 is bigger
-                    f"fontfile={font_path}:"
-                    f"bordercolor=black:borderw=6:"  # <-- thicker outline
-                    f"x=(w-text_w)/2:y=(h-text_h)/2:"
-                    f"enable='between(t,{start_sec},{end_sec})'"
-                )
-        
-        if drawtext_filters:
-            drawtext_chain = ','.join(drawtext_filters)
-            filters.append(
-                f'{outv_stream}trim=duration={audio_duration},'
-                f'{drawtext_chain},'
-                f'format=yuv420p[outv]'
-            )
-        else:
-            filters.append(
-                f'{outv_stream}trim=duration={audio_duration},'
-                f'format=yuv420p[outv]'
-            )
+        # Style: bold, centered, large font, black outline
+        style = 'Fontsize=50, Bold=1, Alignment=10, OutlineColour=&H80000000, Outline=3'
+        filters.append(
+            f'{outv_stream}trim=duration={audio_duration},'
+            f'subtitles={srt_path}:force_style=\'{style}\','
+            f'format=yuv420p[outv]'
+        )
     else:
         filters.append(
             f'{outv_stream}trim=duration={audio_duration},'
             f'format=yuv420p[outv]'
         )
-
     # 6. Audio: simple mixing using concat (more reliable)
     if music_index is not None:
         filters.append(
