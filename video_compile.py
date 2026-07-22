@@ -204,22 +204,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     return output_path
 
 def download_background_music():
-    """Download a royalty-free action/cinematic background music track."""
-    import requests
-    import tempfile
-    music_url = "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8f7c7a6.mp3"
-    try:
-        print("   🎵 Downloading background music...")
-        response = requests.get(music_url, timeout=30)
-        if response.status_code == 200:
-            temp_music = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
-            temp_music.write(response.content)
-            temp_music.close()
-            print(f"   ✅ Background music downloaded: {temp_music.name}")
-            return temp_music.name
-        else:
-            print(f"   ⚠️ Music download failed (HTTP {response.status_code})")
-            return None
-    except Exception as e:
-        print(f"   ⚠️ Music download error: {e}")
+    """Use a local music file from the repository."""
+    from config import PROJECT_ROOT
+    local_music_path = os.path.join(PROJECT_ROOT, "assets/music/my_action_track.mp3")
+    if os.path.exists(local_music_path):
+        print(f"   ✅ Using local background music: {local_music_path}")
+        return local_music_path
+    else:
+        print("   ⚠️ Local music not found. Proceeding without background music.")
         return None
