@@ -87,7 +87,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             f'{outv_stream}trim=duration={audio_duration},'
             f'format=yuv420p[outv]'
         )
-    # 6. Audio: simple mixing using concat (more reliable)
+    # 7. Audio: apply atempo and volume, then mix with music
     if music_index is not None:
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},'
@@ -98,7 +98,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             f'volume=0.15[music]'
         )
         filters.append(
-            f'[voice][music]concat=n=2:v=0:a=1[outa]'
+            f'[voice][music]amix=inputs=2:duration=longest[outa]'
         )
     else:
         filters.append(
