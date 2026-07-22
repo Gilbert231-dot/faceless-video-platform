@@ -85,14 +85,53 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
     filters.append(f'[bgv]copy[outv0]')
     outv_stream = '[outv0]'
     
-    # 6. Captions: simple, reliable styling
+    # 6. Captions: burn directly using drawtext (more reliable)
     if srt_path and os.path.exists(srt_path):
-        style = 'Fontsize=22, Alignment=10, OutlineColour=&H80000000'
-        filters.append(
-            f'{outv_stream}trim=duration={audio_duration},'
-            f'subtitles={srt_path}:force_style=\'{style}\','
-            f'format=yuv420p[outv]'
-        )
+        # Read SRT file and generate drawtext filters for each subtitle
+        drawtext_filters = []
+        with open(srt_path, 'r') as f:
+            content = f.read()
+        # Parse SRT blocks
+        blocks = content.strip().split('\n\n')
+        for block in blocks:
+            lines = block.split('\n')
+            if len(lines) >= 3:
+                # Timecode line
+                timecode = lines[1]
+                # Text lines (join all text lines)
+                text = ' '.join(lines[2:])
+                # Parse timecode: 00:00:00,000 --> 00:00:01,000
+                start_str, end_str = timecode.split(' --> ')
+                # Convert to seconds
+                start_parts = start_str.replace(',', '.').split(':')
+                end_parts = end_str.replace(',', '.').split(':')
+                start_sec = float(start_parts[0])*3600 + float(start_parts[1])*60 + float(start_parts[2])
+                end_sec = float(end_parts[0])*3600 + float(end_parts[1])*60 + float(end_parts[2])
+                duration = end_sec - start_sec
+                # Escape text for drawtext (quotes, colons, etc.)
+                text = text.replace("'", "'\\''").replace(':', '\\:')
+                # Add drawtext filter
+                drawtext_filters.append(
+                    f"drawtext=text='{text}':fontcolor=white:fontsize=22:"
+                    f"fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
+                    f"bordercolor=black:borderw=2:"
+                    f"x=(w-text_w)/2:y=(h-text_h)/2:"
+                    f"enable='between(t,{start_sec},{end_sec})'"
+                )
+        
+        if drawtext_filters:
+            # Combine all drawtext filters
+            drawtext_chain = ','.join(drawtext_filters)
+            filters.append(
+                f'{outv_stream}trim=duration={audio_duration},'
+                f'{drawtext_chain},'
+                f'format=yuv420p[outv]'
+            )
+        else:
+            filters.append(
+                f'{outv_stream}trim=duration={audio_duration},'
+                f'format=yuv420p[outv]'
+            )
     else:
         filters.append(
             f'{outv_stream}trim=duration={audio_duration},'
