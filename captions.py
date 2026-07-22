@@ -52,9 +52,8 @@ def whisper_json_to_srt(subtitle_path, intro_duration, srt_path):
     return srt_path
 
 
-
 def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
-    """Generate SRT subtitles with natural pauses and bigger text."""
+    """Generate SRT with phrases (3-5 words) for faster pacing."""
     import re
     
     # Split script into words
@@ -63,7 +62,14 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
     if not words:
         return None
     
-    # --- Use audio duration if provided ---
+    # --- Group words into phrases of 3-5 words ---
+    phrase_size = 4  # average 4 words per phrase
+    phrases = []
+    for i in range(0, len(words), phrase_size):
+        phrase = ' '.join(words[i:i+phrase_size])
+        phrases.append(phrase)
+    
+    # Use audio duration if provided
     if audio_duration and audio_duration > 0:
         total_duration = audio_duration
     else:
@@ -71,35 +77,13 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
         if total_duration < 30:
             total_duration = 60
     
-    # --- Calculate base duration per word ---
-    base_dur_per_word = total_duration / len(words)
+    # Calculate duration per phrase
+    dur_per_phrase = total_duration / len(phrases)
     
-    # --- Add micro-pauses for natural rhythm ---
-    # Each word gets a random duration between 80% and 140% of the base duration
-    # This creates natural pauses without breaking sync
-    durations = []
-    for i, word in enumerate(words):
-        # Add longer pauses at punctuation marks (if any)
-        # We'll simulate pauses by giving certain words longer durations
-        if word in ['.', '!', '?', ',', ';', ':'] or word in ['and', 'but', 'or', 'so', 'for']:
-            # Pause slightly longer at punctuation and conjunctions
-            dur = base_dur_per_word * random.uniform(1.2, 1.8)
-        else:
-            dur = base_dur_per_word * random.uniform(0.7, 1.3)
-        durations.append(dur)
-    
-    # Normalize durations so total = audio_duration
-    total_dur_sum = sum(durations)
-    scale_factor = total_duration / total_dur_sum
-    durations = [d * scale_factor for d in durations]
-    
-    # --- Generate SRT ---
     with open(srt_path, 'w') as f:
-        current_time = intro_duration
-        for i, word in enumerate(words, 1):
-            start_time = current_time
-            end_time = current_time + durations[i-1]
-            current_time = end_time
+        for i, phrase in enumerate(phrases, 1):
+            start_time = (i - 1) * dur_per_phrase + intro_duration
+            end_time = i * dur_per_phrase + intro_duration
             
             start_s = int(start_time)
             start_ms = int((start_time - start_s) * 1000)
@@ -109,6 +93,7 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
             f.write(f"{i}\n")
             f.write(f"{start_s//3600:02d}:{(start_s%3600)//60:02d}:{start_s%60:02d},{start_ms:03d} --> ")
             f.write(f"{end_s//3600:02d}:{(end_s%3600)//60:02d}:{end_s%60:02d},{end_ms:03d}\n")
-            f.write(f"{word}\n\n")
+            f.write(f"{phrase}\n\n")
     
     return srt_path
+
