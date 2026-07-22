@@ -22,13 +22,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
 
     intro_duration = 0
 
-    # 2. Generate SRT – ALWAYS use fallback for word-by-word captions
-    # Force fallback to ensure word-by-word chunks
+    # 2. Generate SRT – ALWAYS use fallback with actual audio duration
     srt_path = None
     try:
         srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
-        generate_fallback_srt(script, intro_duration, srt_path)
-        print(f"   ✅ SRT subtitles created (word-by-word): {srt_path}")
+        generate_fallback_srt(script, intro_duration, srt_path, audio_duration)
+        print(f"   ✅ SRT subtitles created (word-by-word, synced to audio): {srt_path}")
     except Exception as e:
         print(f"   ⚠️ Fallback SRT generation failed: {e}")
         srt_path = None
@@ -103,11 +102,11 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 if not os.path.exists(font_path):
                     font_path = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
                 
-                # Add drawtext filter with fontsize 44 (bigger) and borderw 4 (bolder outline)
+                # Add drawtext filter with larger font (50), bold, with outline
                 drawtext_filters.append(
-                    f"drawtext=text='{text}':fontcolor=white:fontsize=44:"
+                    f"drawtext=text='{text}':fontcolor=white:fontsize=50:"  # <-- 50 is bigger
                     f"fontfile={font_path}:"
-                    f"bordercolor=black:borderw=4:"
+                    f"bordercolor=black:borderw=5:"  # <-- thicker outline
                     f"x=(w-text_w)/2:y=(h-text_h)/2:"
                     f"enable='between(t,{start_sec},{end_sec})'"
                 )
