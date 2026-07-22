@@ -52,8 +52,9 @@ def whisper_json_to_srt(subtitle_path, intro_duration, srt_path):
     return srt_path
 
 
+
 def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
-    """Generate SRT subtitles with word-by-word chunks, timed to audio duration."""
+    """Generate SRT subtitles with natural pauses and bigger text."""
     import re
     
     # Split script into words
@@ -62,26 +63,43 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
     if not words:
         return None
     
-    # --- If audio_duration is provided, use it for perfect sync ---
+    # --- Use audio duration if provided ---
     if audio_duration and audio_duration > 0:
         total_duration = audio_duration
     else:
-        # Fallback: estimate duration (4 words/second for 1.3x speed)
         total_duration = len(words) / 4
         if total_duration < 30:
             total_duration = 60
     
-    # Calculate duration per word
-    dur_per_word = total_duration / len(words)
+    # --- Calculate base duration per word ---
+    base_dur_per_word = total_duration / len(words)
     
-    # Set minimum duration per word to avoid flickering
-    if dur_per_word < 0.2:
-        dur_per_word = 0.2
+    # --- Add micro-pauses for natural rhythm ---
+    # Each word gets a random duration between 80% and 140% of the base duration
+    # This creates natural pauses without breaking sync
+    durations = []
+    for i, word in enumerate(words):
+        # Add longer pauses at punctuation marks (if any)
+        # We'll simulate pauses by giving certain words longer durations
+        if word in ['.', '!', '?', ',', ';', ':'] or word in ['and', 'but', 'or', 'so', 'for']:
+            # Pause slightly longer at punctuation and conjunctions
+            dur = base_dur_per_word * random.uniform(1.2, 1.8)
+        else:
+            dur = base_dur_per_word * random.uniform(0.7, 1.3)
+        durations.append(dur)
     
+    # Normalize durations so total = audio_duration
+    total_dur_sum = sum(durations)
+    scale_factor = total_duration / total_dur_sum
+    durations = [d * scale_factor for d in durations]
+    
+    # --- Generate SRT ---
     with open(srt_path, 'w') as f:
+        current_time = intro_duration
         for i, word in enumerate(words, 1):
-            start_time = (i - 1) * dur_per_word + intro_duration
-            end_time = i * dur_per_word + intro_duration
+            start_time = current_time
+            end_time = current_time + durations[i-1]
+            current_time = end_time
             
             start_s = int(start_time)
             start_ms = int((start_time - start_s) * 1000)
