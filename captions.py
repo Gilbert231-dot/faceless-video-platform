@@ -53,23 +53,21 @@ def whisper_json_to_srt(subtitle_path, intro_duration, srt_path):
 
 
 def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
-    """Generate SRT with phrases (3-5 words) for faster pacing."""
+    """Generate SRT with larger phrases (5-7 words) to reduce subtitle count."""
     import re
     
-    # Split script into words
     words = re.findall(r'\b\w+\b', script)
-    
     if not words:
         return None
     
-    # --- Group words into phrases of 3-5 words ---
-    phrase_size = 4  # average 4 words per phrase
+    # Group into phrases of 5-7 words
+    phrase_size = 6
     phrases = []
     for i in range(0, len(words), phrase_size):
         phrase = ' '.join(words[i:i+phrase_size])
         phrases.append(phrase)
     
-    # Use audio duration if provided
+    # Use audio duration
     if audio_duration and audio_duration > 0:
         total_duration = audio_duration
     else:
@@ -77,7 +75,6 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
         if total_duration < 30:
             total_duration = 60
     
-    # Calculate duration per phrase
     dur_per_phrase = total_duration / len(phrases)
     
     with open(srt_path, 'w') as f:
@@ -96,4 +93,3 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
             f.write(f"{phrase}\n\n")
     
     return srt_path
-
