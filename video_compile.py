@@ -104,9 +104,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 
                 # Add drawtext filter with larger font (50), bold, with outline
                 drawtext_filters.append(
-                    f"drawtext=text='{text}':fontcolor=white:fontsize=50:"  # <-- 50 is bigger
+                    f"drawtext=text='{text}':fontcolor=white:fontsize=65:"  # <-- 50 is bigger
                     f"fontfile={font_path}:"
-                    f"bordercolor=black:borderw=5:"  # <-- thicker outline
+                    f"bordercolor=black:borderw=6:"  # <-- thicker outline
                     f"x=(w-text_w)/2:y=(h-text_h)/2:"
                     f"enable='between(t,{start_sec},{end_sec})'"
                 )
