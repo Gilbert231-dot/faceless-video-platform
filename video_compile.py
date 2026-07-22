@@ -156,17 +156,18 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     # 7. Output path
     output_path = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     cmd = (
-        ['ffmpeg', '-y'] + inputs +
-        ['-filter_complex', filter_graph,
-         '-map', '[outv]', '-map', '[outa]',
-         '-c:v', 'libx264', '-preset', 'veryfast',
-         '-crf', '23',
-         '-c:a', 'aac', '-b:a', '128k',
-         '-shortest',
-         '-movflags', '+faststart',
-         output_path]
+    ['ffmpeg', '-y'] + inputs +
+    ['-filter_complex', filter_graph,
+     '-map', '[outv]', '-map', '[outa]',
+     '-c:v', 'libx264',
+     '-preset', 'slow',          # <-- Better quality
+     '-crf', '18',               # <-- Near-lossless
+     '-c:a', 'aac',
+     '-b:a', '192k',             # <-- Clearer audio
+     '-shortest',
+     '-movflags', '+faststart',
+     output_path]
     )
-
     print("⚡ Running FFmpeg...")
     process = subprocess.Popen(
         cmd,
