@@ -40,6 +40,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
         except Exception as e:
             print(f"   ⚠️ Whisper SRT generation failed: {e}")
             srt_path = None
+
+    with open(srt_path, 'r') as f:
+        print(f"   📝 SRT preview: {f.read()[:500]}")
     
     # If Whisper failed, generate fallback SRT from script
     if not srt_path and script:
@@ -100,7 +103,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
     if music_index is not None:
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},'
-            f'atempo=1.2,volume=2[voice]'
+            f'atempo=1.3,volume=2[voice]'
             )
         # Music: low volume (15%), trimmed to audio duration
         filters.append(
