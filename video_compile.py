@@ -52,7 +52,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     
     return ass_path
 
-
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
     print("🎬 Starting FFmpeg compilation...")
@@ -65,7 +64,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
 
     intro_duration = 0
 
-    # 2. Generate SRT – use fallback for word-by-word phrases
+    # 2. Generate SRT – fallback for word-by-word phrases
     srt_path = None
     try:
         srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
@@ -92,7 +91,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         music_index = None
         print("   ⚠️ No background music available. Proceeding with voiceover only.")
 
-    # 4. Build filter graph - SIMPLIFIED
+    # 4. Build filter graph (NO CAPTIONS, just video + audio)
     filters = []
     
     # Video: crop and scale to 9:16
@@ -105,23 +104,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     concat_inputs = ''.join([f'[v{i}]' for i in range(len(video_paths))])
     filters.append(f'{concat_inputs}concat=n={len(video_paths)}:v=1:a=0[bgv]')
     
-    # Apply subtitles using ass filter (more reliable than subtitles)
-    if srt_path and os.path.exists(srt_path):
-        # Convert SRT to ASS
-        ass_path = srt_path.replace('.srt', '.ass')
-        convert_srt_to_ass(srt_path, ass_path, audio_duration)
-        filters.append(
-            f'[bgv]trim=duration={audio_duration},'
-            f'ass={ass_path},'
-            f'format=yuv420p[outv]'
-        )
-    else:
-        filters.append(
-            f'[bgv]trim=duration={audio_duration},'
-            f'format=yuv420p[outv]'
-        )
+    # Trim video to audio duration
+    filters.append(f'[bgv]trim=duration={audio_duration},format=yuv420p[outv]')
 
-    # Audio: voice with atempo + volume
+    # Audio: voice with atempo + volume, mix with music
     if music_index is not None:
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},'
@@ -142,8 +128,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
 
     filter_graph = ';'.join(filters)
 
-    # 5. Output path
-    output_path = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
+    # 5. Output path (TEMP video without captions)
+    temp_output = os.path.join(OUTPUT_DIR, f"temp_{int(time.time())}.mp4")
     cmd = (
         ['ffmpeg', '-y'] + inputs +
         ['-filter_complex', filter_graph,
@@ -153,10 +139,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
          '-c:a', 'aac', '-b:a', '192k',
          '-shortest',
          '-movflags', '+faststart',
-         output_path]
+         temp_output]
     )
 
-    print("⚡ Running FFmpeg...")
+    print("⚡ Running FFmpeg (video + audio, no captions)...")
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -171,11 +157,55 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     process.wait()
 
     if process.returncode != 0:
-        raise Exception(f"FFmpeg failed with exit code {process.returncode}")
+        raise Exception(f"FFmpeg (no captions) failed with exit code {process.returncode}")
 
-    print("   ✅ FFmpeg completed successfully.")
+    print("   ✅ First pass completed.")
 
-    # Clean up
+    # 6. SECOND PASS: Burn captions using subtitles filter (simpler)
+    if srt_path and os.path.exists(srt_path):
+        final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
+        print("⚡ Running FFmpeg (burning captions)...")
+        
+        # Simple style that works reliably
+        style = 'Fontsize=40, Bold=1, Alignment=10, OutlineColour=&H80000000'
+        cmd2 = [
+            'ffmpeg', '-y',
+            '-i', temp_output,
+            '-vf', f'subtitles={srt_path}:force_style=\'{style}\'',
+            '-c:a', 'copy',
+            '-preset', 'slow',
+            '-crf', '18',
+            final_output
+        ]
+        
+        process2 = subprocess.Popen(
+            cmd2,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+            bufsize=1
+        )
+
+        for line in process2.stdout:
+            if 'frame=' in line or 'size=' in line:
+                print(f"   {line.strip()}")
+        process2.wait()
+
+        if process2.returncode != 0:
+            raise Exception(f"FFmpeg (caption burn) failed with exit code {process2.returncode}")
+
+        print("   ✅ Captions burned successfully.")
+        
+        # Remove temp file
+        try:
+            os.unlink(temp_output)
+        except:
+            pass
+    else:
+        final_output = temp_output
+        print("   ℹ️ No captions to burn. Using temp output as final.")
+
+    # 7. Clean up
     for path in video_paths + [audio_path]:
         try:
             os.unlink(path)
@@ -189,8 +219,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if srt_path and os.path.exists(srt_path):
         os.unlink(srt_path)
 
-    print(f"✅ Video compiled successfully: {output_path}")
-    return output_path
+    print(f"✅ Video compiled successfully: {final_output}")
+    return final_output
+
 
 def download_background_music():
     """Use a local music file from the repository."""
