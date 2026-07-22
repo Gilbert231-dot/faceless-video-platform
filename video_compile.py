@@ -3,22 +3,15 @@ import time
 import tempfile
 import json
 import subprocess
+import re
 from config import PROJECT_ROOT, FAST_MODE, OUTPUT_DIR
 from captions import whisper_json_to_srt, generate_fallback_srt
 
 def create_reddit_frame(title, video_size, part_label=None):
-    """Stub: No longer used. Returns None to skip intro frame."""
     return None
 
-def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_frame=None, title=None, part_label=None):
-    print("🎬 VERSION 3 - UPDATED COMPILE_VIDEO WITH STYLING AND SPEED")
-    """Compile video using FFmpeg with:
-    - Normal video speed (no speed-up)
-    - Narrator speed kept (already natural)
-    - Captions: smaller, bold, centered
-    - Narrator volume: boosted to TikTok standard
-    - Background music: action/cinematic track at 15% volume
-    """
+def compile_video(video_paths, audio_path, script, subtitle_path=None,
+                  intro_frame=None, title=None, part_label=None):
     print("🎬 Starting FFmpeg compilation...")
 
     # 1. Get audio duration
@@ -27,12 +20,21 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
          '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
     ).decode().strip())
 
-    # 2. Intro duration (set to 0 since we removed the intro frame)
     intro_duration = 0
 
-    # 3. Generate SRT from Whisper JSON OR fallback
+    # 2. Generate SRT – ALWAYS use fallback for word-by-word captions
+    # Force fallback to ensure word-by-word chunks
     srt_path = None
-    if subtitle_path and os.path.exists(subtitle_path):
+    try:
+        srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
+        generate_fallback_srt(script, intro_duration, srt_path)
+        print(f"   ✅ SRT subtitles created (word-by-word): {srt_path}")
+    except Exception as e:
+        print(f"   ⚠️ Fallback SRT generation failed: {e}")
+        srt_path = None
+
+    # If fallback failed, try Whisper (but we want fallback's word-by-word)
+    if not srt_path and subtitle_path and os.path.exists(subtitle_path):
         try:
             srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
             whisper_json_to_srt(subtitle_path, intro_duration, srt_path)
@@ -41,37 +43,24 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
             print(f"   ⚠️ Whisper SRT generation failed: {e}")
             srt_path = None
 
-    with open(srt_path, 'r') as f:
-        print(f"   📝 SRT preview: {f.read()[:500]}")
-    
-    # If Whisper failed, generate fallback SRT from script
-    if not srt_path and script:
-        try:
-            srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
-            generate_fallback_srt(script, intro_duration, srt_path)
-            print(f"   ✅ SRT subtitles created from fallback: {srt_path}")
-        except Exception as e:
-            print(f"   ⚠️ Fallback SRT generation failed: {e}")
-            srt_path = None
-
-    # 4. Build input list
+    # 3. Build input list
     inputs = []
     for p in video_paths:
         inputs.extend(['-i', p])
     audio_index = len(video_paths)
     inputs.extend(['-i', audio_path])
 
-    # --- 4.5 DOWNLOAD BACKGROUND MUSIC ---
+    # --- Background music (optional) ---
     music_path = download_background_music()
     if music_path and os.path.exists(music_path):
         inputs.extend(['-i', music_path])
-        music_index = len(video_paths) + 1  # after all video inputs and audio
+        music_index = len(video_paths) + 1
         print(f"   ✅ Background music added: {music_path}")
     else:
         music_index = None
         print("   ⚠️ No background music available. Proceeding with voiceover only.")
 
-    # 5. Build filter graph
+    # 4. Build filter graph
     filters = []
     for i in range(len(video_paths)):
         filters.append(
@@ -84,43 +73,43 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
     )
     filters.append(f'[bgv]copy[outv0]')
     outv_stream = '[outv0]'
-    
-    # 6. Captions: burn directly using drawtext (more reliable)
+
+    # 5. Captions: burn using drawtext (center, large, bold)
     if srt_path and os.path.exists(srt_path):
-        # Read SRT file and generate drawtext filters for each subtitle
+        # Read SRT and generate drawtext filters
         drawtext_filters = []
         with open(srt_path, 'r') as f:
             content = f.read()
-        # Parse SRT blocks
+        
         blocks = content.strip().split('\n\n')
         for block in blocks:
             lines = block.split('\n')
             if len(lines) >= 3:
-                # Timecode line
                 timecode = lines[1]
-                # Text lines (join all text lines)
                 text = ' '.join(lines[2:])
-                # Parse timecode: 00:00:00,000 --> 00:00:01,000
+                # Parse timecode
                 start_str, end_str = timecode.split(' --> ')
-                # Convert to seconds
                 start_parts = start_str.replace(',', '.').split(':')
                 end_parts = end_str.replace(',', '.').split(':')
                 start_sec = float(start_parts[0])*3600 + float(start_parts[1])*60 + float(start_parts[2])
                 end_sec = float(end_parts[0])*3600 + float(end_parts[1])*60 + float(end_parts[2])
                 duration = end_sec - start_sec
-                # Escape text for drawtext (quotes, colons, etc.)
+                # Escape text
                 text = text.replace("'", "'\\''").replace(':', '\\:')
-                # Add drawtext filter
+                # Choose bold font
+                font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+                if not os.path.exists(font_path):
+                    font_path = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
+                # Add drawtext filter with larger font (38), centered, with outline
                 drawtext_filters.append(
-                    f"drawtext=text='{text}':fontcolor=white:fontsize=22:"
-                    f"fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
-                    f"bordercolor=black:borderw=2:"
+                    f"drawtext=text='{text}':fontcolor=white:fontsize=38:"
+                    f"fontfile={font_path}:"
+                    f"bordercolor=black:borderw=3:"
                     f"x=(w-text_w)/2:y=(h-text_h)/2:"
                     f"enable='between(t,{start_sec},{end_sec})'"
                 )
         
         if drawtext_filters:
-            # Combine all drawtext filters
             drawtext_chain = ','.join(drawtext_filters)
             filters.append(
                 f'{outv_stream}trim=duration={audio_duration},'
@@ -138,45 +127,44 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
             f'format=yuv420p[outv]'
         )
 
-    # 7. Audio: boost narrator volume (2x = ~6dB boost) + mix with background music
+    # 6. Audio: ALWAYS apply atempo (speed up narrator) regardless of music
     if music_index is not None:
+        # Voice: apply atempo and volume, then mix with music
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},'
             f'atempo=1.3,volume=2[voice]'
-            )
-        # Music: low volume (15%), trimmed to audio duration
+        )
         filters.append(
             f'[{music_index}:a]atrim=duration={audio_duration},'
             f'volume=0.15[music]'
         )
-        # Mix voice + music
         filters.append(
             f'[voice][music]amix=inputs=2:duration=longest[outa]'
         )
     else:
-        # Voice only (no music)
+        # No music: still apply atempo and volume
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},'
-            f'volume=2[outa]'
+            f'atempo=1.3,volume=2[outa]'
         )
 
     filter_graph = ';'.join(filters)
 
-    # 8. Output path
+    # 7. Output path
     output_path = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     cmd = (
         ['ffmpeg', '-y'] + inputs +
         ['-filter_complex', filter_graph,
-        '-map', '[outv]', '-map', '[outa]',
-        '-c:v', 'libx264', '-preset', 'veryfast',
-        '-crf', '23',
-        '-c:a', 'aac', '-b:a', '128k',
-        '-shortest',
-        '-movflags', '+faststart',
-        output_path]
+         '-map', '[outv]', '-map', '[outa]',
+         '-c:v', 'libx264', '-preset', 'veryfast',
+         '-crf', '23',
+         '-c:a', 'aac', '-b:a', '128k',
+         '-shortest',
+         '-movflags', '+faststart',
+         output_path]
     )
 
-    print("⚡ Running FFmpeg (this may take a few minutes)...")
+    print("⚡ Running FFmpeg...")
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -195,7 +183,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
 
     print("   ✅ FFmpeg completed successfully.")
 
-    # Clean up temp files
+    # Clean up
     for path in video_paths + [audio_path]:
         try:
             os.unlink(path)
@@ -212,16 +200,11 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
     print(f"✅ Video compiled successfully: {output_path}")
     return output_path
 
-
 def download_background_music():
     """Download a royalty-free action/cinematic background music track."""
     import requests
     import tempfile
-    
-    # Pixabay royalty-free music (action/cinematic)
-    # You can replace this URL with any royalty-free track
     music_url = "https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8f7c7a6.mp3"
-    
     try:
         print("   🎵 Downloading background music...")
         response = requests.get(music_url, timeout=30)
