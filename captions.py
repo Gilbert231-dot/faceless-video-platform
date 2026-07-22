@@ -52,8 +52,8 @@ def whisper_json_to_srt(subtitle_path, intro_duration, srt_path):
     return srt_path
 
 
-def generate_fallback_srt(script, intro_duration, srt_path):
-    """Generate SRT subtitles with word-by-word chunks (1 word per subtitle)."""
+def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
+    """Generate SRT subtitles with word-by-word chunks, timed to audio duration."""
     import re
     
     # Split script into words
@@ -62,36 +62,26 @@ def generate_fallback_srt(script, intro_duration, srt_path):
     if not words:
         return None
     
-    # --- 1 WORD PER CAPTION (word-by-word) ---
-    chunk_size = 1  # <-- Changed from 2-4 to 1
-    chunks = []
-    for i in range(0, len(words), chunk_size):
-        chunk = words[i:i+chunk_size]
-        chunks.append(' '.join(chunk))
+    # --- If audio_duration is provided, use it for perfect sync ---
+    if audio_duration and audio_duration > 0:
+        total_duration = audio_duration
+    else:
+        # Fallback: estimate duration (4 words/second for 1.3x speed)
+        total_duration = len(words) / 4
+        if total_duration < 30:
+            total_duration = 60
     
-    if not chunks:
-        chunks = words  # fallback: each word individually
+    # Calculate duration per word
+    dur_per_word = total_duration / len(words)
     
-    # --- ESTIMATE DURATION FOR SPED-UP SPEECH ---
-    # Normal speech: 3 words/second. At 1.3x speed: ~4 words/second.
-    total_words = len(words)
-    estimated_duration = total_words / 4  # 4 words per second (for 1.3x speed)
-    
-    # Minimum duration
-    if estimated_duration < 30:
-        estimated_duration = 60
-    
-    # Calculate duration per chunk (1 word per chunk)
-    dur_per_chunk = estimated_duration / len(chunks)
-    
-    # If duration per word is too short, set a minimum
-    if dur_per_chunk < 0.25:
-        dur_per_chunk = 0.25  # Minimum 0.25 seconds per word
+    # Set minimum duration per word to avoid flickering
+    if dur_per_word < 0.2:
+        dur_per_word = 0.2
     
     with open(srt_path, 'w') as f:
-        for i, chunk in enumerate(chunks, 1):
-            start_time = (i - 1) * dur_per_chunk + intro_duration
-            end_time = i * dur_per_chunk + intro_duration
+        for i, word in enumerate(words, 1):
+            start_time = (i - 1) * dur_per_word + intro_duration
+            end_time = i * dur_per_word + intro_duration
             
             start_s = int(start_time)
             start_ms = int((start_time - start_s) * 1000)
@@ -101,6 +91,6 @@ def generate_fallback_srt(script, intro_duration, srt_path):
             f.write(f"{i}\n")
             f.write(f"{start_s//3600:02d}:{(start_s%3600)//60:02d}:{start_s%60:02d},{start_ms:03d} --> ")
             f.write(f"{end_s//3600:02d}:{(end_s%3600)//60:02d}:{end_s%60:02d},{end_ms:03d}\n")
-            f.write(f"{chunk}\n\n")
+            f.write(f"{word}\n\n")
     
     return srt_path
