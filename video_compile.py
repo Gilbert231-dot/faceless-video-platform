@@ -84,7 +84,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_fra
     
     # 6. Captions: simple, reliable styling
     if srt_path and os.path.exists(srt_path):
-        style = 'Fontsize=20, OutlineColour=&H80000000'
+        style = 'Fontsize=22, Alignment=10, OutlineColour=&H80000000'
         filters.append(
             f'{outv_stream}trim=duration={audio_duration},'
             f'subtitles={srt_path}:force_style=\'{style}\','
