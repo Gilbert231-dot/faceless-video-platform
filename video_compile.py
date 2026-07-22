@@ -129,29 +129,25 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             f'format=yuv420p[outv]'
         )
 
-    # 6. Audio: apply atempo and volume, then mix with music
+    # 6. Audio: simple mixing using concat (more reliable)
     if music_index is not None:
-        # Voice: apply atempo and volume
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},'
             f'atempo=1.3,volume=2[voice]'
         )
-        # Music: trim to same duration, reduce volume to 15%
         filters.append(
             f'[{music_index}:a]atrim=duration={audio_duration},'
             f'volume=0.15[music]'
         )
-        # Mix voice + music
         filters.append(
-            f'[voice][music]amix=inputs=2:duration=longest[outa]'
+            f'[voice][music]concat=n=2:v=0:a=1[outa]'
         )
     else:
-        # Voice only (no music)
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},'
             f'atempo=1.3,volume=2[outa]'
         )
-
+        
     filter_graph = ';'.join(filters)
     print(f"   🧪 Filter graph: {filter_graph}")
 
