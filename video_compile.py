@@ -10,8 +10,8 @@ def create_reddit_frame(title, video_size, part_label=None):
     """Stub: No longer used. Returns None to skip intro frame."""
     return None
 
-def compile_video(video_paths, audio_path, script, subtitle_path=None,
-                  intro_frame=None, title=None, part_label=None):
+def compile_video(video_paths, audio_path, script, subtitle_path=None, intro_frame=None, title=None, part_label=None):
+    print("🎬 VERSION 3 - UPDATED COMPILE_VIDEO WITH STYLING AND SPEED")
     """Compile video using FFmpeg with:
     - Normal video speed (no speed-up)
     - Narrator speed kept (already natural)
