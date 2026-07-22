@@ -53,7 +53,7 @@ def whisper_json_to_srt(subtitle_path, intro_duration, srt_path):
 
 
 def generate_fallback_srt(script, intro_duration, srt_path):
-    """Generate SRT subtitles with word-by-word chunks (2-4 words per subtitle)."""
+    """Generate SRT subtitles with word-by-word chunks (1 word per subtitle)."""
     import re
     
     # Split script into words
@@ -62,26 +62,31 @@ def generate_fallback_srt(script, intro_duration, srt_path):
     if not words:
         return None
     
-    # Group words into chunks of 2-4 words each
-    chunk_size = random.randint(2, 4)  # Random for more natural feel
+    # --- 1 WORD PER CAPTION (word-by-word) ---
+    chunk_size = 1  # <-- Changed from 2-4 to 1
     chunks = []
     for i in range(0, len(words), chunk_size):
         chunk = words[i:i+chunk_size]
-        if len(chunk) >= 2:
-            chunks.append(' '.join(chunk))
+        chunks.append(' '.join(chunk))
     
     if not chunks:
-        chunks = [' '.join(words[i:i+3]) for i in range(0, len(words), 3)]
+        chunks = words  # fallback: each word individually
     
-    # Estimate total duration (approx 3 words per second = 0.33s per word)
+    # --- ESTIMATE DURATION FOR SPED-UP SPEECH ---
+    # Normal speech: 3 words/second. At 1.3x speed: ~4 words/second.
     total_words = len(words)
-    estimated_duration = total_words / 3  # 3 words per second
+    estimated_duration = total_words / 4  # 4 words per second (for 1.3x speed)
     
+    # Minimum duration
     if estimated_duration < 30:
-        estimated_duration = 60  # Minimum 60 seconds
+        estimated_duration = 60
     
-    # Calculate duration per chunk
+    # Calculate duration per chunk (1 word per chunk)
     dur_per_chunk = estimated_duration / len(chunks)
+    
+    # If duration per word is too short, set a minimum
+    if dur_per_chunk < 0.25:
+        dur_per_chunk = 0.25  # Minimum 0.25 seconds per word
     
     with open(srt_path, 'w') as f:
         for i, chunk in enumerate(chunks, 1):
