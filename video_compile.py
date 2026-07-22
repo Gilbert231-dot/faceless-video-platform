@@ -74,7 +74,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     filters.append(f'[bgv]copy[outv0]')
     outv_stream = '[outv0]'
 
-    # 5. Captions: burn using drawtext (center, large, bold)
+    # 5. Captions: burn using drawtext (center, large, bold, word-by-word)
     if srt_path and os.path.exists(srt_path):
         # Read SRT and generate drawtext filters
         drawtext_filters = []
@@ -96,15 +96,18 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 duration = end_sec - start_sec
                 # Escape text
                 text = text.replace("'", "'\\''").replace(':', '\\:')
+                
+                # --- UPDATED: Bigger, bolder font ---
                 # Choose bold font
                 font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
                 if not os.path.exists(font_path):
                     font_path = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
-                # Add drawtext filter with larger font (38), centered, with outline
+                
+                # Add drawtext filter with fontsize 44 (bigger) and borderw 4 (bolder outline)
                 drawtext_filters.append(
-                    f"drawtext=text='{text}':fontcolor=white:fontsize=38:"
+                    f"drawtext=text='{text}':fontcolor=white:fontsize=44:"
                     f"fontfile={font_path}:"
-                    f"bordercolor=black:borderw=3:"
+                    f"bordercolor=black:borderw=4:"
                     f"x=(w-text_w)/2:y=(h-text_h)/2:"
                     f"enable='between(t,{start_sec},{end_sec})'"
                 )
