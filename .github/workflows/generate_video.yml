@@ -61,9 +61,11 @@ jobs:
           pwd
           echo "Files in current directory:"
           ls -la
+          echo "Output directory contents:"
+          ls -la output/ || echo "Output directory not found"
           echo "Searching for output_*.mp4 files:"
           find . -name "output_*.mp4"
-
+      
       - name: Upload the generated video
         uses: actions/upload-artifact@v4
         with:
