@@ -54,8 +54,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video using VideoCaptioner CLI for captions."""
-    print("🎬 Starting video compilation (VideoCaptioner CLI)...")
+    """Compile video using FFmpeg + caption burn in second pass."""
+    print("🎬 Starting video compilation...")
 
     # 1. Get audio duration
     audio_duration = float(subprocess.check_output(
@@ -63,7 +63,17 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
          '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
     ).decode().strip())
 
-    # 2. Process each video clip: crop, scale, and concatenate
+    # 2. Generate SRT subtitles (fallback from script)
+    srt_path = None
+    try:
+        srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
+        generate_fallback_srt(script, 0, srt_path, audio_duration)
+        print(f"   ✅ SRT subtitles created: {srt_path}")
+    except Exception as e:
+        print(f"   ⚠️ SRT generation failed: {e}")
+        srt_path = None
+
+    # 3. Build input list and filter graph (NO CAPTIONS)
     inputs = []
     filter_parts = []
     
@@ -73,17 +83,16 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             f'[{i}:v]crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920,setsar=1[v{i}]'
         )
     
-    # Concatenate all video clips
     concat_inputs = ''.join([f'[v{i}]' for i in range(len(video_paths))])
     filter_parts.append(
         f'{concat_inputs}concat=n={len(video_paths)}:v=1:a=0[outv]'
     )
     
-    # Add audio input
+    # Audio
     inputs.extend(['-i', audio_path])
     audio_index = len(video_paths)
     
-    # Add background music if available
+    # Background music
     music_path = download_background_music()
     if music_path and os.path.exists(music_path):
         inputs.extend(['-i', music_path])
@@ -91,43 +100,31 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   ✅ Background music added: {music_path}")
     else:
         music_index = None
-        print("   ⚠️ No background music available. Proceeding with voiceover only.")
+        print("   ⚠️ No background music available.")
 
-    # 3. Build filter graph
     filters = []
-    
-    # Video
     filters.extend(filter_parts)
-    
-    # Trim video to audio duration and format
     filters.append(f'[outv]trim=duration={audio_duration},format=yuv420p[outv]')
-    
-    # Audio: simple volume boost (no atempo to avoid crashes)
+
     if music_index is not None:
-        # Voice: just volume boost (no atempo)
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},volume=2[voice]'
         )
-        # Music: reduce volume
         filters.append(
             f'[{music_index}:a]atrim=duration={audio_duration},volume=0.15[music]'
         )
-        # Mix voice + music
         filters.append(
             f'[voice][music]amix=inputs=2:duration=longest[outa]'
         )
     else:
-        # Voice only
         filters.append(
             f'[{audio_index}:a]atrim=duration={audio_duration},volume=2[outa]'
         )
 
     filter_graph = ';'.join(filters)
 
-    # 4. Output path
-    output_path = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
-    
-    # 5. Build FFmpeg command
+    # 4. Render raw video (NO CAPTIONS)
+    temp_output = os.path.join(OUTPUT_DIR, f"temp_{int(time.time())}.mp4")
     cmd = (
         ['ffmpeg', '-y'] + inputs +
         ['-filter_complex', filter_graph,
@@ -137,10 +134,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
          '-c:a', 'aac', '-b:a', '192k',
          '-shortest',
          '-movflags', '+faststart',
-         output_path]
+         temp_output]
     )
 
-    print("⚡ Running FFmpeg...")
+    print("⚡ Running FFmpeg (video + audio, no captions)...")
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -157,45 +154,62 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if process.returncode != 0:
         raise Exception(f"FFmpeg failed with exit code {process.returncode}")
 
-    print("   ✅ FFmpeg completed successfully.")
+    print("   ✅ FFmpeg completed.")
 
-    # 6. Burn captions using VideoCaptioner CLI
-    style_file = os.path.join(PROJECT_ROOT, "my_style.ass")
+    # 5. Burn captions (Plan A: Simple FFmpeg subtitle burn)
+    final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
-    print("⚡ Burning captions with VideoCaptioner CLI...")
-    
-    # Create a temp file for VideoCaptioner
-    temp_cap_output = os.path.join(OUTPUT_DIR, f"output_cap_{int(time.time())}.mp4")
-    
-    cmd_vc = [
-        'videocaptioner', 'process', output_path,
-        '--style-ass', style_file,
-        '--quality', 'ultra',
-        '--target-language', 'en',
-        '--output', temp_cap_output
-    ]
+    if srt_path and os.path.exists(srt_path):
+        print("⚡ Burning captions with FFmpeg (Plan A)...")
+        cmd_burn = [
+            'ffmpeg', '-y',
+            '-i', temp_output,
+            '-vf', f"subtitles={srt_path}:force_style='Fontsize=45, Bold=1, Alignment=10, OutlineColour=&H80000000'",
+            '-c:a', 'copy',
+            '-preset', 'slow',
+            '-crf', '18',
+            final_output
+        ]
+        
+        process_burn = subprocess.Popen(
+            cmd_burn,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+            bufsize=1
+        )
 
-    process_vc = subprocess.Popen(
-        cmd_vc,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        universal_newlines=True,
-        bufsize=1
-    )
+        for line in process_burn.stdout:
+            if 'frame=' in line or 'size=' in line:
+                print(f"   {line.strip()}")
+        process_burn.wait()
 
-    for line in process_vc.stdout:
-        print(f"   {line.strip()}")
-    process_vc.wait()
+        if process_burn.returncode == 0:
+            print("   ✅ Captions burned successfully (Plan A).")
+            os.unlink(temp_output)
+        else:
+            print(f"   ⚠️ Plan A failed (exit code {process_burn.returncode}). Trying Plan B...")
+            # Fallback to Plan B: VideoCaptioner CLI
+            os.rename(temp_output, final_output)
+            try:
+                print("⚡ Burning captions with VideoCaptioner CLI (Plan B)...")
+                style_file = os.path.join(PROJECT_ROOT, "my_style.ass")
+                cmd_vc = [
+                    'videocaptioner', 'process', final_output,
+                    '--style-ass', style_file,
+                    '--quality', 'ultra',
+                    '--target-language', 'en',
+                    '--output', final_output
+                ]
+                subprocess.run(cmd_vc, check=True, capture_output=True)
+                print("   ✅ Captions burned successfully (Plan B).")
+            except Exception as e:
+                print(f"   ⚠️ Plan B failed: {e}. Proceeding without captions.")
+    else:
+        os.rename(temp_output, final_output)
+        print("   ℹ️ No captions available. Using raw video.")
 
-    if process_vc.returncode != 0:
-        raise Exception(f"VideoCaptioner CLI failed with exit code {process_vc.returncode}")
-
-    print("   ✅ Captions burned successfully.")
-
-    # 7. Replace original with captioned version
-    os.replace(temp_cap_output, output_path)
-
-    # 8. Clean up
+    # 6. Clean up
     for path in video_paths + [audio_path]:
         try:
             os.unlink(path)
@@ -209,8 +223,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if srt_path and os.path.exists(srt_path):
         os.unlink(srt_path)
 
-    print(f"✅ Video compiled successfully: {output_path}")
-    return output_path
+    print(f"✅ Video compiled successfully: {final_output}")
+    return final_output
 
 
 def download_background_music():
