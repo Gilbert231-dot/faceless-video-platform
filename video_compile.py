@@ -54,8 +54,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with fast cropping and high quality."""
-    print("🎬 Starting video compilation...")
+    """Compile video with one FFmpeg pass (crop + resize + combine)."""
+    print("🎬 Starting video compilation (one-pass)...")
 
     # 1. Get audio duration
     audio_duration = float(subprocess.check_output(
@@ -73,7 +73,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   ⚠️ SRT generation failed: {e}")
         srt_path = None
 
-    # 3. Step 1: Concatenate video clips
+    # 3. Step 1: Concatenate video clips (no encode)
     print("⚡ Step 1: Concatenating video clips...")
     video_concat_file = os.path.join(OUTPUT_DIR, f"video_concat_{int(time.time())}.txt")
     with open(video_concat_file, 'w') as f:
@@ -96,35 +96,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video concat failed: {e}")
 
-    # 4. Step 2: Crop to 9:16 (NO RESIZE - much faster)
-    print("⚡ Step 2: Cropping to 9:16...")
-    video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
-    
-    cmd_crop = [
-        'ffmpeg', '-y',
-        '-i', video_concat_output,
-        '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0',
-        '-c:v', 'libx264',
-        '-preset', 'veryfast',
-        '-crf', '18',
-        '-an',
-        video_cropped
-    ]
-    
-    try:
-        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=600)
-        print("   ✅ Video cropped.")
-        os.unlink(video_concat_output)
-        video_concat_output = video_cropped
-    except Exception as e:
-        raise Exception(f"Video cropping failed: {e}")
-
-    # 5. Step 3: Mix audio (voice + music)
+    # 4. Step 2: Mix audio (voice + music)
     music_path = download_background_music()
     audio_mixed_output = os.path.join(OUTPUT_DIR, f"audio_mixed_{int(time.time())}.mp3")
     
     if music_path and os.path.exists(music_path):
-        print("⚡ Step 3: Mixing voiceover + music...")
+        print("⚡ Step 2: Mixing voiceover + music...")
         cmd_mix = [
             'ffmpeg', '-y',
             '-i', audio_path,
@@ -150,7 +127,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             ]
             subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
     else:
-        print("⚡ Step 3: Using voiceover only...")
+        print("⚡ Step 2: Using voiceover only...")
         cmd_voice = [
             'ffmpeg', '-y',
             '-i', audio_path,
@@ -161,33 +138,37 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         ]
         subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
 
-    # 6. Step 4: Combine video + audio + resize to 1080x1920
-    print("⚡ Step 4: Combining video + audio...")
-    temp_output = os.path.join(OUTPUT_DIR, f"temp_{int(time.time())}.mp4")
+    # 5. Step 3: Combine video + audio + CROP + RESIZE in ONE PASS
+    print("⚡ Step 3: Combining, cropping, and resizing (one pass)...")
+    final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
-    # Add resize in the combine step
+    # ONE filter: crop to 9:16, then resize to 1080x1920
+    # This does everything in a single encode pass
     cmd_combine = [
         'ffmpeg', '-y',
         '-i', video_concat_output,
         '-i', audio_mixed_output,
-        '-vf', 'scale=1080:1920',  # Resize to 1080x1920
+        '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
-        '-preset', 'veryfast',
-        '-crf', '18',
+        '-preset', 'medium',      # Balanced quality/speed
+        '-crf', '18',             # High quality
         '-c:a', 'aac',
         '-b:a', '192k',
         '-shortest',
         '-movflags', '+faststart',
-        temp_output
+        final_output
     ]
     
     try:
-        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=600)
-        print("   ✅ Video + audio combined and resized.")
+        # 20 minute timeout for the combined step
+        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=1200)
+        print("   ✅ Video combined, cropped, and resized.")
+    except subprocess.TimeoutExpired:
+        raise Exception("Video combine step timed out after 20 minutes.")
     except Exception as e:
-        raise Exception(f"Video+audio combine failed: {e}")
+        raise Exception(f"Video combine failed: {e}")
 
-    # 7. Clean up
+    # 6. Clean up
     for path in [video_concat_output, audio_mixed_output, video_concat_file]:
         try:
             os.unlink(path)
@@ -204,43 +185,41 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         except:
             pass
 
-    # 8. Burn captions (using VideoCaptioner CLI)
-    final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
-    
+    # 7. Burn captions (using VideoCaptioner CLI or FFmpeg)
     if srt_path and os.path.exists(srt_path):
-        print("⚡ Step 5: Burning captions with VideoCaptioner CLI...")
+        print("⚡ Step 4: Burning captions...")
         style_file = os.path.join(PROJECT_ROOT, "my_style.ass")
         
+        # Try VideoCaptioner CLI first
         try:
             cmd_vc = [
-                'videocaptioner', 'process', temp_output,
+                'videocaptioner', 'process', final_output,
                 '--style-ass', style_file,
                 '--quality', 'ultra',
                 '--target-language', 'en',
                 '--output', final_output
             ]
             subprocess.run(cmd_vc, check=True, capture_output=True, timeout=300)
-            os.unlink(temp_output)
             print("   ✅ Captions burned with VideoCaptioner CLI.")
         except Exception as e:
             print(f"   ⚠️ VideoCaptioner CLI failed: {e}. Falling back to FFmpeg...")
+            # FFmpeg fallback: burn captions in a separate step
+            temp_with_captions = os.path.join(OUTPUT_DIR, f"temp_captions_{int(time.time())}.mp4")
             cmd_burn = [
                 'ffmpeg', '-y',
-                '-i', temp_output,
+                '-i', final_output,
                 '-vf', f"subtitles={srt_path}:force_style='Fontsize=45, Bold=1, Alignment=10, OutlineColour=&H80000000'",
                 '-c:a', 'copy',
-                final_output
+                temp_with_captions
             ]
             try:
                 subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
-                os.unlink(temp_output)
+                os.replace(temp_with_captions, final_output)
                 print("   ✅ Captions burned with FFmpeg.")
             except Exception as e2:
                 print(f"   ⚠️ FFmpeg caption burn failed: {e2}. Using raw video.")
-                os.rename(temp_output, final_output)
-    else:
-        os.rename(temp_output, final_output)
-        print("   ℹ️ No captions available.")
+                if os.path.exists(temp_with_captions):
+                    os.unlink(temp_with_captions)
 
     if srt_path and os.path.exists(srt_path):
         os.unlink(srt_path)
