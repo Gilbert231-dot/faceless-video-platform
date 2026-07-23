@@ -54,8 +54,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video using three-step approach with faster cropping."""
-    print("🎬 Starting video compilation...")
+    """Compile video with maximum quality and reliability."""
+    print("🎬 Starting video compilation (quality focused)...")
 
     # 1. Get audio duration
     audio_duration = float(subprocess.check_output(
@@ -73,7 +73,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   ⚠️ SRT generation failed: {e}")
         srt_path = None
 
-    # 3. Step 1: Concatenate video clips (simple concat)
+    # 3. Step 1: Concatenate video clips
     print("⚡ Step 1: Concatenating video clips...")
     video_concat_file = os.path.join(OUTPUT_DIR, f"video_concat_{int(time.time())}.txt")
     with open(video_concat_file, 'w') as f:
@@ -86,42 +86,58 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         '-f', 'concat',
         '-safe', '0',
         '-i', video_concat_file,
-        '-c:v', 'copy',  # No re-encoding
+        '-c:v', 'copy',
         video_concat_output
     ]
     
     try:
-        subprocess.run(cmd_concat, check=True, capture_output=True, timeout=60)
+        subprocess.run(cmd_concat, check=True, capture_output=True, timeout=120)
         print("   ✅ Video concatenated.")
-    except subprocess.TimeoutExpired:
-        raise Exception("Video concat step timed out.")
     except Exception as e:
         raise Exception(f"Video concat failed: {e}")
 
-    # 4. Step 2: Crop and resize to 9:16 (FASTER PRESET)
-    print("⚡ Step 2: Cropping and resizing to 9:16 (fast mode)...")
+    # 4. Step 2: Crop and resize to 9:16 (High Quality)
+    print("⚡ Step 2: Cropping and resizing to 9:16 (high quality)...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
-    # Use ultrafast preset and crf 28 to speed up processing
+    # High quality settings: veryfast + crf 18
     cmd_crop = [
         'ffmpeg', '-y',
         '-i', video_concat_output,
         '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
-        '-preset', 'veryfast',   # Faster than slow, slower than ultrafast
-        '-crf', '18',            # High quality
+        '-preset', 'veryfast',   # Balanced speed/quality
+        '-crf', '18',            # Visually lossless
         '-an',
         video_cropped
     ]
     
     try:
-        # Increase timeout to 300 seconds (5 minutes)
-        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=300)
-        print("   ✅ Video cropped and resized.")
+        # 10 minute timeout for cropping
+        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=600)
+        print("   ✅ Video cropped and resized (high quality).")
         os.unlink(video_concat_output)
         video_concat_output = video_cropped
     except subprocess.TimeoutExpired:
-        raise Exception("Video cropping step timed out. Try using a shorter video or lower resolution.")
+        print("   ⚠️ Cropping timed out. Trying lower resolution fallback...")
+        # Fallback: crop to 720p (faster)
+        cmd_crop_fallback = [
+            'ffmpeg', '-y',
+            '-i', video_concat_output,
+            '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=720:1280',
+            '-c:v', 'libx264',
+            '-preset', 'veryfast',
+            '-crf', '18',
+            '-an',
+            video_cropped
+        ]
+        try:
+            subprocess.run(cmd_crop_fallback, check=True, capture_output=True, timeout=600)
+            print("   ✅ Video cropped to 720p (fallback).")
+            os.unlink(video_concat_output)
+            video_concat_output = video_cropped
+        except Exception as e:
+            raise Exception(f"Video cropping failed: {e}")
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
@@ -142,7 +158,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             audio_mixed_output
         ]
         try:
-            subprocess.run(cmd_mix, check=True, capture_output=True, timeout=60)
+            subprocess.run(cmd_mix, check=True, capture_output=True, timeout=120)
             print("   ✅ Audio mixed.")
         except Exception as e:
             print(f"   ⚠️ Audio mixing failed: {e}. Using voice only.")
@@ -154,7 +170,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 '-b:a', '192k',
                 audio_mixed_output
             ]
-            subprocess.run(cmd_voice, check=True, capture_output=True)
+            subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
     else:
         print("⚡ Step 3: Using voiceover only...")
         cmd_voice = [
@@ -165,7 +181,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-b:a', '192k',
             audio_mixed_output
         ]
-        subprocess.run(cmd_voice, check=True, capture_output=True)
+        subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
 
     # 6. Step 4: Combine video + audio
     print("⚡ Step 4: Combining video + audio...")
@@ -183,7 +199,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     ]
     
     try:
-        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=60)
+        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=120)
         print("   ✅ Video + audio combined.")
     except Exception as e:
         raise Exception(f"Video+audio combine failed: {e}")
@@ -205,24 +221,42 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         except:
             pass
 
-    # 8. Burn captions (optional)
+    # 8. Burn captions (using VideoCaptioner CLI for better styling)
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
+    
     if srt_path and os.path.exists(srt_path):
-        print("⚡ Burning captions...")
-        cmd_burn = [
-            'ffmpeg', '-y',
-            '-i', temp_output,
-            '-vf', f"subtitles={srt_path}:force_style='Fontsize=45, Bold=1, Alignment=10, OutlineColour=&H80000000'",
-            '-c:a', 'copy',
-            final_output
-        ]
+        print("⚡ Step 5: Burning captions with VideoCaptioner CLI...")
+        style_file = os.path.join(PROJECT_ROOT, "my_style.ass")
+        
+        # Try VideoCaptioner CLI first
         try:
-            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=120)
+            cmd_vc = [
+                'videocaptioner', 'process', temp_output,
+                '--style-ass', style_file,
+                '--quality', 'ultra',
+                '--target-language', 'en',
+                '--output', final_output
+            ]
+            subprocess.run(cmd_vc, check=True, capture_output=True, timeout=300)
             os.unlink(temp_output)
-            print("   ✅ Captions burned.")
+            print("   ✅ Captions burned with VideoCaptioner CLI.")
         except Exception as e:
-            print(f"   ⚠️ Caption burn failed: {e}. Using raw video.")
-            os.rename(temp_output, final_output)
+            print(f"   ⚠️ VideoCaptioner CLI failed: {e}. Falling back to FFmpeg...")
+            # Fallback: use FFmpeg subtitles filter
+            cmd_burn = [
+                'ffmpeg', '-y',
+                '-i', temp_output,
+                '-vf', f"subtitles={srt_path}:force_style='Fontsize=45, Bold=1, Alignment=10, OutlineColour=&H80000000'",
+                '-c:a', 'copy',
+                final_output
+            ]
+            try:
+                subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
+                os.unlink(temp_output)
+                print("   ✅ Captions burned with FFmpeg (fallback).")
+            except Exception as e2:
+                print(f"   ⚠️ FFmpeg caption burn failed: {e2}. Using raw video.")
+                os.rename(temp_output, final_output)
     else:
         os.rename(temp_output, final_output)
         print("   ℹ️ No captions available.")
