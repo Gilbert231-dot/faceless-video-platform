@@ -54,7 +54,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video using three-step approach with timeouts."""
+    """Compile video using three-step approach with faster cropping."""
     print("🎬 Starting video compilation...")
 
     # 1. Get audio duration
@@ -73,8 +73,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   ⚠️ SRT generation failed: {e}")
         srt_path = None
 
-    # 3. Step 1: Concatenate video clips (without cropping, just concat)
-    print("⚡ Step 1: Concatenating video clips (simple)...")
+    # 3. Step 1: Concatenate video clips (simple concat)
+    print("⚡ Step 1: Concatenating video clips...")
     video_concat_file = os.path.join(OUTPUT_DIR, f"video_concat_{int(time.time())}.txt")
     with open(video_concat_file, 'w') as f:
         for path in video_paths:
@@ -86,7 +86,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         '-f', 'concat',
         '-safe', '0',
         '-i', video_concat_file,
-        '-c:v', 'copy',  # No re-encoding, just concat
+        '-c:v', 'copy',  # No re-encoding
         video_concat_output
     ]
     
@@ -98,27 +98,30 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video concat failed: {e}")
 
-    # 4. Crop and resize the concatenated video (separate step)
-    print("⚡ Step 2: Cropping and resizing to 9:16...")
+    # 4. Step 2: Crop and resize to 9:16 (FASTER PRESET)
+    print("⚡ Step 2: Cropping and resizing to 9:16 (fast mode)...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
+    
+    # Use ultrafast preset and crf 28 to speed up processing
     cmd_crop = [
         'ffmpeg', '-y',
         '-i', video_concat_output,
         '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
-        '-preset', 'veryfast',
-        '-crf', '23',
+        '-preset', 'veryfast',   # Faster than slow, slower than ultrafast
+        '-crf', '18',            # High quality
         '-an',
         video_cropped
     ]
     
     try:
-        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=120)
+        # Increase timeout to 300 seconds (5 minutes)
+        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=300)
         print("   ✅ Video cropped and resized.")
         os.unlink(video_concat_output)
         video_concat_output = video_cropped
     except subprocess.TimeoutExpired:
-        raise Exception("Video cropping step timed out.")
+        raise Exception("Video cropping step timed out. Try using a shorter video or lower resolution.")
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
@@ -152,7 +155,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 audio_mixed_output
             ]
             subprocess.run(cmd_voice, check=True, capture_output=True)
-            audio_mixed_output = audio_path
     else:
         print("⚡ Step 3: Using voiceover only...")
         cmd_voice = [
