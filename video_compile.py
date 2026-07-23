@@ -52,7 +52,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     
     return ass_path
 
-
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
     """Compile video using VideoCaptioner CLI for captions."""
@@ -64,14 +63,27 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
          '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
     ).decode().strip())
 
-    # 2. Build FFmpeg command for video + audio (NO CAPTIONS)
+    # 2. Process each video clip: crop, scale, and concatenate
     inputs = []
-    for p in video_paths:
-        inputs.extend(['-i', p])
-    audio_index = len(video_paths)
+    filter_parts = []
+    
+    for i, path in enumerate(video_paths):
+        inputs.extend(['-i', path])
+        filter_parts.append(
+            f'[{i}:v]crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920,setsar=1[v{i}]'
+        )
+    
+    # Concatenate all video clips
+    concat_inputs = ''.join([f'[v{i}]' for i in range(len(video_paths))])
+    filter_parts.append(
+        f'{concat_inputs}concat=n={len(video_paths)}:v=1:a=0[outv]'
+    )
+    
+    # Add audio input
     inputs.extend(['-i', audio_path])
-
-    # --- Background music ---
+    audio_index = len(video_paths)
+    
+    # Add background music if available
     music_path = download_background_music()
     if music_path and os.path.exists(music_path):
         inputs.extend(['-i', music_path])
@@ -81,38 +93,41 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         music_index = None
         print("   ⚠️ No background music available. Proceeding with voiceover only.")
 
-    # --- Filter graph (video + audio, NO CAPTIONS) ---
+    # 3. Build filter graph
     filters = []
-    for i in range(len(video_paths)):
-        filters.append(
-            f'[{i}:v]crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920,setsar=1[v{i}]'
-        )
-    concat_inputs = ''.join([f'[v{i}]' for i in range(len(video_paths))])
-    filters.append(f'{concat_inputs}concat=n={len(video_paths)}:v=1:a=0[bgv]')
-    filters.append(f'[bgv]trim=duration={audio_duration},format=yuv420p[outv]')
-
+    
+    # Video
+    filters.extend(filter_parts)
+    
+    # Trim video to audio duration and format
+    filters.append(f'[outv]trim=duration={audio_duration},format=yuv420p[outv]')
+    
+    # Audio: simple volume boost (no atempo to avoid crashes)
     if music_index is not None:
+        # Voice: just volume boost (no atempo)
         filters.append(
-            f'[{audio_index}:a]atrim=duration={audio_duration},'
-            f'atempo=1.3,volume=2[voice]'
+            f'[{audio_index}:a]atrim=duration={audio_duration},volume=2[voice]'
         )
+        # Music: reduce volume
         filters.append(
-            f'[{music_index}:a]atrim=duration={audio_duration},'
-            f'volume=0.15[music]'
+            f'[{music_index}:a]atrim=duration={audio_duration},volume=0.15[music]'
         )
+        # Mix voice + music
         filters.append(
             f'[voice][music]amix=inputs=2:duration=longest[outa]'
         )
     else:
+        # Voice only
         filters.append(
-            f'[{audio_index}:a]atrim=duration={audio_duration},'
-            f'atempo=1.3,volume=2[outa]'
+            f'[{audio_index}:a]atrim=duration={audio_duration},volume=2[outa]'
         )
 
     filter_graph = ';'.join(filters)
 
-    # --- Render raw video (without captions) ---
-    temp_output = os.path.join(OUTPUT_DIR, f"temp_{int(time.time())}.mp4")
+    # 4. Output path
+    output_path = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
+    
+    # 5. Build FFmpeg command
     cmd = (
         ['ffmpeg', '-y'] + inputs +
         ['-filter_complex', filter_graph,
@@ -122,10 +137,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
          '-c:a', 'aac', '-b:a', '192k',
          '-shortest',
          '-movflags', '+faststart',
-         temp_output]
+         output_path]
     )
 
-    print("⚡ Running FFmpeg (video + audio, no captions)...")
+    print("⚡ Running FFmpeg...")
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -142,21 +157,24 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if process.returncode != 0:
         raise Exception(f"FFmpeg failed with exit code {process.returncode}")
 
-    print("   ✅ FFmpeg completed. Now burning captions with VideoCaptioner CLI...")
+    print("   ✅ FFmpeg completed successfully.")
 
-    # --- Burn captions using VideoCaptioner CLI ---
+    # 6. Burn captions using VideoCaptioner CLI
     style_file = os.path.join(PROJECT_ROOT, "my_style.ass")
-    final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
-
+    
+    print("⚡ Burning captions with VideoCaptioner CLI...")
+    
+    # Create a temp file for VideoCaptioner
+    temp_cap_output = os.path.join(OUTPUT_DIR, f"output_cap_{int(time.time())}.mp4")
+    
     cmd_vc = [
-        'videocaptioner', 'process', temp_output,
+        'videocaptioner', 'process', output_path,
         '--style-ass', style_file,
         '--quality', 'ultra',
         '--target-language', 'en',
-        '--output', final_output
+        '--output', temp_cap_output
     ]
 
-    print("⚡ Running VideoCaptioner CLI...")
     process_vc = subprocess.Popen(
         cmd_vc,
         stdout=subprocess.PIPE,
@@ -172,9 +190,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if process_vc.returncode != 0:
         raise Exception(f"VideoCaptioner CLI failed with exit code {process_vc.returncode}")
 
-    print(f"   ✅ Captions burned successfully.")
+    print("   ✅ Captions burned successfully.")
 
-    # --- Clean up ---
+    # 7. Replace original with captioned version
+    os.replace(temp_cap_output, output_path)
+
+    # 8. Clean up
     for path in video_paths + [audio_path]:
         try:
             os.unlink(path)
@@ -185,14 +206,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             os.unlink(music_path)
         except:
             pass
-    if os.path.exists(temp_output):
-        try:
-            os.unlink(temp_output)
-        except:
-            pass
+    if srt_path and os.path.exists(srt_path):
+        os.unlink(srt_path)
 
-    print(f"✅ Video compiled successfully: {final_output}")
-    return final_output
+    print(f"✅ Video compiled successfully: {output_path}")
+    return output_path
+
 
 def download_background_music():
     """Use a local music file from the repository."""
