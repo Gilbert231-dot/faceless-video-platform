@@ -47,6 +47,9 @@ jobs:
           echo "REDDIT_CLIENT_ID=${{ secrets.REDDIT_CLIENT_ID }}" >> $GITHUB_ENV
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
 
+      - name: Install mpg123
+        run: sudo apt-get update && sudo apt-get install -y mpg123
+        
       - name: Run the video generator
         run: |
           python -c "
@@ -72,3 +75,4 @@ jobs:
           name: generated-video
           path: output/output_*.mp4
           retention-days: 7
+
