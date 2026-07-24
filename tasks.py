@@ -48,53 +48,35 @@ def concat_clips(clip_paths, output_path):
 # TASK: generate_single_video
 # ===========================
 def generate_single_video(title, script, part_label=None, topic=None, include_title_in_script=True):
-    # Build the spoken script
     if include_title_in_script:
-        if part_label and part_label != "Part 1":
-            full_script = f"{title} {part_label}. {script}"
-        else:
-            full_script = f"{title}. {script}"
-        print(f"   📝 Prepended title to script: '{title}'")
+        full_script = f"{title} {part_label}. {script}" if part_label and part_label != "Part 1" else f"{title}. {script}"
     else:
         full_script = script
-    
-    # Generate voiceover (returns MP3 path and SRT path)
+
     audio_path, subtitle_path = generate_voiceover(full_script)
     print(f"🎙️ Voiceover saved to: {audio_path}")
-    
-    # Fetch gameplay footage (list of clips)
-    video_paths = fetch_gameplay_footage(title if title else topic)
-    print(f"🎬 Downloaded {len(video_paths)} clips")
-    
-    # Concatenate clips into a single temporary video
-    with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as tmp:
-        concat_video = tmp.name
-    concat_clips(video_paths, concat_video)
-    print(f"🔗 Concatenated clips into: {concat_video}")
-    
-    # --- New compile_video call ---
-    # Path for final output (you can also use a temp file, but we return it)
+
+    # Get audio duration
+    audio_duration = get_duration(audio_path)
+
+    # Get next segment from large videos
+    segment_path = get_next_segment(audio_duration)
+    print(f"🎬 Using segment: {segment_path}")
+
+    # Compile
     final_output = f"final_{title.replace(' ', '_')}_{part_label or 'part1'}.mp4"
-    
-    # Optional background music – set your default path here
-    BG_MUSIC = 'assets/music/my_action_track.mp3'   # adjust if needed
-    
+    BG_MUSIC = 'assets/music/my_action_track.mp3'
+
     final_video_path = compile_video(
-        video_path=concat_video,                # single concatenated video
+        video_path=segment_path,
         audio_mp3=audio_path,
         output_path=final_output,
-        subtitle_ass=subtitle_path,             # SRT is fine, ffmpeg accepts it
+        subtitle_ass=subtitle_path,
         background_music=BG_MUSIC if os.path.exists(BG_MUSIC) else None,
         voice_volume=2.0,
         bg_volume=0.3,
-        fade_duration=3.0,
     )
-    
-    # Clean up the temporary concat video (optional)
-    # os.unlink(concat_video)
-    
     return final_video_path
-
 # =====================
 # TASK: generate_video
 # =====================
