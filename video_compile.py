@@ -54,8 +54,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with no audio processing (use original voiceover)."""
-    print("🎬 Starting video compilation (simplified)...")
+    """Compile video with background music and volume boost."""
+    print("🎬 Starting video compilation (with music + volume boost)...")
 
     # 1. Get audio duration
     audio_duration = float(subprocess.check_output(
@@ -63,7 +63,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
          '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
     ).decode().strip())
 
-    # 2. Generate SRT (if not provided)
+    # 2. Generate SRT
     srt_path = None
     if subtitle_path and os.path.exists(subtitle_path):
         srt_path = subtitle_path
@@ -100,21 +100,69 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video concat failed: {e}")
 
-    # 4. Combine video + audio (NO processing, just copy audio)
-    print("⚡ Step 2: Combining video + original audio...")
+    # 4. Download or locate background music
+    music_path = download_background_music()
+    
+    # 5. Audio mixing (voice + music)
+    print("⚡ Step 2: Mixing voiceover + music...")
+    audio_mixed_output = os.path.join(OUTPUT_DIR, f"audio_mixed_{int(time.time())}.mp3")
+    
+    if music_path and os.path.exists(music_path):
+        # Mix voice (volume=2) + music (volume=0.15)
+        cmd_mix = [
+            'ffmpeg', '-y',
+            '-i', audio_path,
+            '-i', music_path,
+            '-filter_complex', 
+            f'[0:a]volume=2[voice];[1:a]volume=0.15,atrim=duration={audio_duration}[music];[voice][music]amix=inputs=2:duration=longest',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            audio_mixed_output
+        ]
+        try:
+            subprocess.run(cmd_mix, check=True, capture_output=True, timeout=120)
+            print("   ✅ Audio mixed (voice + music).")
+            mixed_audio = audio_mixed_output
+        except Exception as e:
+            print(f"   ⚠️ Audio mixing failed: {e}. Using voice only with volume boost.")
+            # Fallback: just boost voice volume
+            cmd_voice = [
+                'ffmpeg', '-y',
+                '-i', audio_path,
+                '-af', 'volume=2',
+                '-c:a', 'aac',
+                '-b:a', '192k',
+                audio_mixed_output
+            ]
+            subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
+            mixed_audio = audio_mixed_output
+    else:
+        print("   ⚠️ No music available. Using voice only with volume boost.")
+        cmd_voice = [
+            'ffmpeg', '-y',
+            '-i', audio_path,
+            '-af', 'volume=2',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            audio_mixed_output
+        ]
+        subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
+        mixed_audio = audio_mixed_output
+
+    # 6. Combine video + mixed audio
+    print("⚡ Step 3: Combining video + audio...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
-    # Note: We're NOT using any audio filters (no volume, no music)
-    # This avoids the FFmpeg audio crash
     cmd_combine = [
         'ffmpeg', '-y',
         '-i', video_concat_output,
-        '-i', audio_path,
+        '-i', mixed_audio,
         '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
         '-preset', 'medium',
         '-crf', '18',
-        '-c:a', 'copy',        # Copy audio WITHOUT re-encoding
+        '-c:a', 'aac',
+        '-b:a', '192k',
         '-shortest',
         '-movflags', '+faststart',
         final_output
@@ -122,13 +170,13 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     try:
         subprocess.run(cmd_combine, check=True, capture_output=True, timeout=600)
-        print("   ✅ Video combined (audio copied).")
+        print("   ✅ Video combined.")
     except Exception as e:
         raise Exception(f"Video combine failed: {e}")
 
-    # 5. Burn captions (if SRT exists)
+    # 7. Burn captions
     if srt_path and os.path.exists(srt_path):
-        print("⚡ Step 3: Burning captions...")
+        print("⚡ Step 4: Burning captions...")
         temp_captioned = os.path.join(OUTPUT_DIR, f"temp_captioned_{int(time.time())}.mp4")
         cmd_burn = [
             'ffmpeg', '-y',
@@ -142,12 +190,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             os.replace(temp_captioned, final_output)
             print("   ✅ Captions burned.")
         except Exception as e:
-            print(f"   ⚠️ Caption burn failed: {e}. Proceeding without captions.")
+            print(f"   ⚠️ Caption burn failed: {e}.")
             if os.path.exists(temp_captioned):
                 os.unlink(temp_captioned)
 
-    # 6. Clean up
-    for path in [video_concat_output, video_concat_file]:
+    # 8. Clean up
+    for path in [video_concat_output, video_concat_file, mixed_audio]:
         try:
             os.unlink(path)
         except:
@@ -155,6 +203,11 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     for path in video_paths + [audio_path]:
         try:
             os.unlink(path)
+        except:
+            pass
+    if music_path and os.path.exists(music_path):
+        try:
+            os.unlink(music_path)
         except:
             pass
     if srt_path and srt_path != subtitle_path:
