@@ -4,7 +4,7 @@ import tempfile
 import subprocess
 from celery import Celery
 from config import FAST_MODE
-from video_compile import compile_video          # <-- NEW signature
+from video_compile import compile_video, get_duration
 from voiceover import generate_voiceover
 from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
