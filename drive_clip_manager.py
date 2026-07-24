@@ -10,8 +10,12 @@ from pathlib import Path
 STATE_FILE = "clip_state.json"
 CACHE_DIR = "cached_videos"          # where downloaded files are stored
 DRIVE_URLS = [                       # your public Google Drive video URLs
-    "https://drive.google.com/uc?export=download&id=FILE_ID_1",
-    "https://drive.google.com/uc?export=download&id=FILE_ID_2",
+    "https://drive.google.com/uc?export=download&id=1QjdFKRf1PmmQncLGrI59hD7yKngqui_r",
+    "https://drive.google.com/uc?export=download&id=1csHaO2EUANXLexMSxG-ltI77dvCIlH2P",
+    "https://drive.google.com/uc?export=download&id=1XSwwDED61z2MbM7QSEGhH0W9I7qoSd-Z",
+    "https://drive.google.com/uc?export=download&id=1JIy54c7ljm4njW7lqaHzlpOhIMVplUzs",
+    "https://drive.google.com/uc?export=download&id=1183ENgEB0H55gwVYDFzqJ4bFrOwXo5OM",
+    "https://drive.google.com/uc?export=download&id=1CcysUW40RnBFV4LEpLHv66NKsXOh_NU_",
     # ... add all 6 URLs here
 ]
 
