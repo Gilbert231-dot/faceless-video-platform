@@ -4,11 +4,12 @@ import tempfile
 import subprocess
 from celery import Celery
 from config import FAST_MODE
-from script_gen import generate_story_script, adapt_reddit_story
-from voiceover import generate_voiceover
-from broll_fetcher import fetch_gameplay_footage
 from video_compile import compile_video          # <-- NEW signature
+from voiceover import generate_voiceover
+from drive_clip_manager import get_next_segment
+from broll_fetcher import fetch_gameplay_footage
 from reddit_fetcher import get_reddit_story_with_fallback
+from script_gen import generate_story_script, adapt_reddit_story
 
 # Celery setup
 app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
@@ -52,25 +53,20 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
         full_script = f"{title} {part_label}. {script}" if part_label and part_label != "Part 1" else f"{title}. {script}"
     else:
         full_script = script
-
+    
+    # 1. Generate voiceover and get its duration
     audio_path, subtitle_path = generate_voiceover(full_script)
-    print(f"🎙️ Voiceover saved to: {audio_path}")
-
-    # Get audio duration
-    audio_duration = get_duration(audio_path)
-
-    # Get next segment from large videos
+    audio_duration = get_duration(audio_path)   # you already have this helper
+    
+    # 2. Fetch the next segment matching the audio length
     segment_path = get_next_segment(audio_duration)
     print(f"🎬 Using segment: {segment_path}")
-
-    # Compile
-    final_output = f"final_{title.replace(' ', '_')}_{part_label or 'part1'}.mp4"
-    BG_MUSIC = 'assets/music/my_action_track.mp3'
-
+    
+    # 3. Compile video using this single segment (no concatenation needed)
     final_video_path = compile_video(
         video_path=segment_path,
         audio_mp3=audio_path,
-        output_path=final_output,
+        output_path=f"final_{title.replace(' ', '_')}_{part_label or 'part1'}.mp4",
         subtitle_ass=subtitle_path,
         background_music=BG_MUSIC if os.path.exists(BG_MUSIC) else None,
         voice_volume=2.0,
