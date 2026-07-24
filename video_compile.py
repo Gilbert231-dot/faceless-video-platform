@@ -1,70 +1,84 @@
 import os
-import time
-import tempfile
-import json
-import subprocess
 import re
+import time
+import json
+import shutil
+import tempfile
+import subprocess
+from pathlib import Path
 from config import PROJECT_ROOT, FAST_MODE, OUTPUT_DIR
 from captions import whisper_json_to_srt, generate_fallback_srt
 
 #!/usr/bin/env python3
 """
 video_compile.py - FFmpeg pipeline for faceless TikTok videos
-
-Handles:
-- Decoding Edge TTS MP3 to WAV (using mpg123 or ffmpeg fallback)
-- Cropping/rescaling gameplay footage to 1080x1920 (9:16)
-- Burning styled subtitles (ASS format)
-- Mixing voiceover with background music + volume adjustments
-- Loudness normalization
-- Exporting final H.264 video with AAC audio
 """
 
-import shutil
-from pathlib import Path
-
 # ----------------------------------------------------------------------
-# Helper: Decode MP3 to WAV (stable decoder)
+# Helper: decode MP3 to WAV with multiple tools
 # ----------------------------------------------------------------------
 def prepare_audio(mp3_path: str, wav_path: str, sample_rate: int = 48000) -> str:
     """
-    Convert MP3 to 16‑bit PCM WAV using mpg123 (preferred) or ffmpeg as fallback.
-    Returns the WAV file path.
+    Convert MP3 to 16‑bit PCM WAV using the first available tool that works.
+    Tries: sox, lame, mpg123, then ffmpeg with error-ignoring flags.
     """
     mp3_path = str(mp3_path)
     wav_path = str(wav_path)
 
-    # Try mpg123 first (most reliable)
-    mpg123_path = shutil.which('mpg123')
-    if mpg123_path:
-        cmd = [
-            mpg123_path,
-            '-w', wav_path,
-            '-r', str(sample_rate),
-            '-2',           # stereo
-            mp3_path
-        ]
+    # ---- 1) sox (most reliable) ----
+    sox = shutil.which('sox')
+    if sox:
+        cmd = [sox, mp3_path, '-r', str(sample_rate), '-c', '2', '-b', '16', wav_path]
         try:
             subprocess.run(cmd, check=True, capture_output=True, text=True)
             return wav_path
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            print(f"mpg123 failed, falling back to ffmpeg: {e}")
+        except subprocess.CalledProcessError as e:
+            print(f"sox failed: {e.stderr}")
 
-    # Fallback: use ffmpeg (should also work, but sometimes buggy in CI)
-    ffmpeg_path = shutil.which('ffmpeg')
-    if ffmpeg_path:
+    # ---- 2) lame --decode ----
+    lame = shutil.which('lame')
+    if lame:
+        cmd = [lame, '--decode', mp3_path, wav_path]
+        try:
+            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            return wav_path
+        except subprocess.CalledProcessError as e:
+            print(f"lame failed: {e.stderr}")
+
+    # ---- 3) mpg123 ----
+    mpg123 = shutil.which('mpg123')
+    if mpg123:
+        cmd = [mpg123, '-w', wav_path, '-r', str(sample_rate), '-2', mp3_path]
+        try:
+            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            return wav_path
+        except subprocess.CalledProcessError as e:
+            print(f"mpg123 failed: {e.stderr}")
+
+    # ---- 4) ffmpeg with error-ignoring ----
+    ffmpeg = shutil.which('ffmpeg')
+    if ffmpeg:
         cmd = [
-            ffmpeg_path, '-y',
+            ffmpeg, '-y',
+            '-err_detect', 'ignore_err',
             '-i', mp3_path,
             '-acodec', 'pcm_s16le',
             '-ar', str(sample_rate),
             '-ac', '2',
             wav_path
         ]
-        subprocess.run(cmd, check=True, capture_output=True, text=True)
-        return wav_path
+        try:
+            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            return wav_path
+        except subprocess.CalledProcessError as e:
+            print(f"ffmpeg failed: {e.stderr}")
+            raise RuntimeError(f"All decoders failed for {mp3_path}")
 
-    raise RuntimeError("No audio decoder found (mpg123 or ffmpeg). Please install mpg123.")
+    raise RuntimeError("No audio decoder found (sox, lame, mpg123, or ffmpeg)")
+
+# ----------------------------------------------------------------------
+# (rest of video_compile.py remains the same as previously given)
+# ----------------------------------------------------------------------
 
 
 # ----------------------------------------------------------------------
