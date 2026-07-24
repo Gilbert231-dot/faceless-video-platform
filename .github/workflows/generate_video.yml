@@ -48,6 +48,43 @@ jobs:
           echo "REDDIT_CLIENT_ID=${{ secrets.REDDIT_CLIENT_ID }}" >> $GITHUB_ENV
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
 
+      # ------------------------------------------------------------
+      # CACHING: video files (downloaded from Google Drive)
+      # ------------------------------------------------------------
+      - name: Cache downloaded videos
+        uses: actions/cache@v4
+        id: video-cache
+        with:
+          path: cached_videos
+          key: video-cache-${{ hashFiles('drive_clip_manager.py') }}
+          restore-keys: |
+            video-cache-
+
+      # ------------------------------------------------------------
+      # CACHING: clip state (progress across runs)
+      # ------------------------------------------------------------
+      - name: Cache video state (clip_state.json)
+        uses: actions/cache@v4
+        id: state-cache
+        with:
+          path: clip_state.json
+          key: video-state
+          restore-keys: |
+            video-state-
+
+      # ------------------------------------------------------------
+      # (Optional) Debug – show cached contents
+      # ------------------------------------------------------------
+      - name: List cached files
+        run: |
+          echo "--- Cached videos ---"
+          ls -la cached_videos/ || echo "(none yet)"
+          echo "--- State file ---"
+          cat clip_state.json 2>/dev/null || echo "(no state file yet)"
+
+      # ------------------------------------------------------------
+      # RUN THE GENERATOR
+      # ------------------------------------------------------------
       - name: Run the video generator
         run: |
           python -c "
@@ -56,6 +93,9 @@ jobs:
           print(result)
           "
 
+      # ------------------------------------------------------------
+      # COLLECT OUTPUT
+      # ------------------------------------------------------------
       - name: Prepare output directory and collect videos
         run: |
           mkdir -p output
@@ -68,11 +108,3 @@ jobs:
           name: generated-videos
           path: output/*.mp4
           retention-days: 7
-
-      - name: Cache video state
-        uses: actions/cache@v4
-        with:
-          path: clip_state.json
-          key: video-state-${{ github.run_id }}
-          restore-keys: |
-            video-state-
