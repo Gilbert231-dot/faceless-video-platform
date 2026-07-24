@@ -1,7 +1,6 @@
 import os
 import json
 import gdown
-import requests
 import subprocess
 from pathlib import Path
 
@@ -9,15 +8,14 @@ from pathlib import Path
 # CONFIGURATION
 # ================================
 STATE_FILE = "clip_state.json"
-CACHE_DIR = "cached_videos"          # where downloaded files are stored
-DRIVE_URLS = [                       # your public Google Drive video URLs
-    "https://drive.google.com/uc?export=download&id=1QjdFKRf1PmmQncLGrI59hD7yKngqui_r",
-    "https://drive.google.com/uc?export=download&id=1csHaO2EUANXLexMSxG-ltI77dvCIlH2P",
-    "https://drive.google.com/uc?export=download&id=1XSwwDED61z2MbM7QSEGhH0W9I7qoSd-Z",
-    "https://drive.google.com/uc?export=download&id=1JIy54c7ljm4njW7lqaHzlpOhIMVplUzs",
-    "https://drive.google.com/uc?export=download&id=1183ENgEB0H55gwVYDFzqJ4bFrOwXo5OM",
-    "https://drive.google.com/uc?export=download&id=1CcysUW40RnBFV4LEpLHv66NKsXOh_NU_",
-    # ... add all 6 URLs here
+CACHE_DIR = "cached_videos"
+DRIVE_URLS = [
+    "1QjdFKRf1PmmQncLGrI59hD7yKngqui_r",
+    "1csHaO2EUANXLexMSxG-ltI77dvCIlH2P",
+    "1XSwwDED61z2MbM7QSEGhH0W9I7qoSd-Z",
+    "1JIy54c7ljm4njW7lqaHzlpOhIMVplUzs",
+    "1183ENgEB0H55gwVYDFzqJ4bFrOwXo5OM",
+    "1CcysUW40RnBFV4LEpLHv66NKsXOh_NU_",
 ]
 
 # ================================
@@ -31,33 +29,17 @@ def get_video_duration(video_path):
         '-of', 'default=noprint_wrappers=1:nokey=1',
         video_path
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-    return float(result.stdout.strip())
-
-
-def download_file(url, dest_path):
-    """
-    Download a file from a Google Drive URL using gdown.
-    Handles the warning page and large files automatically.
-    """
-    print(f"⬇️ Downloading {url} to {dest_path} ...")
-    # gdown can use the standard share link format:
-    # https://drive.google.com/uc?id=FILE_ID
-    gdown.download(url, dest_path, quiet=False)
-    print(f"✅ Download complete: {dest_path}")
-
-def get_video_duration(video_path):
-    """Return duration in seconds using ffprobe."""
-    cmd = [
-        'ffprobe', '-v', 'error',
-        '-show_entries', 'format=duration',
-        '-of', 'default=noprint_wrappers=1:nokey=1',
-        video_path
-    ]
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(f"ffprobe failed on {video_path}: {result.stderr}")
     return float(result.stdout.strip())
+
+def download_file(file_id, dest_path):
+    """Download a file from Google Drive using its file ID."""
+    print(f"⬇️ Downloading file ID {file_id} to {dest_path} ...")
+    url = f"https://drive.google.com/uc?id={file_id}"
+    gdown.download(url, dest_path, quiet=False)
+    print(f"✅ Download complete: {dest_path}")
 
 def load_state():
     if os.path.exists(STATE_FILE):
@@ -85,16 +67,22 @@ def get_next_segment(duration_needed):
 
     # Loop over videos
     while current_idx < len(DRIVE_URLS):
-        url = DRIVE_URLS[current_idx]
-        # Determine cache filename (e.g., video_0.mp4)
+        file_id = DRIVE_URLS[current_idx]
         cache_path = os.path.join(CACHE_DIR, f"video_{current_idx}.mp4")
 
         # Download if not already cached
         if not os.path.exists(cache_path):
-            download_file(url, cache_path)
+            download_file(file_id, cache_path)
 
-        # Get total duration
-        duration = get_video_duration(cache_path)
+        # Verify the file is valid
+        try:
+            duration = get_video_duration(cache_path)
+        except RuntimeError as e:
+            print(f"⚠️ Downloaded file is invalid: {e}")
+            print("🔄 Deleting corrupt file and retrying...")
+            os.remove(cache_path)
+            download_file(file_id, cache_path)
+            duration = get_video_duration(cache_path)  # try again
 
         # If offset exceeds duration, move to next video
         if offset >= duration:
@@ -113,14 +101,14 @@ def get_next_segment(duration_needed):
             '-ss', str(offset),
             '-i', cache_path,
             '-t', str(take),
-            '-c', 'copy',          # copy video & audio streams (no re-encode)
+            '-c', 'copy',
             output_segment
         ]
         subprocess.run(cmd, check=True, capture_output=True)
 
         # Update state
         new_offset = offset + take
-        if new_offset >= duration - 0.1:   # close to end, advance to next video
+        if new_offset >= duration - 0.1:
             current_idx += 1
             new_offset = 0.0
 
