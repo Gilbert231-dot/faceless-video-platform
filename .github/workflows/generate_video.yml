@@ -68,3 +68,11 @@ jobs:
           name: generated-videos
           path: output/*.mp4
           retention-days: 7
+
+      - name: Cache video state
+        uses: actions/cache@v4
+        with:
+          path: clip_state.json
+          key: video-state-${{ github.run_id }}
+          restore-keys: |
+            video-state-
