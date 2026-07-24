@@ -1,7 +1,8 @@
 import os
 import json
-import subprocess
+import gdown
 import requests
+import subprocess
 from pathlib import Path
 
 # ================================
@@ -33,15 +34,30 @@ def get_video_duration(video_path):
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return float(result.stdout.strip())
 
+
 def download_file(url, dest_path):
-    """Download a file from a public URL using requests."""
+    """
+    Download a file from a Google Drive URL using gdown.
+    Handles the warning page and large files automatically.
+    """
     print(f"⬇️ Downloading {url} to {dest_path} ...")
-    response = requests.get(url, stream=True)
-    response.raise_for_status()
-    with open(dest_path, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=8192):
-            f.write(chunk)
+    # gdown can use the standard share link format:
+    # https://drive.google.com/uc?id=FILE_ID
+    gdown.download(url, dest_path, quiet=False)
     print(f"✅ Download complete: {dest_path}")
+
+def get_video_duration(video_path):
+    """Return duration in seconds using ffprobe."""
+    cmd = [
+        'ffprobe', '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        video_path
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"ffprobe failed on {video_path}: {result.stderr}")
+    return float(result.stdout.strip())
 
 def load_state():
     if os.path.exists(STATE_FILE):
