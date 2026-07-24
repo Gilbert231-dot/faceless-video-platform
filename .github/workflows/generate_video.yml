@@ -28,7 +28,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg redis-server postgresql postgresql-contrib
+          sudo apt-get install -y ffmpeg redis-server postgresql postgresql-contrib mpg123
 
       - name: Start Redis & PostgreSQL
         run: |
@@ -47,9 +47,6 @@ jobs:
           echo "REDDIT_CLIENT_ID=${{ secrets.REDDIT_CLIENT_ID }}" >> $GITHUB_ENV
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
 
-      - name: Install mpg123
-        run: sudo apt-get update && sudo apt-get install -y mpg123
-        
       - name: Run the video generator
         run: |
           python -c "
@@ -58,21 +55,17 @@ jobs:
           print(result)
           "
 
-      - name: List files for debugging
+      - name: Prepare output directory and collect videos
         run: |
-          echo "Current directory:"
-          pwd
-          echo "Files in current directory:"
-          ls -la
-          echo "Output directory contents:"
-          ls -la output/ || echo "Output directory not found"
-          echo "Searching for output_*.mp4 files:"
-          find . -name "output_*.mp4"
-      
-      - name: Upload the generated video
+          mkdir -p output
+          # Move all final_*.mp4 files (part 1 and part 2) into output/
+          mv final_*.mp4 output/ || echo "No final videos found"
+          # Also move any other video if needed (optional)
+          ls -la output/
+
+      - name: Upload the generated videos
         uses: actions/upload-artifact@v4
         with:
-          name: generated-video
-          path: output/output_*.mp4
+          name: generated-videos
+          path: output/*.mp4
           retention-days: 7
-
