@@ -7,224 +7,224 @@ import re
 from config import PROJECT_ROOT, FAST_MODE, OUTPUT_DIR
 from captions import whisper_json_to_srt, generate_fallback_srt
 
-def create_reddit_frame(title, video_size, part_label=None):
-    return None
-
-def convert_srt_to_ass(srt_path, ass_path, audio_duration):
-    """Convert SRT to ASS format with proper styling."""
-    with open(srt_path, 'r') as f:
-        content = f.read()
-    
-    # ASS header
-    ass_content = f"""[Script Info]
-ScriptType: v4.00+
-PlayResX: 1080
-PlayResY: 1920
-Timer: 100.0000
-
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,DejaVu Sans,50,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,1,0,0,0,100,100,0,0,1,3,0,10,10,10,10,0
-
-[Events]
-Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+#!/usr/bin/env python3
 """
-    
-    # Parse SRT and convert to ASS events
-    blocks = content.strip().split('\n\n')
-    for block in blocks:
-        lines = block.split('\n')
-        if len(lines) >= 3:
-            # Timecode line
-            timecode = lines[1]
-            # Text
-            text = ' '.join(lines[2:])
-            # Convert time format
-            start_str, end_str = timecode.split(' --> ')
-            start = start_str.replace(',', '.')
-            end = end_str.replace(',', '.')
-            # Clean text
-            text = text.replace('\n', ' ').strip()
-            ass_content += f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}\n"
-    
-    with open(ass_path, 'w') as f:
-        f.write(ass_content)
-    
-    return ass_path
+video_compile.py - FFmpeg pipeline for faceless TikTok videos
 
-def compile_video(video_paths, audio_path, script, subtitle_path=None,
-                  intro_frame=None, title=None, part_label=None):
-    """Compile video with segment extraction (process only what we need)."""
-    print("🎬 Starting video compilation (segment extraction)...")
+Handles:
+- Decoding Edge TTS MP3 to WAV (using mpg123 or ffmpeg fallback)
+- Cropping/rescaling gameplay footage to 1080x1920 (9:16)
+- Burning styled subtitles (ASS format)
+- Mixing voiceover with background music + volume adjustments
+- Loudness normalization
+- Exporting final H.264 video with AAC audio
+"""
 
-    # 1. Get audio duration
-    audio_duration = float(subprocess.check_output(
-        ['ffprobe', '-i', audio_path, '-show_entries', 'format=duration',
-         '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
-    ).decode().strip())
-    print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
+import shutil
+from pathlib import Path
 
-    # 2. Extract the required segment from the gameplay video
-    # We only need audio_duration seconds from the start of the video
-    print("⚡ Step 1: Extracting required segment from gameplay footage...")
-    gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
-    
-    # Use the first video file as the source
-    source_video = video_paths[0]
-    
-    cmd_extract = [
-        'ffmpeg', '-y',
-        '-i', source_video,
-        '-t', str(audio_duration),  # Only take audio_duration seconds
-        '-c:v', 'copy',              # Copy video stream (no re-encode)
-        '-an',                       # No audio
-        gameplay_segment
+# ----------------------------------------------------------------------
+# Helper: Decode MP3 to WAV (stable decoder)
+# ----------------------------------------------------------------------
+def prepare_audio(mp3_path: str, wav_path: str, sample_rate: int = 48000) -> str:
+    """
+    Convert MP3 to 16‑bit PCM WAV using mpg123 (preferred) or ffmpeg as fallback.
+    Returns the WAV file path.
+    """
+    mp3_path = str(mp3_path)
+    wav_path = str(wav_path)
+
+    # Try mpg123 first (most reliable)
+    mpg123_path = shutil.which('mpg123')
+    if mpg123_path:
+        cmd = [
+            mpg123_path,
+            '-w', wav_path,
+            '-r', str(sample_rate),
+            '-2',           # stereo
+            mp3_path
+        ]
+        try:
+            subprocess.run(cmd, check=True, capture_output=True, text=True)
+            return wav_path
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            print(f"mpg123 failed, falling back to ffmpeg: {e}")
+
+    # Fallback: use ffmpeg (should also work, but sometimes buggy in CI)
+    ffmpeg_path = shutil.which('ffmpeg')
+    if ffmpeg_path:
+        cmd = [
+            ffmpeg_path, '-y',
+            '-i', mp3_path,
+            '-acodec', 'pcm_s16le',
+            '-ar', str(sample_rate),
+            '-ac', '2',
+            wav_path
+        ]
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+        return wav_path
+
+    raise RuntimeError("No audio decoder found (mpg123 or ffmpeg). Please install mpg123.")
+
+
+# ----------------------------------------------------------------------
+# Helper: Get video/audio duration (seconds)
+# ----------------------------------------------------------------------
+def get_duration(media_path: str) -> float:
+    """Return duration in seconds using ffprobe."""
+    cmd = [
+        'ffprobe', '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        media_path
     ]
-    
-    try:
-        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=120)
-        print(f"   ✅ Extracted {audio_duration:.2f}s segment from gameplay.")
-    except Exception as e:
-        raise Exception(f"Segment extraction failed: {e}")
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return float(result.stdout.strip())
 
-    # 3. Generate SRT (if not provided)
-    srt_path = None
-    if subtitle_path and os.path.exists(subtitle_path):
-        srt_path = subtitle_path
-        print(f"   ✅ Using provided SRT: {srt_path}")
+
+# ----------------------------------------------------------------------
+# Main compilation function
+# ----------------------------------------------------------------------
+def compile_video(
+    video_path: str,
+    audio_mp3: str,
+    output_path: str,
+    subtitle_ass: str,               # path to .ass file
+    background_music: str = None,    # optional .mp3
+    voice_volume: float = 2.0,       # boost voice (default 2x)
+    bg_volume: float = 0.3,          # background volume (30%)
+    fade_duration: float = 3.0,      # fade in/out for bg music (seconds)
+    target_width: int = 1080,
+    target_height: int = 1920,
+    crf: int = 18,
+    audio_bitrate: str = '192k',
+    temp_dir: str = None,
+) -> str:
+    """
+    Compose final video with audio processing and subtitles.
+
+    Returns path to output file.
+    """
+    # Create temporary directory for decoded WAVs
+    if temp_dir is None:
+        temp_dir = tempfile.mkdtemp(prefix='video_compile_')
     else:
-        try:
-            srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
-            generate_fallback_srt(script, 0, srt_path, audio_duration)
-            print(f"   ✅ SRT subtitles created: {srt_path}")
-        except Exception as e:
-            print(f"   ⚠️ SRT generation failed: {e}")
-            srt_path = None
+        os.makedirs(temp_dir, exist_ok=True)
 
-    # 4. Download background music
-    music_path = download_background_music()
-    
-    # 5. Audio mixing (voice + music)
-    print("⚡ Step 2: Mixing voiceover + music...")
-    audio_mixed_output = os.path.join(OUTPUT_DIR, f"audio_mixed_{int(time.time())}.mp3")
-    
-    if music_path and os.path.exists(music_path):
-        cmd_mix = [
-            'ffmpeg', '-y',
-            '-i', audio_path,
-            '-i', music_path,
-            '-filter_complex', 
-            f'[0:a]volume=2[voice];[1:a]volume=0.15,atrim=duration={audio_duration}[music];[voice][music]amix=inputs=2:duration=longest',
-            '-c:a', 'aac',
-            '-b:a', '192k',
-            audio_mixed_output
-        ]
-        try:
-            subprocess.run(cmd_mix, check=True, capture_output=True, timeout=120)
-            print("   ✅ Audio mixed.")
-            mixed_audio = audio_mixed_output
-        except Exception as e:
-            print(f"   ⚠️ Audio mixing failed: {e}. Using voice only.")
-            cmd_voice = [
-                'ffmpeg', '-y',
-                '-i', audio_path,
-                '-af', 'volume=2',
-                '-c:a', 'aac',
-                '-b:a', '192k',
-                audio_mixed_output
-            ]
-            subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
-            mixed_audio = audio_mixed_output
+    # 1. Decode voiceover MP3 -> WAV
+    voice_wav = os.path.join(temp_dir, 'voice_decoded.wav')
+    prepare_audio(audio_mp3, voice_wav)
+
+    # 2. Get video duration (for fades and trimming)
+    video_duration = get_duration(video_path)
+    # Voice duration should be similar; we'll trim to video duration.
+
+    # 3. Build filter_complex parts
+    filter_parts = []
+
+    # ---- Video filter chain ----
+    # Crop to 9:16 aspect ratio (center crop) then scale to target
+    # Assuming source is landscape (16:9) - adjust if needed.
+    video_filter = (
+        f"[0:v]crop=iw:ih*9/16,scale={target_width}:{target_height},"
+        f"subtitles={subtitle_ass}:force_style='FontName=Arial,Bold,FontSize=40,"
+        f"Outline=2,Shadow=1,Alignment=10,MarginV=100'"
+    )
+    filter_parts.append(f"{video_filter}[vout]")
+
+    # ---- Audio filter chain ----
+    # Voice: trim to video duration, boost volume
+    voice_filter = (
+        f"[1:a]atrim=0:{video_duration},asetpts=PTS-STARTPTS,"
+        f"volume={voice_volume}[voice]"
+    )
+    filter_parts.append(voice_filter)
+
+    # If background music is provided, decode it and mix
+    if background_music:
+        bg_wav = os.path.join(temp_dir, 'bg_decoded.wav')
+        prepare_audio(background_music, bg_wav)
+
+        # Fade in/out and adjust volume
+        bg_filter = (
+            f"[2:a]volume={bg_volume},"
+            f"afade=t=in:st=0:d={fade_duration},"
+            f"afade=t=out:st={video_duration - fade_duration}:d={fade_duration}[bg]"
+        )
+        filter_parts.append(bg_filter)
+
+        # Mix voice and bg (keep first duration, i.e. voice length)
+        mix_filter = (
+            f"[bg][voice]amix=inputs=2:duration=first:dropout_transition={fade_duration}[mixed]"
+        )
+        filter_parts.append(mix_filter)
+
+        # Apply loudness normalization to the mixed audio
+        norm_filter = "[mixed]loudnorm=I=-16:LRA=11:TP=-1.5[aout]"
+        filter_parts.append(norm_filter)
+        audio_map = '[aout]'
+        audio_inputs = ['-i', voice_wav, '-i', bg_wav]
     else:
-        print("   ⚠️ No music. Using voice only with volume boost.")
-        cmd_voice = [
-            'ffmpeg', '-y',
-            '-i', audio_path,
-            '-af', 'volume=2',
-            '-c:a', 'aac',
-            '-b:a', '192k',
-            audio_mixed_output
-        ]
-        subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
-        mixed_audio = audio_mixed_output
+        # Only voice, apply loudnorm directly
+        norm_filter = "[voice]loudnorm=I=-16:LRA=11:TP=-1.5[aout]"
+        filter_parts.append(norm_filter)
+        audio_map = '[aout]'
+        audio_inputs = ['-i', voice_wav]
 
-    # 6. Combine gameplay segment + mixed audio
-    print("⚡ Step 3: Combining gameplay segment + audio...")
-    final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
-    
-    cmd_combine = [
+    # Combine all filter parts
+    full_filter = '; '.join(filter_parts)
+
+    # 4. Build the FFmpeg command
+    cmd = [
         'ffmpeg', '-y',
-        '-i', gameplay_segment,
-        '-i', mixed_audio,
-        '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
+        '-i', video_path,
+        *audio_inputs,               # voice_wav, optionally bg_wav
+        '-filter_complex', full_filter,
+        '-map', '[vout]',
+        '-map', audio_map,
         '-c:v', 'libx264',
+        '-crf', str(crf),
         '-preset', 'medium',
-        '-crf', '18',
         '-c:a', 'aac',
-        '-b:a', '192k',
-        '-shortest',
-        '-movflags', '+faststart',
-        final_output
+        '-b:a', audio_bitrate,
+        '-shortest',                 # stop when shortest stream ends
+        output_path
     ]
-    
-    try:
-        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=600)
-        print("   ✅ Video combined.")
-    except Exception as e:
-        raise Exception(f"Video combine failed: {e}")
 
-    # 7. Burn captions
-    if srt_path and os.path.exists(srt_path):
-        print("⚡ Step 4: Burning captions...")
-        temp_captioned = os.path.join(OUTPUT_DIR, f"temp_captioned_{int(time.time())}.mp4")
-        cmd_burn = [
-            'ffmpeg', '-y',
-            '-i', final_output,
-            '-vf', f"subtitles={srt_path}:force_style='Fontsize=45, Bold=1, Alignment=10, OutlineColour=&H80000000'",
-            '-c:a', 'copy',
-            temp_captioned
-        ]
-        try:
-            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
-            os.replace(temp_captioned, final_output)
-            print("   ✅ Captions burned.")
-        except Exception as e:
-            print(f"   ⚠️ Caption burn failed: {e}.")
-            if os.path.exists(temp_captioned):
-                os.unlink(temp_captioned)
+    # 5. Execute
+    print(f"Running FFmpeg command:\n{' '.join(cmd)}")
+    subprocess.run(cmd, check=True, capture_output=False)  # show progress
 
-    # 8. Clean up
-    for path in [gameplay_segment, mixed_audio, source_video]:
-        try:
-            os.unlink(path)
-        except:
-            pass
-    for path in video_paths + [audio_path]:
-        try:
-            os.unlink(path)
-        except:
-            pass
-    if music_path and os.path.exists(music_path):
-        try:
-            os.unlink(music_path)
-        except:
-            pass
-    if srt_path and srt_path != subtitle_path:
-        try:
-            os.unlink(srt_path)
-        except:
-            pass
+    # 6. Cleanup temp files? (optional – commented out for debugging)
+    # shutil.rmtree(temp_dir)
 
-    print(f"✅ Video compiled successfully: {final_output}")
-    return final_output
+    return output_path
 
-def download_background_music():
-    """Use a local music file from the repository."""
-    from config import PROJECT_ROOT
-    local_music_path = os.path.join(PROJECT_ROOT, "assets/music/my_action_track.mp3")
-    if os.path.exists(local_music_path):
-        print(f"   ✅ Using local background music: {local_music_path}")
-        return local_music_path
-    else:
-        print("   ⚠️ Local music not found. Proceeding without background music.")
-        return None
+
+# ----------------------------------------------------------------------
+# Example usage (for testing or direct invocation)
+# ----------------------------------------------------------------------
+if __name__ == "__main__":
+    # When run directly, compile a sample video (modify paths as needed)
+    import sys
+
+    if len(sys.argv) < 5:
+        print("Usage: python video_compile.py <video.mp4> <audio.mp3> <output.mp4> <subtitles.ass> [background.mp3]")
+        sys.exit(1)
+
+    video = sys.argv[1]
+    audio = sys.argv[2]
+    output = sys.argv[3]
+    subs = sys.argv[4]
+    bg = sys.argv[5] if len(sys.argv) > 5 else None
+
+    compile_video(
+        video_path=video,
+        audio_mp3=audio,
+        output_path=output,
+        subtitle_ass=subs,
+        background_music=bg,
+        voice_volume=2.0,
+        bg_volume=0.3,
+        fade_duration=3.0,
+    )
