@@ -54,16 +54,40 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with background music and volume boost."""
-    print("🎬 Starting video compilation (with music + volume boost)...")
+    """Compile video with segment extraction (process only what we need)."""
+    print("🎬 Starting video compilation (segment extraction)...")
 
     # 1. Get audio duration
     audio_duration = float(subprocess.check_output(
         ['ffprobe', '-i', audio_path, '-show_entries', 'format=duration',
          '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
     ).decode().strip())
+    print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Generate SRT
+    # 2. Extract the required segment from the gameplay video
+    # We only need audio_duration seconds from the start of the video
+    print("⚡ Step 1: Extracting required segment from gameplay footage...")
+    gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
+    
+    # Use the first video file as the source
+    source_video = video_paths[0]
+    
+    cmd_extract = [
+        'ffmpeg', '-y',
+        '-i', source_video,
+        '-t', str(audio_duration),  # Only take audio_duration seconds
+        '-c:v', 'copy',              # Copy video stream (no re-encode)
+        '-an',                       # No audio
+        gameplay_segment
+    ]
+    
+    try:
+        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=120)
+        print(f"   ✅ Extracted {audio_duration:.2f}s segment from gameplay.")
+    except Exception as e:
+        raise Exception(f"Segment extraction failed: {e}")
+
+    # 3. Generate SRT (if not provided)
     srt_path = None
     if subtitle_path and os.path.exists(subtitle_path):
         srt_path = subtitle_path
@@ -77,30 +101,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             print(f"   ⚠️ SRT generation failed: {e}")
             srt_path = None
 
-    # 3. Concatenate video clips
-    print("⚡ Step 1: Concatenating video clips...")
-    video_concat_file = os.path.join(OUTPUT_DIR, f"video_concat_{int(time.time())}.txt")
-    with open(video_concat_file, 'w') as f:
-        for path in video_paths:
-            f.write(f"file '{path}'\n")
-    
-    video_concat_output = os.path.join(OUTPUT_DIR, f"video_{int(time.time())}.mp4")
-    cmd_concat = [
-        'ffmpeg', '-y',
-        '-f', 'concat',
-        '-safe', '0',
-        '-i', video_concat_file,
-        '-c:v', 'copy',
-        video_concat_output
-    ]
-    
-    try:
-        subprocess.run(cmd_concat, check=True, capture_output=True, timeout=120)
-        print("   ✅ Video concatenated.")
-    except Exception as e:
-        raise Exception(f"Video concat failed: {e}")
-
-    # 4. Download or locate background music
+    # 4. Download background music
     music_path = download_background_music()
     
     # 5. Audio mixing (voice + music)
@@ -108,7 +109,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_mixed_output = os.path.join(OUTPUT_DIR, f"audio_mixed_{int(time.time())}.mp3")
     
     if music_path and os.path.exists(music_path):
-        # Mix voice (volume=2) + music (volume=0.15)
         cmd_mix = [
             'ffmpeg', '-y',
             '-i', audio_path,
@@ -121,11 +121,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         ]
         try:
             subprocess.run(cmd_mix, check=True, capture_output=True, timeout=120)
-            print("   ✅ Audio mixed (voice + music).")
+            print("   ✅ Audio mixed.")
             mixed_audio = audio_mixed_output
         except Exception as e:
-            print(f"   ⚠️ Audio mixing failed: {e}. Using voice only with volume boost.")
-            # Fallback: just boost voice volume
+            print(f"   ⚠️ Audio mixing failed: {e}. Using voice only.")
             cmd_voice = [
                 'ffmpeg', '-y',
                 '-i', audio_path,
@@ -137,7 +136,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
             mixed_audio = audio_mixed_output
     else:
-        print("   ⚠️ No music available. Using voice only with volume boost.")
+        print("   ⚠️ No music. Using voice only with volume boost.")
         cmd_voice = [
             'ffmpeg', '-y',
             '-i', audio_path,
@@ -149,13 +148,13 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         subprocess.run(cmd_voice, check=True, capture_output=True, timeout=60)
         mixed_audio = audio_mixed_output
 
-    # 6. Combine video + mixed audio
-    print("⚡ Step 3: Combining video + audio...")
+    # 6. Combine gameplay segment + mixed audio
+    print("⚡ Step 3: Combining gameplay segment + audio...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
     cmd_combine = [
         'ffmpeg', '-y',
-        '-i', video_concat_output,
+        '-i', gameplay_segment,
         '-i', mixed_audio,
         '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
@@ -195,7 +194,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 os.unlink(temp_captioned)
 
     # 8. Clean up
-    for path in [video_concat_output, video_concat_file, mixed_audio]:
+    for path in [gameplay_segment, mixed_audio, source_video]:
         try:
             os.unlink(path)
         except:
