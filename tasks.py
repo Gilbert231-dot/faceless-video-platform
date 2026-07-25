@@ -4,10 +4,10 @@ import tempfile
 import subprocess
 from celery import Celery
 from config import FAST_MODE
-from video_compile import compile_video, get_duration
 from voiceover import generate_voiceover
 from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
+from video_compile import compile_video, get_duration
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
 
@@ -23,11 +23,9 @@ def concat_clips(clip_paths, output_path):
     This is fast (copy‑codec) and preserves quality.
     """
     if len(clip_paths) == 1:
-        # Just copy the single clip
         subprocess.run(['ffmpeg', '-y', '-i', clip_paths[0], '-c', 'copy', output_path], check=True)
         return output_path
 
-    # Create a concat file list
     list_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
     for clip in clip_paths:
         list_file.write(f"file '{os.path.abspath(clip)}'\n")
@@ -69,21 +67,20 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
     segment_path = get_next_segment(audio_duration)
     print(f"🎬 Using segment: {segment_path}")
 
-    # Define background music path (change if needed)
-    BG_MUSIC = 'assets/music/my_action_track.mp3'   # <-- FIXED
-
-    # Compile final video
-    final_output = f"final_{title.replace(' ', '_')}_{part_label or 'part1'}.mp4"
+    # Compile video using the updated function
+    # The function now expects: video_paths (list), audio_path, script, subtitle_path
     final_video_path = compile_video(
-        video_path=segment_path,
-        audio_mp3=audio_path,
-        output_path=final_output,
-        subtitle_ass=subtitle_path,
-        background_music=BG_MUSIC if os.path.exists(BG_MUSIC) else None,
-        voice_volume=2.0,
-        bg_volume=0.3,
+        video_paths=[segment_path],   # <-- Pass as list
+        audio_path=audio_path,        # <-- audio path
+        script=full_script,           # <-- script text (for fallback SRT)
+        subtitle_path=subtitle_path,  # <-- subtitle file (if any)
+        intro_frame=None,
+        title=title,
+        part_label=part_label
     )
+    
     return final_video_path
+
 # =====================
 # TASK: generate_video
 # =====================
