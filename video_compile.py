@@ -19,22 +19,25 @@ def get_duration(media_path: str) -> float:
     return float(result.stdout.strip())
 
 # ----------------------------------------------------------------------
-# Generate fallback SRT (when Whisper fails)
+# Generate SRT with 2-word chunks (for 2-by-2 captions)
 # ----------------------------------------------------------------------
 def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
-    """Generate SRT subtitles from script (fallback when Whisper fails)."""
+    """Generate SRT subtitles with 2 words per caption chunk."""
     import re
     
     words = re.findall(r'\b\w+\b', script)
     if not words:
         return None
     
-    # Group into phrases of 4-6 words
-    phrase_size = 5
-    phrases = []
-    for i in range(0, len(words), phrase_size):
-        phrase = ' '.join(words[i:i+phrase_size])
-        phrases.append(phrase)
+    # Group into 2-word chunks
+    chunk_size = 2
+    chunks = []
+    for i in range(0, len(words), chunk_size):
+        chunk = words[i:i+chunk_size]
+        chunks.append(' '.join(chunk))
+    
+    if not chunks:
+        return None
     
     if audio_duration and audio_duration > 0:
         total_duration = audio_duration
@@ -43,12 +46,12 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
         if total_duration < 30:
             total_duration = 60
     
-    dur_per_phrase = total_duration / len(phrases)
+    dur_per_chunk = total_duration / len(chunks)
     
     with open(srt_path, 'w') as f:
-        for i, phrase in enumerate(phrases, 1):
-            start_time = (i - 1) * dur_per_phrase + intro_duration
-            end_time = i * dur_per_phrase + intro_duration
+        for i, chunk in enumerate(chunks, 1):
+            start_time = (i - 1) * dur_per_chunk + intro_duration
+            end_time = i * dur_per_chunk + intro_duration
             
             start_s = int(start_time)
             start_ms = int((start_time - start_s) * 1000)
@@ -58,7 +61,7 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
             f.write(f"{i}\n")
             f.write(f"{start_s//3600:02d}:{(start_s%3600)//60:02d}:{start_s%60:02d},{start_ms:03d} --> ")
             f.write(f"{end_s//3600:02d}:{(end_s%3600)//60:02d}:{end_s%60:02d},{end_ms:03d}\n")
-            f.write(f"{phrase}\n\n")
+            f.write(f"{chunk}\n\n")
     
     return srt_path
 
@@ -67,53 +70,39 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with clean audio and bold captions (no music).
-    
-    Args:
-        video_paths: Can be a single video path (string) or list of paths.
-        audio_path: Path to voiceover MP3.
-        script: Original script text (for fallback SRT).
-        subtitle_path: Optional pre-generated SRT file.
-    """
-    print("🎬 Starting video compilation (clean version)...")
+    """Compile video with 2-by-2 captions, bold, centered, big."""
+    print("🎬 Starting video compilation (2-by-2 captions)...")
 
-    # --- Handle both single video_path and list of video_paths ---
+    # Handle both single path and list
     if isinstance(video_paths, str):
-        # If it's a single string, convert to list
         video_paths = [video_paths]
-    elif not isinstance(video_paths, list):
-        raise Exception(f"video_paths must be a string or list, got {type(video_paths)}")
-    
     if not video_paths:
         raise Exception("No video paths provided")
 
     # 1. Get audio duration
-    audio_duration = float(subprocess.check_output(
-        ['ffprobe', '-i', audio_path, '-show_entries', 'format=duration',
-         '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
-    ).decode().strip())
+    audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Generate SRT (if not provided)
+    # 2. Generate SRT (2-word chunks)
     srt_path = None
     if subtitle_path and os.path.exists(subtitle_path):
+        # Use provided SRT if it exists
         srt_path = subtitle_path
         print(f"   ✅ Using provided SRT: {srt_path}")
     else:
         try:
             srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
             generate_fallback_srt(script, 0, srt_path, audio_duration)
-            print(f"   ✅ SRT subtitles created: {srt_path}")
+            print(f"   ✅ 2-by-2 SRT subtitles created: {srt_path}")
         except Exception as e:
             print(f"   ⚠️ SRT generation failed: {e}")
             srt_path = None
 
-    # 3. Extract required segment from gameplay footage
+    # 3. Extract segment from gameplay
     print("⚡ Step 1: Extracting segment from gameplay...")
     gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
-    
-    # Use the first video file
     source_video = video_paths[0]
+    
     if not os.path.exists(source_video):
         raise Exception(f"Source video not found: {source_video}")
     
@@ -132,7 +121,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 4. Combine gameplay + voiceover audio (NO AUDIO PROCESSING)
+    # 4. Combine video + audio (NO audio processing)
     print("⚡ Step 2: Combining video + audio...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
@@ -144,7 +133,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         '-c:v', 'libx264',
         '-preset', 'medium',
         '-crf', '18',
-        '-c:a', 'copy',        # <-- CRITICAL: copy audio WITHOUT processing
+        '-c:a', 'copy',        # Copy audio WITHOUT re-encoding
         '-shortest',
         '-movflags', '+faststart',
         final_output
@@ -156,9 +145,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video combine failed: {e}")
 
-    # 5. Burn captions (bold, centered, big)
+    # 5. Burn captions (2-by-2, bold, centered, big)
     if srt_path and os.path.exists(srt_path):
-        print("⚡ Step 3: Burning captions...")
+        print("⚡ Step 3: Burning captions (2-by-2, bold, centered)...")
         temp_captioned = os.path.join(OUTPUT_DIR, f"temp_captioned_{int(time.time())}.mp4")
         cmd_burn = [
             'ffmpeg', '-y',
@@ -170,13 +159,15 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         try:
             subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
             os.replace(temp_captioned, final_output)
-            print("   ✅ Captions burned.")
+            print("   ✅ 2-by-2 captions burned.")
         except Exception as e:
             print(f"   ⚠️ Caption burn failed: {e}.")
             if os.path.exists(temp_captioned):
                 os.unlink(temp_captioned)
+    else:
+        print("   ⚠️ No SRT available. Skipping captions.")
 
-    # 6. Clean up
+    # 6. Clean up temp files
     for path in [gameplay_segment, source_video]:
         try:
             os.unlink(path)
