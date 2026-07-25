@@ -4,6 +4,23 @@ import tempfile
 import subprocess
 from config import OUTPUT_DIR
 
+# ----------------------------------------------------------------------
+# Helper: Get duration (seconds)
+# ----------------------------------------------------------------------
+def get_duration(media_path: str) -> float:
+    """Return duration in seconds using ffprobe."""
+    cmd = [
+        'ffprobe', '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        media_path
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return float(result.stdout.strip())
+
+# ----------------------------------------------------------------------
+# Generate fallback SRT (when Whisper fails)
+# ----------------------------------------------------------------------
 def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
     """Generate SRT subtitles from script (fallback when Whisper fails)."""
     import re
@@ -45,17 +62,16 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
     
     return srt_path
 
-
+# ----------------------------------------------------------------------
+# Main compilation function
+# ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
     """Compile video with clean audio and bold captions (no music)."""
     print("🎬 Starting video compilation (clean version)...")
 
     # 1. Get audio duration
-    audio_duration = float(subprocess.check_output(
-        ['ffprobe', '-i', audio_path, '-show_entries', 'format=duration',
-         '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
-    ).decode().strip())
+    audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
     # 2. Generate SRT (if not provided)
@@ -76,7 +92,11 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print("⚡ Step 1: Extracting segment from gameplay...")
     gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
     
-    source_video = video_paths[0]
+    # Use the first video file (we may have multiple, but we only need the first one)
+    source_video = video_paths[0] if video_paths else None
+    if not source_video or not os.path.exists(source_video):
+        raise Exception("No valid gameplay video found.")
+    
     cmd_extract = [
         'ffmpeg', '-y',
         '-i', source_video,
