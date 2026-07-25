@@ -67,11 +67,31 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with clean audio and bold captions (no music)."""
+    """Compile video with clean audio and bold captions (no music).
+    
+    Args:
+        video_paths: Can be a single video path (string) or list of paths.
+        audio_path: Path to voiceover MP3.
+        script: Original script text (for fallback SRT).
+        subtitle_path: Optional pre-generated SRT file.
+    """
     print("🎬 Starting video compilation (clean version)...")
 
+    # --- Handle both single video_path and list of video_paths ---
+    if isinstance(video_paths, str):
+        # If it's a single string, convert to list
+        video_paths = [video_paths]
+    elif not isinstance(video_paths, list):
+        raise Exception(f"video_paths must be a string or list, got {type(video_paths)}")
+    
+    if not video_paths:
+        raise Exception("No video paths provided")
+
     # 1. Get audio duration
-    audio_duration = get_duration(audio_path)
+    audio_duration = float(subprocess.check_output(
+        ['ffprobe', '-i', audio_path, '-show_entries', 'format=duration',
+         '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
+    ).decode().strip())
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
     # 2. Generate SRT (if not provided)
@@ -92,10 +112,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print("⚡ Step 1: Extracting segment from gameplay...")
     gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
     
-    # Use the first video file (we may have multiple, but we only need the first one)
-    source_video = video_paths[0] if video_paths else None
-    if not source_video or not os.path.exists(source_video):
-        raise Exception("No valid gameplay video found.")
+    # Use the first video file
+    source_video = video_paths[0]
+    if not os.path.exists(source_video):
+        raise Exception(f"Source video not found: {source_video}")
     
     cmd_extract = [
         'ffmpeg', '-y',
