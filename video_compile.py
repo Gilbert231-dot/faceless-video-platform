@@ -1,183 +1,157 @@
-#!/usr/bin/env python3
-"""
-video_compile.py - Simplified FFmpeg pipeline for faceless TikTok videos
-"""
-
-import subprocess
 import os
-import shutil
+import time
 import tempfile
-from pathlib import Path
+import subprocess
+from config import OUTPUT_DIR
 
-# ----------------------------------------------------------------------
-# Helper: Check if an audio file is valid and has content
-# ----------------------------------------------------------------------
-def is_valid_audio(filepath: str) -> bool:
-    """Return True if file exists, has size > 0, and ffprobe can read it."""
-    if not os.path.exists(filepath):
-        return False
-    if os.path.getsize(filepath) == 0:
-        return False
-    ffprobe = shutil.which('ffprobe')
-    if not ffprobe:
-        return True
-    cmd = [
-        ffprobe, '-v', 'error',
-        '-show_entries', 'format=duration',
-        '-of', 'default=noprint_wrappers=1:nokey=1',
-        filepath
-    ]
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
-        if result.returncode == 0 and result.stdout.strip():
-            float(result.stdout.strip())
-            return True
-    except Exception:
-        pass
-    return False
-
-# ----------------------------------------------------------------------
-# Helper: Decode MP3 to WAV (with validation)
-# ----------------------------------------------------------------------
-def prepare_audio(mp3_path: str, wav_path: str, sample_rate: int = 48000) -> str:
-    """Convert MP3 to WAV after validating the input file."""
-    mp3_path = str(mp3_path)
-    wav_path = str(wav_path)
-
-    if not is_valid_audio(mp3_path):
-        raise RuntimeError(f"Input audio file is invalid or empty: {mp3_path}")
-
-    # Try decoders in order
-    ffmpeg = shutil.which('ffmpeg')
-    if ffmpeg:
-        cmd = [
-            ffmpeg, '-y',
-            '-err_detect', 'ignore_err',
-            '-i', mp3_path,
-            '-acodec', 'pcm_s16le',
-            '-ar', str(sample_rate),
-            '-ac', '2',
-            wav_path
-        ]
-        try:
-            subprocess.run(cmd, check=True, capture_output=True, text=True)
-            return wav_path
-        except subprocess.CalledProcessError:
-            pass
-
-    # Fallback: use the MP3 directly if decoding fails (some environments)
-    # We'll just copy it and hope ffmpeg can handle it later
-    print(f"⚠️ FFmpeg decode failed, using original MP3: {mp3_path}")
-    shutil.copy2(mp3_path, wav_path)
-    return wav_path
-
-# ----------------------------------------------------------------------
-# Helper: Get duration (seconds)
-# ----------------------------------------------------------------------
-def get_duration(media_path: str) -> float:
-    cmd = [
-        'ffprobe', '-v', 'error',
-        '-show_entries', 'format=duration',
-        '-of', 'default=noprint_wrappers=1:nokey=1',
-        media_path
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-    return float(result.stdout.strip())
-
-# ----------------------------------------------------------------------
-# Main compilation function (SIMPLIFIED)
-# ----------------------------------------------------------------------
-def compile_video(
-    video_path: str,
-    audio_mp3: str,
-    output_path: str,
-    subtitle_ass: str,
-    background_music: str = None,
-    voice_volume: float = 2.0,
-    bg_volume: float = 0.3,
-    target_width: int = 1080,
-    target_height: int = 1920,
-    crf: int = 18,
-    temp_dir: str = None,
-) -> str:
-    """
-    Compose final video. Uses -c:a copy to avoid audio re-encoding issues.
-    """
-    # Create temp dir
-    if temp_dir is None:
-        temp_dir = tempfile.mkdtemp(prefix='video_compile_')
+def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
+    """Generate SRT subtitles from script (fallback when Whisper fails)."""
+    import re
+    
+    words = re.findall(r'\b\w+\b', script)
+    if not words:
+        return None
+    
+    # Group into phrases of 4-6 words
+    phrase_size = 5
+    phrases = []
+    for i in range(0, len(words), phrase_size):
+        phrase = ' '.join(words[i:i+phrase_size])
+        phrases.append(phrase)
+    
+    if audio_duration and audio_duration > 0:
+        total_duration = audio_duration
     else:
-        os.makedirs(temp_dir, exist_ok=True)
+        total_duration = len(words) / 3
+        if total_duration < 30:
+            total_duration = 60
+    
+    dur_per_phrase = total_duration / len(phrases)
+    
+    with open(srt_path, 'w') as f:
+        for i, phrase in enumerate(phrases, 1):
+            start_time = (i - 1) * dur_per_phrase + intro_duration
+            end_time = i * dur_per_phrase + intro_duration
+            
+            start_s = int(start_time)
+            start_ms = int((start_time - start_s) * 1000)
+            end_s = int(end_time)
+            end_ms = int((end_time - end_s) * 1000)
+            
+            f.write(f"{i}\n")
+            f.write(f"{start_s//3600:02d}:{(start_s%3600)//60:02d}:{start_s%60:02d},{start_ms:03d} --> ")
+            f.write(f"{end_s//3600:02d}:{(end_s%3600)//60:02d}:{end_s%60:02d},{end_ms:03d}\n")
+            f.write(f"{phrase}\n\n")
+    
+    return srt_path
+
+
+def compile_video(video_paths, audio_path, script, subtitle_path=None,
+                  intro_frame=None, title=None, part_label=None):
+    """Compile video with clean audio and bold captions (no music)."""
+    print("🎬 Starting video compilation (clean version)...")
 
     # 1. Get audio duration
-    audio_duration = get_duration(audio_mp3)
-    print(f"🎙️ Audio duration: {audio_duration:.2f}s")
+    audio_duration = float(subprocess.check_output(
+        ['ffprobe', '-i', audio_path, '-show_entries', 'format=duration',
+         '-v', 'quiet', '-of', 'csv=%s' % ("p=0")]
+    ).decode().strip())
+    print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Extract required segment from video (if needed)
-    video_segment = os.path.join(temp_dir, 'video_segment.mp4')
+    # 2. Generate SRT (if not provided)
+    srt_path = None
+    if subtitle_path and os.path.exists(subtitle_path):
+        srt_path = subtitle_path
+        print(f"   ✅ Using provided SRT: {srt_path}")
+    else:
+        try:
+            srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
+            generate_fallback_srt(script, 0, srt_path, audio_duration)
+            print(f"   ✅ SRT subtitles created: {srt_path}")
+        except Exception as e:
+            print(f"   ⚠️ SRT generation failed: {e}")
+            srt_path = None
+
+    # 3. Extract required segment from gameplay footage
+    print("⚡ Step 1: Extracting segment from gameplay...")
+    gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
+    
+    source_video = video_paths[0]
     cmd_extract = [
         'ffmpeg', '-y',
-        '-i', video_path,
+        '-i', source_video,
         '-t', str(audio_duration),
         '-c:v', 'copy',
         '-an',
-        video_segment
+        gameplay_segment
     ]
-    subprocess.run(cmd_extract, check=True, capture_output=True)
+    
+    try:
+        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=120)
+        print(f"   ✅ Extracted {audio_duration:.2f}s segment.")
+    except Exception as e:
+        raise Exception(f"Segment extraction failed: {e}")
 
-    # 3. Prepare voiceover audio (decode to WAV or use as-is)
-    voice_wav = os.path.join(temp_dir, 'voice.wav')
-    prepare_audio(audio_mp3, voice_wav)
-
-    # 4. Combine video + audio
+    # 4. Combine gameplay + voiceover audio (NO AUDIO PROCESSING)
+    print("⚡ Step 2: Combining video + audio...")
+    final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
+    
     cmd_combine = [
         'ffmpeg', '-y',
-        '-i', video_segment,
-        '-i', voice_wav,
-        '-vf', f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale={target_width}:{target_height}',
+        '-i', gameplay_segment,
+        '-i', audio_path,
+        '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
         '-preset', 'medium',
-        '-crf', str(crf),
-        '-c:a', 'copy',
+        '-crf', '18',
+        '-c:a', 'copy',        # <-- CRITICAL: copy audio WITHOUT processing
         '-shortest',
-        output_path
+        '-movflags', '+faststart',
+        final_output
     ]
-    subprocess.run(cmd_combine, check=True, capture_output=True)
+    
+    try:
+        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=600)
+        print("   ✅ Video combined.")
+    except Exception as e:
+        raise Exception(f"Video combine failed: {e}")
 
-    # 5. Burn subtitles (using ASS file)
-    if subtitle_ass and os.path.exists(subtitle_ass):
-        print("⚡ Burning subtitles...")
-        temp_captioned = os.path.join(temp_dir, 'captioned.mp4')
+    # 5. Burn captions (bold, centered, big)
+    if srt_path and os.path.exists(srt_path):
+        print("⚡ Step 3: Burning captions...")
+        temp_captioned = os.path.join(OUTPUT_DIR, f"temp_captioned_{int(time.time())}.mp4")
         cmd_burn = [
             'ffmpeg', '-y',
-            '-i', output_path,
-            '-vf', f'subtitles={subtitle_ass}:force_style="Fontsize=50,Bold=1,Alignment=10,OutlineColour=&H80000000"',
+            '-i', final_output,
+            '-vf', f"subtitles={srt_path}:force_style='Fontsize=55, Bold=1, Alignment=10, OutlineColour=&H80000000'",
             '-c:a', 'copy',
             temp_captioned
         ]
         try:
-            subprocess.run(cmd_burn, check=True, capture_output=True)
-            shutil.move(temp_captioned, output_path)
-            print("✅ Subtitles burned.")
+            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
+            os.replace(temp_captioned, final_output)
+            print("   ✅ Captions burned.")
         except Exception as e:
-            print(f"⚠️ Subtitle burn failed: {e}")
+            print(f"   ⚠️ Caption burn failed: {e}.")
+            if os.path.exists(temp_captioned):
+                os.unlink(temp_captioned)
 
-    # Clean up
-    shutil.rmtree(temp_dir, ignore_errors=True)
+    # 6. Clean up
+    for path in [gameplay_segment, source_video]:
+        try:
+            os.unlink(path)
+        except:
+            pass
+    for path in video_paths + [audio_path]:
+        try:
+            os.unlink(path)
+        except:
+            pass
+    if srt_path and srt_path != subtitle_path:
+        try:
+            os.unlink(srt_path)
+        except:
+            pass
 
-    print(f"✅ Video compiled: {output_path}")
-    return output_path
-
-# ----------------------------------------------------------------------
-# Example usage (for direct testing)
-# ----------------------------------------------------------------------
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 5:
-        print("Usage: python video_compile.py <video.mp4> <audio.mp3> <output.mp4> <subtitles.ass>")
-        sys.exit(1)
-    video = sys.argv[1]
-    audio = sys.argv[2]
-    output = sys.argv[3]
-    subs = sys.argv[4]
-    compile_video(video, audio, output, subs)
+    print(f"✅ Video compiled successfully: {final_output}")
+    return final_output
