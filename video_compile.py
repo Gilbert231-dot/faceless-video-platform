@@ -48,6 +48,7 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
     
     dur_per_chunk = total_duration / len(chunks)
     
+    # UPPERCASE the entire script
     with open(srt_path, 'w') as f:
         for i, chunk in enumerate(chunks, 1):
             start_time = (i - 1) * dur_per_chunk + intro_duration
@@ -61,7 +62,7 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
             f.write(f"{i}\n")
             f.write(f"{start_s//3600:02d}:{(start_s%3600)//60:02d}:{start_s%60:02d},{start_ms:03d} --> ")
             f.write(f"{end_s//3600:02d}:{(end_s%3600)//60:02d}:{end_s%60:02d},{end_ms:03d}\n")
-            f.write(f"{chunk}\n\n")
+            f.write(f"{chunk.upper()}\n\n")  # <-- UPPERCASE
     
     return srt_path
 
@@ -70,8 +71,8 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with 1080p quality and 2-by-2 captions."""
-    print("🎬 Starting video compilation (1080p + captions)...")
+    """Compile video with 1080p quality, 2-by-2 UPPERCASE captions, and narrator speed."""
+    print("🎬 Starting video compilation (1080p + UPPERCASE captions + speed)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -83,13 +84,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Generate SRT (2-word chunks) - ALWAYS generate fresh
-    # We ignore subtitle_path and generate our own to ensure 2-by-2
+    # 2. Generate SRT (2-word chunks, UPPERCASE)
     srt_path = None
     try:
         srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
         generate_fallback_srt(script, 0, srt_path, audio_duration)
-        print(f"   ✅ 2-by-2 SRT subtitles created: {srt_path}")
+        print(f"   ✅ 2-by-2 UPPERCASE SRT subtitles created: {srt_path}")
     except Exception as e:
         print(f"   ⚠️ SRT generation failed: {e}")
         srt_path = None
@@ -117,18 +117,17 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 4. Crop and resize to 1080p (HIGH QUALITY)
+    # 4. Crop and resize to 1080p
     print("⚡ Step 2: Cropping and resizing to 1080p...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
-    # Use veryfast preset + crf 18 for speed + quality balance
     cmd_crop = [
         'ffmpeg', '-y',
         '-i', gameplay_segment,
         '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
         '-preset', 'veryfast',
-        '-crf', '18',           # High quality
+        '-crf', '18',
         '-an',
         video_cropped
     ]
@@ -140,7 +139,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         gameplay_segment = video_cropped
     except subprocess.TimeoutExpired:
         print("   ⚠️ 1080p crop timed out. Trying 720p fallback...")
-        # Fallback to 720p if 1080p times out
         cmd_crop_fallback = [
             'ffmpeg', '-y',
             '-i', gameplay_segment,
@@ -161,16 +159,39 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
-    # 5. Combine video + audio
-    print("⚡ Step 3: Combining video + audio...")
+    # 5. Mix audio: speed up narrator (1.15x) + keep original quality
+    print("⚡ Step 3: Processing audio (narrator speed 1.15x)...")
+    audio_processed = os.path.join(OUTPUT_DIR, f"audio_processed_{int(time.time())}.mp3")
+    
+    # Use atempo to speed up voice, keep same sample rate
+    cmd_audio = [
+        'ffmpeg', '-y',
+        '-i', audio_path,
+        '-filter_complex', 'atempo=1.15',
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        audio_processed
+    ]
+    
+    try:
+        subprocess.run(cmd_audio, check=True, capture_output=True, timeout=60)
+        print("   ✅ Audio processed (1.15x speed).")
+        audio_to_use = audio_processed
+    except Exception as e:
+        print(f"   ⚠️ Audio processing failed: {e}. Using original audio.")
+        audio_to_use = audio_path
+
+    # 6. Combine video + processed audio
+    print("⚡ Step 4: Combining video + audio...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
     cmd_combine = [
         'ffmpeg', '-y',
         '-i', gameplay_segment,
-        '-i', audio_path,
-        '-c:v', 'copy',        # NO re-encode (use cropped video)
-        '-c:a', 'copy',        # Copy audio
+        '-i', audio_to_use,
+        '-c:v', 'copy',
+        '-c:a', 'aac',
+        '-b:a', '192k',
         '-shortest',
         '-movflags', '+faststart',
         final_output
@@ -182,35 +203,33 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video combine failed: {e}")
 
-   
-    # 6. Burn captions (2-by-2, bold, centered) - SIMPLER + LONGER TIMEOUT
+    # 7. Burn captions (smaller, bold, centered, UPPERCASE)
     if srt_path and os.path.exists(srt_path):
-        print("⚡ Step 4: Burning captions (2-by-2, bold, centered)...")
+        print("⚡ Step 5: Burning captions (smaller, bold, centered, UPPERCASE)...")
         temp_captioned = os.path.join(OUTPUT_DIR, f"temp_captioned_{int(time.time())}.mp4")
         
-        # Simpler command: just subtitles filter, no extra processing
+        # Smaller font size (35), bold, centered
         cmd_burn = [
             'ffmpeg', '-y',
             '-i', final_output,
-            '-vf', f"subtitles={srt_path}:force_style='Fontsize=55, Bold=1, Alignment=10, OutlineColour=&H80000000'",
+            '-vf', f"subtitles={srt_path}:force_style='Fontsize=35, Bold=1, Alignment=10, OutlineColour=&H80000000, MarginV=50'",
             '-c:a', 'copy',
             temp_captioned
         ]
         
         try:
-            # Increase timeout to 600 seconds (10 minutes)
             subprocess.run(cmd_burn, check=True, capture_output=True, timeout=600)
             os.replace(temp_captioned, final_output)
-            print("   ✅ 2-by-2 captions burned.")
+            print("   ✅ 2-by-2 UPPERCASE captions burned.")
         except Exception as e:
             print(f"   ⚠️ Caption burn failed: {e}.")
-            # Keep the video without captions
             if os.path.exists(temp_captioned):
                 os.unlink(temp_captioned)
     else:
         print("   ⚠️ No SRT available. Skipping captions.")
-    # 7. Clean up
-    for path in [gameplay_segment, source_video]:
+
+    # 8. Clean up
+    for path in [gameplay_segment, source_video, audio_processed]:
         try:
             os.unlink(path)
         except:
