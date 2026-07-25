@@ -19,99 +19,12 @@ def get_duration(media_path: str) -> float:
     return float(result.stdout.strip())
 
 # ----------------------------------------------------------------------
-# Generate SRT with 2-word chunks (2-by-2 captions, UPPERCASE)
-# ----------------------------------------------------------------------
-def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
-    """Generate SRT subtitles with 2 words per caption chunk (UPPERCASE)."""
-    import re
-    
-    words = re.findall(r'\b\w+\b', script)
-    if not words:
-        return None
-    
-    # Group into 2-word chunks
-    chunk_size = 2
-    chunks = []
-    for i in range(0, len(words), chunk_size):
-        chunk = words[i:i+chunk_size]
-        chunks.append(' '.join(chunk))
-    
-    if not chunks:
-        return None
-    
-    if audio_duration and audio_duration > 0:
-        total_duration = audio_duration
-    else:
-        total_duration = len(words) / 3
-        if total_duration < 30:
-            total_duration = 60
-    
-    dur_per_chunk = total_duration / len(chunks)
-    
-    with open(srt_path, 'w') as f:
-        for i, chunk in enumerate(chunks, 1):
-            start_time = (i - 1) * dur_per_chunk + intro_duration
-            end_time = i * dur_per_chunk + intro_duration
-            
-            start_s = int(start_time)
-            start_ms = int((start_time - start_s) * 1000)
-            end_s = int(end_time)
-            end_ms = int((end_time - end_s) * 1000)
-            
-            f.write(f"{i}\n")
-            f.write(f"{start_s//3600:02d}:{(start_s%3600)//60:02d}:{start_s%60:02d},{start_ms:03d} --> ")
-            f.write(f"{end_s//3600:02d}:{(end_s%3600)//60:02d}:{end_s%60:02d},{end_ms:03d}\n")
-            f.write(f"{chunk.upper()}\n\n")
-    
-    return srt_path
-
-# ----------------------------------------------------------------------
-# Convert SRT to ASS (with styling - FIXED)
-# ----------------------------------------------------------------------
-def srt_to_ass(srt_path, ass_path, fontsize=50, bold=True, alignment=5, outline=3):
-    """Convert SRT to ASS with custom styling."""
-    with open(srt_path, 'r') as f:
-        content = f.read()
-    
-    # ASS header with explicit styling
-    ass_content = f"""[Script Info]
-ScriptType: v4.00+
-PlayResX: 1080
-PlayResY: 1920
-Timer: 100.0000
-
-[V4+ Styles]
-Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Arial,{fontsize},&H00FFFFFF,&H00FFFFFF,&H00000000,&H00FFFFFF,{1 if bold else 0},0,0,0,100,100,0,0,1,{outline},0,{alignment},10,10,50,0
-
-[Events]
-Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-"""
-    
-    # Parse SRT blocks
-    blocks = content.strip().split('\n\n')
-    for block in blocks:
-        lines = block.split('\n')
-        if len(lines) >= 3:
-            timecode = lines[1]
-            text = ' '.join(lines[2:])
-            start_str, end_str = timecode.split(' --> ')
-            start = start_str.replace(',', '.')
-            end = end_str.replace(',', '.')
-            ass_content += f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}\n"
-    
-    with open(ass_path, 'w') as f:
-        f.write(ass_content)
-    
-    return ass_path
-
-# ----------------------------------------------------------------------
-# Main compilation function
+# Main compilation function (No captions, maximum quality)
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with 1080p quality and styled captions (ASS)."""
-    print("🎬 Starting video compilation (1080p + FIXED ASS captions)...")
+    """Compile video with maximum quality (1080p, CRF 18, no captions)."""
+    print("🎬 Starting video compilation (maximum quality, no captions)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -123,17 +36,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Generate SRT (2-word chunks, UPPERCASE)
-    srt_path = None
-    try:
-        srt_path = tempfile.NamedTemporaryFile(delete=False, suffix='.srt').name
-        generate_fallback_srt(script, 0, srt_path, audio_duration)
-        print(f"   ✅ 2-by-2 UPPERCASE SRT subtitles created: {srt_path}")
-    except Exception as e:
-        print(f"   ⚠️ SRT generation failed: {e}")
-        srt_path = None
-
-    # 3. Extract segment from gameplay
+    # 2. Extract segment from gameplay
     print("⚡ Step 1: Extracting segment from gameplay...")
     gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
     source_video = video_paths[0]
@@ -156,8 +59,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 4. Crop and resize to 1080p
-    print("⚡ Step 2: Cropping and resizing to 1080p...")
+    # 3. Crop and resize to 1080p (MAXIMUM QUALITY)
+    print("⚡ Step 2: Cropping and resizing to 1080p (maximum quality)...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
     cmd_crop = [
@@ -165,21 +68,40 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         '-i', gameplay_segment,
         '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
-        '-preset', 'veryfast',
-        '-crf', '18',
+        '-preset', 'slow',           # Better quality than medium
+        '-crf', '18',                # Visually lossless
         '-an',
         video_cropped
     ]
     
     try:
         subprocess.run(cmd_crop, check=True, capture_output=True, timeout=600)
-        print(f"   ✅ Cropped and resized to 1080p.")
+        print(f"   ✅ Cropped and resized to 1080p (slow preset, CRF 18).")
         os.unlink(gameplay_segment)
         gameplay_segment = video_cropped
+    except subprocess.TimeoutExpired:
+        print("   ⚠️ Slow preset timed out. Falling back to medium preset...")
+        cmd_crop_fallback = [
+            'ffmpeg', '-y',
+            '-i', gameplay_segment,
+            '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
+            '-c:v', 'libx264',
+            '-preset', 'medium',
+            '-crf', '18',
+            '-an',
+            video_cropped
+        ]
+        try:
+            subprocess.run(cmd_crop_fallback, check=True, capture_output=True, timeout=600)
+            print(f"   ✅ Cropped and resized to 1080p (medium preset, CRF 18).")
+            os.unlink(gameplay_segment)
+            gameplay_segment = video_cropped
+        except Exception as e2:
+            raise Exception(f"Video cropping failed: {e2}")
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
-    # 5. Combine video + audio
+    # 4. Combine video + audio (NO captions)
     print("⚡ Step 3: Combining video + audio...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
@@ -187,8 +109,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         'ffmpeg', '-y',
         '-i', gameplay_segment,
         '-i', audio_path,
-        '-c:v', 'copy',
-        '-c:a', 'copy',
+        '-c:v', 'copy',        # Use the already encoded video
+        '-c:a', 'aac',         # Encode audio
+        '-b:a', '192k',        # High quality audio
         '-shortest',
         '-movflags', '+faststart',
         final_output
@@ -200,39 +123,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video combine failed: {e}")
 
-    # 6. Burn captions using ASS (FIXED STYLING)
-    if srt_path and os.path.exists(srt_path):
-        print("⚡ Step 4: Burning captions using ASS (fixed styling)...")
-        ass_path = srt_path.replace('.srt', '.ass')
-        
-        # Use fontsize 50, bold, centered (alignment 5 = middle center)
-        srt_to_ass(srt_path, ass_path, fontsize=50, bold=True, alignment=5, outline=3)
-        print(f"   ✅ Converted to ASS: {ass_path}")
-        
-        temp_captioned = os.path.join(OUTPUT_DIR, f"temp_captioned_{int(time.time())}.mp4")
-        cmd_burn = [
-            'ffmpeg', '-y',
-            '-i', final_output,
-            '-vf', f"ass={ass_path}",
-            '-c:a', 'copy',
-            temp_captioned
-        ]
-        
-        try:
-            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=600)
-            os.replace(temp_captioned, final_output)
-            print("   ✅ 2-by-2 UPPERCASE captions burned (ASS).")
-        except Exception as e:
-            print(f"   ⚠️ ASS caption burn failed: {e}.")
-            if os.path.exists(temp_captioned):
-                os.unlink(temp_captioned)
-        finally:
-            if os.path.exists(ass_path):
-                os.unlink(ass_path)
-    else:
-        print("   ⚠️ No SRT available. Skipping captions.")
-
-    # 7. Clean up
+    # 5. Clean up
     for path in [gameplay_segment, source_video]:
         try:
             os.unlink(path)
@@ -241,11 +132,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     for path in video_paths + [audio_path]:
         try:
             os.unlink(path)
-        except:
-            pass
-    if srt_path:
-        try:
-            os.unlink(srt_path)
         except:
             pass
 
