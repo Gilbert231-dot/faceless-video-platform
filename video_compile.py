@@ -182,10 +182,13 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video combine failed: {e}")
 
-    # 6. Burn captions (2-by-2, bold, centered, big)
+   
+    # 6. Burn captions (2-by-2, bold, centered) - SIMPLER + LONGER TIMEOUT
     if srt_path and os.path.exists(srt_path):
         print("⚡ Step 4: Burning captions (2-by-2, bold, centered)...")
         temp_captioned = os.path.join(OUTPUT_DIR, f"temp_captioned_{int(time.time())}.mp4")
+        
+        # Simpler command: just subtitles filter, no extra processing
         cmd_burn = [
             'ffmpeg', '-y',
             '-i', final_output,
@@ -193,17 +196,19 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-c:a', 'copy',
             temp_captioned
         ]
+        
         try:
-            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
+            # Increase timeout to 600 seconds (10 minutes)
+            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=600)
             os.replace(temp_captioned, final_output)
             print("   ✅ 2-by-2 captions burned.")
         except Exception as e:
             print(f"   ⚠️ Caption burn failed: {e}.")
+            # Keep the video without captions
             if os.path.exists(temp_captioned):
                 os.unlink(temp_captioned)
     else:
         print("   ⚠️ No SRT available. Skipping captions.")
-
     # 7. Clean up
     for path in [gameplay_segment, source_video]:
         try:
