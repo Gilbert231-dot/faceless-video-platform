@@ -19,7 +19,7 @@ def get_duration(media_path: str) -> float:
     return float(result.stdout.strip())
 
 # ----------------------------------------------------------------------
-# Generate SRT with 2-word chunks (2-by-2 captions)
+# Generate SRT with 2-word chunks (2-by-2 captions, UPPERCASE)
 # ----------------------------------------------------------------------
 def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None):
     """Generate SRT subtitles with 2 words per caption chunk (UPPERCASE)."""
@@ -66,14 +66,14 @@ def generate_fallback_srt(script, intro_duration, srt_path, audio_duration=None)
     return srt_path
 
 # ----------------------------------------------------------------------
-# Convert SRT to ASS (with styling)
+# Convert SRT to ASS (with styling - FIXED)
 # ----------------------------------------------------------------------
-def srt_to_ass(srt_path, ass_path, fontsize=40, bold=True, alignment=10, outline=3):
+def srt_to_ass(srt_path, ass_path, fontsize=50, bold=True, alignment=5, outline=3):
     """Convert SRT to ASS with custom styling."""
     with open(srt_path, 'r') as f:
         content = f.read()
     
-    # ASS header
+    # ASS header with explicit styling
     ass_content = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: 1080
@@ -82,7 +82,7 @@ Timer: 100.0000
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Arial,{fontsize},&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,{1 if bold else 0},0,0,0,100,100,0,0,1,{outline},0,{alignment},10,10,50,0
+Style: Default,Arial,{fontsize},&H00FFFFFF,&H00FFFFFF,&H00000000,&H00FFFFFF,{1 if bold else 0},0,0,0,100,100,0,0,1,{outline},0,{alignment},10,10,50,0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -110,8 +110,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with 1080p quality, 2-by-2 UPPERCASE captions (using ASS)."""
-    print("🎬 Starting video compilation (1080p + ASS captions)...")
+    """Compile video with 1080p quality and styled captions (ASS)."""
+    print("🎬 Starting video compilation (1080p + FIXED ASS captions)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -200,11 +200,13 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video combine failed: {e}")
 
-    # 6. Burn captions using ASS (RELIABLE STYLING)
+    # 6. Burn captions using ASS (FIXED STYLING)
     if srt_path and os.path.exists(srt_path):
-        print("⚡ Step 4: Burning captions using ASS (reliable styling)...")
+        print("⚡ Step 4: Burning captions using ASS (fixed styling)...")
         ass_path = srt_path.replace('.srt', '.ass')
-        srt_to_ass(srt_path, ass_path, fontsize=35, bold=True, alignment=10, outline=3)
+        
+        # Use fontsize 50, bold, centered (alignment 5 = middle center)
+        srt_to_ass(srt_path, ass_path, fontsize=50, bold=True, alignment=5, outline=3)
         print(f"   ✅ Converted to ASS: {ass_path}")
         
         temp_captioned = os.path.join(OUTPUT_DIR, f"temp_captioned_{int(time.time())}.mp4")
