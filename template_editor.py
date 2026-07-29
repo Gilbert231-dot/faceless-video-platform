@@ -47,6 +47,20 @@ def overlay_text_on_template(
     title_y = 250
     title_max_width = width - 200  # 100px padding each side
     
+    # ---- FIX: ERASE PLACEHOLDER TEXT BEFORE DRAWING ----
+    # Erase the "{Subreddit}:" placeholder
+    draw.rectangle(
+        [subreddit_x - 10, subreddit_y - 10, subreddit_x + 600, subreddit_y + 50],
+        fill=(248, 248, 248)
+    )
+    
+    # Erase the "Story_title" placeholder
+    draw.rectangle(
+        [title_x - 400, title_y - 30, title_x + 400, title_y + 100],
+        fill=(248, 248, 248)
+    )
+    # -----------------------------------------------------
+    
     # 5. Draw subreddit
     draw.text((subreddit_x, subreddit_y), f"r/{subreddit}", fill=(16, 16, 16), font=font_bold)
     
@@ -56,7 +70,6 @@ def overlay_text_on_template(
     
     # If title is very long, reduce font size to fit
     if line_count > 3:
-        # Try smaller font
         try:
             font_title = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 34)
         except:
