@@ -15,13 +15,7 @@ def overlay_text_on_template(
 ):
     """
     Load a PNG template and overlay text onto it.
-    
-    Args:
-        subreddit: The subreddit name (e.g., "MaliciousCompliance")
-        title: The story title
-        username: Display username (default: "u/StoryLab")
-        template_path: Path to the PNG template
-        output_path: Where to save the rendered image
+    Handles multi-line titles automatically.
     """
     
     # 1. Load the template
@@ -35,53 +29,62 @@ def overlay_text_on_template(
     width, height = img.size
     
     # 3. Load fonts (with fallbacks)
+    font_size = 42
     try:
-        # Try to use Liberation fonts (available on Linux)
         font_bold = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 36)
         font_regular = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 28)
-        font_title = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 42)
+        font_title = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", font_size)
     except:
-        # Fallback to default
         font_bold = ImageFont.load_default()
         font_regular = ImageFont.load_default()
         font_title = ImageFont.load_default()
     
-    # 4. Define text positions (adjust these based on your template!)
-    # These values are relative to a 1080x560 card
-    # You may need to tweak them based on your template
+    # 4. Define positions (adjust based on your template!)
+    # These values work for a 1080x560 card
+    subreddit_x = 100
+    subreddit_y = 170
+    title_x = width // 2
+    title_y = 250
+    title_max_width = width - 200  # 100px padding each side
     
-    # --- Position for subreddit ---
-    # Based on ChatGPT's analysis: subreddit is below username
-    subreddit_x = 100   # Left margin
-    subreddit_y = 170   # Vertical position (adjust as needed)
-    
-    # --- Position for title ---
-    title_x = width // 2  # Center horizontally
-    title_y = 250         # Vertical position (adjust as needed)
-    title_max_width = width - 200  # 100px padding on each side
-    
-    # --- Position for username ---
-    # (Optional - if your template has a username placeholder)
-    username_x = 100
-    username_y = 120
-    
-    # 5. Draw the subreddit
+    # 5. Draw subreddit
     draw.text((subreddit_x, subreddit_y), f"r/{subreddit}", fill=(16, 16, 16), font=font_bold)
     
-    # 6. Draw the title (wrapped and centered)
-    wrapped_title = wrap_text(title, font_title, title_max_width)
+    # 6. Draw title (multi-line support)
+    lines = wrap_text(title, font_title, title_max_width)
+    line_count = len(lines.split('\n'))
     
-    for i, line in enumerate(wrapped_title.split('\n')):
+    # If title is very long, reduce font size to fit
+    if line_count > 3:
+        # Try smaller font
+        try:
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 34)
+        except:
+            font_title = ImageFont.load_default()
+        lines = wrap_text(title, font_title, title_max_width)
+        line_count = len(lines.split('\n'))
+    
+    if line_count > 4:
+        try:
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 28)
+        except:
+            font_title = ImageFont.load_default()
+        lines = wrap_text(title, font_title, title_max_width)
+        line_count = len(lines.split('\n'))
+    
+    # Center each line
+    line_height = 50
+    total_height = line_count * line_height
+    start_y = title_y - (total_height // 2) + 25
+    
+    for i, line in enumerate(lines.split('\n')):
         bbox = draw.textbbox((0, 0), line, font=font_title)
         line_width = bbox[2] - bbox[0]
         line_x = (width - line_width) // 2
-        line_y = title_y + (i * 50)
+        line_y = start_y + (i * line_height)
         draw.text((line_x, line_y), line, fill=(0, 0, 0), font=font_title)
     
-    # 7. (Optional) Draw username
-    # draw.text((username_x, username_y), username, fill=(16, 16, 16), font=font_regular)
-    
-    # 8. Save the rendered image
+    # 7. Save
     img.save(output_path, 'PNG')
     print(f"✅ Rendered title card: {output_path}")
     return output_path
@@ -110,11 +113,10 @@ def wrap_text(text, font, max_width):
 
 
 if __name__ == "__main__":
-    # Test the function
+    # Test with a long title
     overlay_text_on_template(
         subreddit="MaliciousCompliance",
         title="IT told me I didn't understand the systems, so I stopped fixing them. The store learned what I actually did.",
-        username="u/StoryLab",
         template_path="assets/templates/reddit_title_card.png",
         output_path="test_rendered_card.png"
     )
