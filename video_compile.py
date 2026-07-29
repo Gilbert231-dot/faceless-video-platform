@@ -23,8 +23,8 @@ def get_duration(media_path: str) -> float:
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with maximum quality (1080p, CRF 18, no captions)."""
-    print("🎬 Starting video compilation (maximum quality, no captions)...")
+    """Compile video with fast cropping and high quality."""
+    print("🎬 Starting video compilation (fast crop, high quality)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -59,8 +59,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 3. Crop and resize to 1080p (MAXIMUM QUALITY)
-    print("⚡ Step 2: Cropping and resizing to 1080p (maximum quality)...")
+    # 3. Crop and resize to 1080p (FAST preset)
+    print("⚡ Step 2: Cropping and resizing to 1080p (veryfast)...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
     cmd_crop = [
@@ -68,40 +68,23 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         '-i', gameplay_segment,
         '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
-        '-preset', 'slow',           # Better quality than medium
-        '-crf', '18',                # Visually lossless
+        '-preset', 'veryfast',   # FAST preset to avoid timeout
+        '-crf', '18',
         '-an',
         video_cropped
     ]
     
     try:
-        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=600)
-        print(f"   ✅ Cropped and resized to 1080p (slow preset, CRF 18).")
+        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=900)  # 15 minutes timeout
+        print(f"   ✅ Cropped and resized to 1080p.")
         os.unlink(gameplay_segment)
         gameplay_segment = video_cropped
     except subprocess.TimeoutExpired:
-        print("   ⚠️ Slow preset timed out. Falling back to medium preset...")
-        cmd_crop_fallback = [
-            'ffmpeg', '-y',
-            '-i', gameplay_segment,
-            '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
-            '-c:v', 'libx264',
-            '-preset', 'medium',
-            '-crf', '18',
-            '-an',
-            video_cropped
-        ]
-        try:
-            subprocess.run(cmd_crop_fallback, check=True, capture_output=True, timeout=600)
-            print(f"   ✅ Cropped and resized to 1080p (medium preset, CRF 18).")
-            os.unlink(gameplay_segment)
-            gameplay_segment = video_cropped
-        except Exception as e2:
-            raise Exception(f"Video cropping failed: {e2}")
+        raise Exception("Video cropping timed out even with veryfast preset. Try reducing resolution or using a smaller source.")
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
-    # 4. Combine video + audio (NO captions)
+    # 4. Combine video + audio (no re-encode, just copy)
     print("⚡ Step 3: Combining video + audio...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
@@ -109,9 +92,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         'ffmpeg', '-y',
         '-i', gameplay_segment,
         '-i', audio_path,
-        '-c:v', 'copy',        # Use the already encoded video
-        '-c:a', 'aac',         # Encode audio
-        '-b:a', '192k',        # High quality audio
+        '-c:v', 'copy',        # Use already encoded video
+        '-c:a', 'aac',
+        '-b:a', '192k',
         '-shortest',
         '-movflags', '+faststart',
         final_output
