@@ -23,8 +23,8 @@ def get_duration(media_path: str) -> float:
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with intro overlay (two-step approach)."""
-    print("🎬 Starting video compilation (two-step)...")
+    """Compile video with intro overlay, captions, and correct aspect ratio."""
+    print("🎬 Starting video compilation (FIXED)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -67,14 +67,15 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 4. Crop and resize to 1080p
-    print("⚡ Step 2: Cropping and resizing to 1080p...")
+    # 4. Crop and resize to 1080x1920 (FIXED ASPECT RATIO)
+    print("⚡ Step 2: Cropping and resizing to 1080x1920...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
+    # FIX: Force 9:16 aspect ratio
     cmd_crop = [
         'ffmpeg', '-y',
         '-i', gameplay_segment,
-        '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
+        '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,crop=1080:1920',
         '-c:v', 'libx264',
         '-preset', 'veryfast',
         '-crf', '18',
@@ -84,20 +85,19 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     try:
         subprocess.run(cmd_crop, check=True, capture_output=True, timeout=900)
-        print(f"   ✅ Cropped and resized to 1080p.")
+        print(f"   ✅ Cropped and resized to 1080x1920.")
         os.unlink(gameplay_segment)
         gameplay_segment = video_cropped
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
-    # 5. Build final video with or without intro
+    # 5. Build final video with intro and captions
     print("⚡ Step 3: Building final video...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
 
+    # Step 3a: Create intro video from title card
     if intro_frame and os.path.exists(intro_frame):
         print(f"   🖼️ Adding intro frame: {intro_frame}")
-        
-        # Step 3a: Create intro video from title card
         intro_video = os.path.join(OUTPUT_DIR, f"intro_video_{int(time.time())}.mp4")
         cmd_intro = [
             'ffmpeg', '-y',
@@ -112,53 +112,50 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         ]
         try:
             subprocess.run(cmd_intro, check=True, capture_output=True, timeout=60)
-            print(f"   ✅ Intro video created: {intro_video}")
+            print(f"   ✅ Intro video created.")
         except Exception as e:
-            print(f"   ⚠️ Intro video creation failed: {e}")
+            print(f"   ⚠️ Intro creation failed: {e}")
             intro_video = None
-        
-        if intro_video and os.path.exists(intro_video):
-            # Step 3b: Concatenate intro + gameplay
-            concat_file = os.path.join(OUTPUT_DIR, f"concat_list_{int(time.time())}.txt")
-            with open(concat_file, 'w') as f:
-                f.write(f"file '{intro_video}'\n")
-                f.write(f"file '{gameplay_segment}'\n")
-            
-            cmd_concat = [
-                'ffmpeg', '-y',
-                '-f', 'concat',
-                '-safe', '0',
-                '-i', concat_file,
-                '-c:v', 'copy',
-                '-an',
-                final_output
-            ]
-            try:
-                subprocess.run(cmd_concat, check=True, capture_output=True, timeout=120)
-                print(f"   ✅ Video concatenated with intro.")
-                os.unlink(concat_file)
-                os.unlink(intro_video)
-            except Exception as e:
-                print(f"   ⚠️ Concatenation failed: {e}. Using gameplay only.")
-                # Fallback: copy gameplay to final
-                import shutil
-                shutil.copy(gameplay_segment, final_output)
-        else:
-            # Fallback: copy gameplay to final
-            import shutil
-            shutil.copy(gameplay_segment, final_output)
     else:
-        # No intro: just copy gameplay to final
-        print("   ℹ️ No intro frame. Using gameplay only.")
-        import shutil
-        shutil.copy(gameplay_segment, final_output)
+        intro_video = None
+        print("   ℹ️ No intro frame provided.")
 
-    # 6. Add audio to the final video
-    print("⚡ Step 4: Adding audio...")
+    # Step 3b: Combine intro + gameplay
+    temp_no_audio = os.path.join(OUTPUT_DIR, f"temp_no_audio_{int(time.time())}.mp4")
+    
+    if intro_video and os.path.exists(intro_video):
+        concat_file = os.path.join(OUTPUT_DIR, f"concat_list_{int(time.time())}.txt")
+        with open(concat_file, 'w') as f:
+            f.write(f"file '{intro_video}'\n")
+            f.write(f"file '{gameplay_segment}'\n")
+        
+        cmd_concat = [
+            'ffmpeg', '-y',
+            '-f', 'concat',
+            '-safe', '0',
+            '-i', concat_file,
+            '-c:v', 'copy',
+            '-an',
+            temp_no_audio
+        ]
+        try:
+            subprocess.run(cmd_concat, check=True, capture_output=True, timeout=120)
+            print(f"   ✅ Video concatenated with intro.")
+            os.unlink(concat_file)
+            os.unlink(intro_video)
+        except Exception as e:
+            print(f"   ⚠️ Concatenation failed: {e}. Using gameplay only.")
+            import shutil
+            shutil.copy(gameplay_segment, temp_no_audio)
+    else:
+        import shutil
+        shutil.copy(gameplay_segment, temp_no_audio)
+
+    # Step 3c: Add audio
     temp_with_audio = os.path.join(OUTPUT_DIR, f"temp_audio_{int(time.time())}.mp4")
     cmd_audio = [
         'ffmpeg', '-y',
-        '-i', final_output,
+        '-i', temp_no_audio,
         '-i', audio_path,
         '-c:v', 'copy',
         '-c:a', 'aac',
@@ -169,14 +166,35 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     ]
     try:
         subprocess.run(cmd_audio, check=True, capture_output=True, timeout=120)
-        os.replace(temp_with_audio, final_output)
         print(f"   ✅ Audio added.")
+        os.unlink(temp_no_audio)
     except Exception as e:
         print(f"   ⚠️ Audio addition failed: {e}")
-        if os.path.exists(temp_with_audio):
-            os.unlink(temp_with_audio)
+        os.rename(temp_no_audio, temp_with_audio)
 
-    # 7. Clean up
+    # Step 3d: Burn captions
+    if subtitle_path and os.path.exists(subtitle_path):
+        print("⚡ Step 4: Burning captions...")
+        final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
+        cmd_burn = [
+            'ffmpeg', '-y',
+            '-i', temp_with_audio,
+            '-vf', f"subtitles={subtitle_path}:force_style='Fontsize=48, Bold=1, Alignment=10, OutlineColour=&H80000000'",
+            '-c:a', 'copy',
+            final_output
+        ]
+        try:
+            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
+            print(f"   ✅ Captions burned.")
+            os.unlink(temp_with_audio)
+        except Exception as e:
+            print(f"   ⚠️ Caption burn failed: {e}. Using video without captions.")
+            os.rename(temp_with_audio, final_output)
+    else:
+        final_output = temp_with_audio
+        print("   ℹ️ No captions to burn.")
+
+    # 6. Clean up
     for path in [gameplay_segment, source_video]:
         try:
             os.unlink(path)
