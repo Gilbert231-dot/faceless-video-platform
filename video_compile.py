@@ -23,8 +23,8 @@ def get_duration(media_path: str) -> float:
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with fast cropping and high quality."""
-    print("🎬 Starting video compilation (fast crop, high quality)...")
+    """Compile video with intro frame overlay."""
+    print("🎬 Starting video compilation (with intro overlay)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -36,7 +36,15 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Extract segment from gameplay
+    # 2. Determine intro duration (3-5 seconds based on title length)
+    intro_duration = 3.5
+    if title:
+        word_count = len(title.split())
+        intro_duration = max(2.5, min(5.0, word_count * 0.3))
+    intro_duration = min(intro_duration, audio_duration)
+    print(f"   🖼️ Intro duration: {intro_duration:.2f}s")
+
+    # 3. Extract segment from gameplay
     print("⚡ Step 1: Extracting segment from gameplay...")
     gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
     source_video = video_paths[0]
@@ -59,8 +67,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 3. Crop and resize to 1080p (FAST preset)
-    print("⚡ Step 2: Cropping and resizing to 1080p (veryfast)...")
+    # 4. Crop and resize to 1080p
+    print("⚡ Step 2: Cropping and resizing to 1080p...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
     cmd_crop = [
@@ -68,45 +76,70 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         '-i', gameplay_segment,
         '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920',
         '-c:v', 'libx264',
-        '-preset', 'veryfast',   # FAST preset to avoid timeout
+        '-preset', 'veryfast',
         '-crf', '18',
         '-an',
         video_cropped
     ]
     
     try:
-        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=900)  # 15 minutes timeout
+        subprocess.run(cmd_crop, check=True, capture_output=True, timeout=900)
         print(f"   ✅ Cropped and resized to 1080p.")
         os.unlink(gameplay_segment)
         gameplay_segment = video_cropped
-    except subprocess.TimeoutExpired:
-        raise Exception("Video cropping timed out even with veryfast preset. Try reducing resolution or using a smaller source.")
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
-    # 4. Combine video + audio (no re-encode, just copy)
-    print("⚡ Step 3: Combining video + audio...")
+    # 5. Build FFmpeg command with or without intro frame
+    print("⚡ Step 3: Combining video + audio with intro overlay...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
-    
-    cmd_combine = [
-        'ffmpeg', '-y',
-        '-i', gameplay_segment,
-        '-i', audio_path,
-        '-c:v', 'copy',        # Use already encoded video
-        '-c:a', 'aac',
-        '-b:a', '192k',
-        '-shortest',
-        '-movflags', '+faststart',
-        final_output
-    ]
+
+    if intro_frame and os.path.exists(intro_frame):
+        # --- WITH INTRO FRAME (Title Card) ---
+        print(f"   🖼️ Overlaying intro frame: {intro_frame}")
+        
+        cmd_combine = [
+            'ffmpeg', '-y',
+            '-i', gameplay_segment,
+            '-i', audio_path,
+            '-i', intro_frame,
+            '-filter_complex',
+            f'[0:v]trim=0:{audio_duration},setpts=PTS-STARTPTS[video];'
+            f'[2:v]scale=1080:1920,loop=-1:size=1,trim=0:{intro_duration},setpts=PTS-STARTPTS[intro];'
+            f'[intro][video]overlay=0:0:enable=\'between(t,0,{intro_duration})\'[outv]',
+            '-map', '[outv]',
+            '-map', '1:a',
+            '-c:v', 'libx264',
+            '-preset', 'medium',
+            '-crf', '18',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-shortest',
+            '-movflags', '+faststart',
+            final_output
+        ]
+    else:
+        # --- WITHOUT INTRO FRAME ---
+        print("   ℹ️ No intro frame provided. Using basic combine.")
+        cmd_combine = [
+            'ffmpeg', '-y',
+            '-i', gameplay_segment,
+            '-i', audio_path,
+            '-c:v', 'copy',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-shortest',
+            '-movflags', '+faststart',
+            final_output
+        ]
     
     try:
-        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=120)
+        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=300)
         print("   ✅ Video combined.")
     except Exception as e:
         raise Exception(f"Video combine failed: {e}")
 
-    # 5. Clean up
+    # 6. Clean up
     for path in [gameplay_segment, source_video]:
         try:
             os.unlink(path)
