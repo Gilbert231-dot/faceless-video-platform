@@ -40,26 +40,25 @@ def overlay_text_on_template(
         font_title = ImageFont.load_default()
     
     # 4. Define positions (adjust based on your template!)
-    # These values work for a 1080x560 card
     subreddit_x = 100
     subreddit_y = 170
     title_x = width // 2
     title_y = 250
     title_max_width = width - 200  # 100px padding each side
     
-    # ---- FIX: ERASE PLACEHOLDER TEXT BEFORE DRAWING ----
-    # Erase the "{Subreddit}:" placeholder
+    # ---- CRITICAL FIX: ERASE PLACEHOLDER TEXT ----
+    # Erase the "{Subreddit}:" placeholder with a white rectangle
     draw.rectangle(
         [subreddit_x - 10, subreddit_y - 10, subreddit_x + 600, subreddit_y + 50],
-        fill=(248, 248, 248)
+        fill=(248, 248, 248)  # Match card background color
     )
     
     # Erase the "Story_title" placeholder
     draw.rectangle(
         [title_x - 400, title_y - 30, title_x + 400, title_y + 100],
-        fill=(248, 248, 248)
+        fill=(248, 248, 248)  # Match card background color
     )
-    # -----------------------------------------------------
+    # ------------------------------------------------
     
     # 5. Draw subreddit
     draw.text((subreddit_x, subreddit_y), f"r/{subreddit}", fill=(16, 16, 16), font=font_bold)
@@ -99,7 +98,7 @@ def overlay_text_on_template(
     
     # 7. Save
     img.save(output_path, 'PNG')
-    print(f"✅ Rendered title card: {output_path}")
+    print(f"✅ Rendered title card with r/{subreddit}: {title[:30]}...")
     return output_path
 
 
