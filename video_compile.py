@@ -24,7 +24,7 @@ def get_duration(media_path: str) -> float:
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
     """Compile video with intro overlay, captions, and correct aspect ratio."""
-    print("🎬 Starting video compilation (FIXED)...")
+    print("🎬 Starting video compilation (SIMPLIFIED CROP)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -67,15 +67,15 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 4. Crop and resize to 1080x1920 (FIXED ASPECT RATIO)
-    print("⚡ Step 2: Cropping and resizing to 1080x1920...")
+    # 4. Crop to 9:16 (simple crop, NO SCALE)
+    print("⚡ Step 2: Cropping to 9:16...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
-    # FIX: Force 9:16 aspect ratio
+    # Simple crop filter - much more reliable
     cmd_crop = [
         'ffmpeg', '-y',
         '-i', gameplay_segment,
-        '-vf', 'scale=1080:1920:force_original_aspect_ratio=decrease,crop=1080:1920',
+        '-vf', 'crop=ih*9/16:ih:(iw-ih*9/16)/2:0',
         '-c:v', 'libx264',
         '-preset', 'veryfast',
         '-crf', '18',
@@ -85,7 +85,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     try:
         subprocess.run(cmd_crop, check=True, capture_output=True, timeout=900)
-        print(f"   ✅ Cropped and resized to 1080x1920.")
+        print(f"   ✅ Cropped to 9:16.")
         os.unlink(gameplay_segment)
         gameplay_segment = video_cropped
     except Exception as e:
@@ -151,13 +151,16 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         import shutil
         shutil.copy(gameplay_segment, temp_no_audio)
 
-    # Step 3c: Add audio
+    # Step 3c: Add audio AND scale to 1080x1920
     temp_with_audio = os.path.join(OUTPUT_DIR, f"temp_audio_{int(time.time())}.mp4")
     cmd_audio = [
         'ffmpeg', '-y',
         '-i', temp_no_audio,
         '-i', audio_path,
-        '-c:v', 'copy',
+        '-vf', 'scale=1080:1920',  # Scale to 1080x1920 here
+        '-c:v', 'libx264',
+        '-preset', 'veryfast',
+        '-crf', '18',
         '-c:a', 'aac',
         '-b:a', '192k',
         '-shortest',
@@ -165,8 +168,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         temp_with_audio
     ]
     try:
-        subprocess.run(cmd_audio, check=True, capture_output=True, timeout=120)
-        print(f"   ✅ Audio added.")
+        subprocess.run(cmd_audio, check=True, capture_output=True, timeout=300)
+        print(f"   ✅ Audio added and scaled to 1080x1920.")
         os.unlink(temp_no_audio)
     except Exception as e:
         print(f"   ⚠️ Audio addition failed: {e}")
