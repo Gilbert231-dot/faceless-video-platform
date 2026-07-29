@@ -21,10 +21,11 @@ def get_duration(media_path: str) -> float:
 # ----------------------------------------------------------------------
 # Main compilation function (No captions, maximum quality)
 # ----------------------------------------------------------------------
+
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with intro overlay, captions, and correct aspect ratio."""
-    print("🎬 Starting video compilation (SIMPLIFIED CROP)...")
+    """Compile video with intro overlay, captions, fade transition, and correct aspect ratio."""
+    print("🎬 Starting video compilation (WITH FADE + CAPTIONS)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -71,7 +72,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print("⚡ Step 2: Cropping to 9:16...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
-    # Simple crop filter - much more reliable
     cmd_crop = [
         'ffmpeg', '-y',
         '-i', gameplay_segment,
@@ -120,36 +120,69 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         intro_video = None
         print("   ℹ️ No intro frame provided.")
 
-    # Step 3b: Combine intro + gameplay
+    # Step 3b: Combine intro + gameplay WITH FADE TRANSITION
     temp_no_audio = os.path.join(OUTPUT_DIR, f"temp_no_audio_{int(time.time())}.mp4")
     
     if intro_video and os.path.exists(intro_video):
-        concat_file = os.path.join(OUTPUT_DIR, f"concat_list_{int(time.time())}.txt")
-        with open(concat_file, 'w') as f:
-            f.write(f"file '{intro_video}'\n")
-            f.write(f"file '{gameplay_segment}'\n")
+        # Use crossfade for smooth transition (0.3 seconds)
+        # offset = intro_duration - 0.3 (so transition starts near the end of intro)
+        fade_offset = intro_duration - 0.3
+        if fade_offset < 0:
+            fade_offset = 0
         
         cmd_concat = [
             'ffmpeg', '-y',
-            '-f', 'concat',
-            '-safe', '0',
-            '-i', concat_file,
-            '-c:v', 'copy',
+            '-i', intro_video,
+            '-i', gameplay_segment,
+            '-filter_complex', f'xfade=transition=fade:duration=0.3:offset={fade_offset}',
+            '-c:v', 'libx264',
+            '-preset', 'veryfast',
+            '-crf', '18',
             '-an',
             temp_no_audio
         ]
         try:
             subprocess.run(cmd_concat, check=True, capture_output=True, timeout=120)
-            print(f"   ✅ Video concatenated with intro.")
-            os.unlink(concat_file)
-            os.unlink(intro_video)
+            print(f"   ✅ Video concatenated with fade transition.")
         except Exception as e:
-            print(f"   ⚠️ Concatenation failed: {e}. Using gameplay only.")
-            import shutil
-            shutil.copy(gameplay_segment, temp_no_audio)
+            print(f"   ⚠️ Fade transition failed: {e}. Falling back to simple concat.")
+            # Fallback: simple concat without fade
+            concat_file = os.path.join(OUTPUT_DIR, f"concat_list_{int(time.time())}.txt")
+            with open(concat_file, 'w') as f:
+                f.write(f"file '{intro_video}'\n")
+                f.write(f"file '{gameplay_segment}'\n")
+            cmd_concat_simple = [
+                'ffmpeg', '-y',
+                '-f', 'concat',
+                '-safe', '0',
+                '-i', concat_file,
+                '-c:v', 'copy',
+                '-an',
+                temp_no_audio
+            ]
+            try:
+                subprocess.run(cmd_concat_simple, check=True, capture_output=True, timeout=120)
+                print(f"   ✅ Video concatenated (simple concat fallback).")
+                os.unlink(concat_file)
+            except Exception as e2:
+                print(f"   ⚠️ Simple concat also failed: {e2}. Using gameplay only.")
+                import shutil
+                shutil.copy(gameplay_segment, temp_no_audio)
+            finally:
+                try:
+                    os.unlink(concat_file)
+                except:
+                    pass
     else:
         import shutil
         shutil.copy(gameplay_segment, temp_no_audio)
+
+    # Clean up intro video if it exists
+    if intro_video and os.path.exists(intro_video):
+        try:
+            os.unlink(intro_video)
+        except:
+            pass
 
     # Step 3c: Add audio AND scale to 1080x1920
     temp_with_audio = os.path.join(OUTPUT_DIR, f"temp_audio_{int(time.time())}.mp4")
@@ -175,7 +208,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   ⚠️ Audio addition failed: {e}")
         os.rename(temp_no_audio, temp_with_audio)
 
-    # Step 3d: Burn captions
+    # Step 3d: Burn captions (FIXED)
     if subtitle_path and os.path.exists(subtitle_path):
         print("⚡ Step 4: Burning captions...")
         final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
