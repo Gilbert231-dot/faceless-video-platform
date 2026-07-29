@@ -23,8 +23,8 @@ def get_duration(media_path: str) -> float:
 # ----------------------------------------------------------------------
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with intro frame overlay."""
-    print("🎬 Starting video compilation (with intro overlay)...")
+    """Compile video with intro overlay (two-step approach)."""
+    print("🎬 Starting video compilation (two-step)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -36,7 +36,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Determine intro duration (3-5 seconds based on title length)
+    # 2. Determine intro duration
     intro_duration = 3.5
     if title:
         word_count = len(title.split())
@@ -90,56 +90,93 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
-    # 5. Build FFmpeg command with or without intro frame
-    print("⚡ Step 3: Combining video + audio with intro overlay...")
+    # 5. Build final video with or without intro
+    print("⚡ Step 3: Building final video...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
 
     if intro_frame and os.path.exists(intro_frame):
-        # --- WITH INTRO FRAME (Title Card) ---
-        print(f"   🖼️ Overlaying intro frame: {intro_frame}")
+        print(f"   🖼️ Adding intro frame: {intro_frame}")
         
-        cmd_combine = [
+        # Step 3a: Create intro video from title card
+        intro_video = os.path.join(OUTPUT_DIR, f"intro_video_{int(time.time())}.mp4")
+        cmd_intro = [
             'ffmpeg', '-y',
-            '-i', gameplay_segment,
-            '-i', audio_path,
+            '-loop', '1',
             '-i', intro_frame,
-            '-filter_complex',
-            f'[0:v]trim=0:{audio_duration},setpts=PTS-STARTPTS[video];'
-            f'[2:v]scale=1080:1920,loop=-1:size=1,trim=0:{intro_duration},setpts=PTS-STARTPTS[intro];'
-            f'[intro][video]overlay=0:0:enable=\'between(t,0,{intro_duration})\'[outv]',
-            '-map', '[outv]',
-            '-map', '1:a',
+            '-t', str(intro_duration),
             '-c:v', 'libx264',
-            '-preset', 'medium',
+            '-preset', 'veryfast',
             '-crf', '18',
-            '-c:a', 'aac',
-            '-b:a', '192k',
-            '-shortest',
-            '-movflags', '+faststart',
-            final_output
+            '-pix_fmt', 'yuv420p',
+            intro_video
         ]
+        try:
+            subprocess.run(cmd_intro, check=True, capture_output=True, timeout=60)
+            print(f"   ✅ Intro video created: {intro_video}")
+        except Exception as e:
+            print(f"   ⚠️ Intro video creation failed: {e}")
+            intro_video = None
+        
+        if intro_video and os.path.exists(intro_video):
+            # Step 3b: Concatenate intro + gameplay
+            concat_file = os.path.join(OUTPUT_DIR, f"concat_list_{int(time.time())}.txt")
+            with open(concat_file, 'w') as f:
+                f.write(f"file '{intro_video}'\n")
+                f.write(f"file '{gameplay_segment}'\n")
+            
+            cmd_concat = [
+                'ffmpeg', '-y',
+                '-f', 'concat',
+                '-safe', '0',
+                '-i', concat_file,
+                '-c:v', 'copy',
+                '-an',
+                final_output
+            ]
+            try:
+                subprocess.run(cmd_concat, check=True, capture_output=True, timeout=120)
+                print(f"   ✅ Video concatenated with intro.")
+                os.unlink(concat_file)
+                os.unlink(intro_video)
+            except Exception as e:
+                print(f"   ⚠️ Concatenation failed: {e}. Using gameplay only.")
+                # Fallback: copy gameplay to final
+                import shutil
+                shutil.copy(gameplay_segment, final_output)
+        else:
+            # Fallback: copy gameplay to final
+            import shutil
+            shutil.copy(gameplay_segment, final_output)
     else:
-        # --- WITHOUT INTRO FRAME ---
-        print("   ℹ️ No intro frame provided. Using basic combine.")
-        cmd_combine = [
-            'ffmpeg', '-y',
-            '-i', gameplay_segment,
-            '-i', audio_path,
-            '-c:v', 'copy',
-            '-c:a', 'aac',
-            '-b:a', '192k',
-            '-shortest',
-            '-movflags', '+faststart',
-            final_output
-        ]
-    
-    try:
-        subprocess.run(cmd_combine, check=True, capture_output=True, timeout=300)
-        print("   ✅ Video combined.")
-    except Exception as e:
-        raise Exception(f"Video combine failed: {e}")
+        # No intro: just copy gameplay to final
+        print("   ℹ️ No intro frame. Using gameplay only.")
+        import shutil
+        shutil.copy(gameplay_segment, final_output)
 
-    # 6. Clean up
+    # 6. Add audio to the final video
+    print("⚡ Step 4: Adding audio...")
+    temp_with_audio = os.path.join(OUTPUT_DIR, f"temp_audio_{int(time.time())}.mp4")
+    cmd_audio = [
+        'ffmpeg', '-y',
+        '-i', final_output,
+        '-i', audio_path,
+        '-c:v', 'copy',
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        '-shortest',
+        '-movflags', '+faststart',
+        temp_with_audio
+    ]
+    try:
+        subprocess.run(cmd_audio, check=True, capture_output=True, timeout=120)
+        os.replace(temp_with_audio, final_output)
+        print(f"   ✅ Audio added.")
+    except Exception as e:
+        print(f"   ⚠️ Audio addition failed: {e}")
+        if os.path.exists(temp_with_audio):
+            os.unlink(temp_with_audio)
+
+    # 7. Clean up
     for path in [gameplay_segment, source_video]:
         try:
             os.unlink(path)
