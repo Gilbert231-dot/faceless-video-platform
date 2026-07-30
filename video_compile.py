@@ -20,18 +20,18 @@ def get_duration(media_path: str) -> float:
     return float(result.stdout.strip())
 
 # ----------------------------------------------------------------------
-# Quality + Speed Compilation (NO INTRO)
+# Stable Compilation (Good Quality + Speed Up)
 # ----------------------------------------------------------------------
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
     """
     Compile video with:
-    - Sped up background (1.2x - 1.5x faster)
-    - Maximum quality (CRF 15, slow preset)
-    - 1080x1920 9:16 output
+    - Sped up background (1.25x)
+    - Good quality (CRF 18, medium preset)
+    - Stable and reliable
     """
-    print("🎬 Starting video compilation (QUALITY + SPEED UP)...")
+    print("🎬 Starting video compilation (STABLE + QUALITY)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -43,11 +43,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Extract segment from gameplay (add some buffer for speed up)
-    # We extract a bit more than audio duration so after speeding up
-    # we still have enough footage
-    extract_duration = audio_duration * 1.5  # 1.5x for safety
-    print(f"   ⏱️ Extracting {extract_duration:.2f}s of footage (will be sped up)")
+    # 2. Extract segment from gameplay (add buffer for speed up)
+    speed_factor = 1.25  # 25% faster - good balance
+    extract_duration = audio_duration * 1.4  # Buffer for speed up
+    print(f"   ⏱️ Extracting {extract_duration:.2f}s of footage (will be sped up {speed_factor}x)")
     
     gameplay_segment = os.path.join(OUTPUT_DIR, f"gameplay_segment_{int(time.time())}.mp4")
     source_video = video_paths[0]
@@ -55,6 +54,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if not os.path.exists(source_video):
         raise Exception(f"Source video not found: {source_video}")
     
+    # Extract without re-encoding (fast)
     cmd_extract = [
         'ffmpeg', '-y',
         '-i', source_video,
@@ -70,51 +70,64 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 3. Process video: Crop + Scale + Speed Up + High Quality
-    print("⚡ Step 1: Cropping to 9:16, scaling to 1080x1920, and speeding up...")
-    video_ready = os.path.join(OUTPUT_DIR, f"video_ready_{int(time.time())}.mp4")
+    # 3. Step 1: Crop + Scale + Speed Up (Video ONLY)
+    print("⚡ Step 1: Cropping, scaling, and speeding up video...")
+    video_processed = os.path.join(OUTPUT_DIR, f"video_processed_{int(time.time())}.mp4")
     
-    # Speed factor: 1.3x (good balance between engaging and watchable)
-    # Adjust this value if you want faster/slower: 1.2 = 20% faster, 1.5 = 50% faster
-    speed_factor = 1.3
-    
-    cmd_process = [
+    # Video processing: crop to 9:16, scale to 1080x1920, speed up
+    cmd_video = [
         'ffmpeg', '-y',
         '-i', gameplay_segment,
         '-vf', 
         f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
         f'scale=1080:1920,'
-        f'setpts={1/speed_factor}*PTS',  # Speed up video
-        '-filter_complex', 
-        f'[0:a]atempo={speed_factor}[a]',  # Speed up audio (but we won't use it)
-        '-map', '0:v:0',
-        '-map', '[a]',
+        f'setpts={1/speed_factor}*PTS',
         '-c:v', 'libx264',
-        '-preset', 'slow',        # Max quality (vs ultrafast/veryfast)
-        '-crf', '15',             # Max quality (lower = better, 18 is transparent)
+        '-preset', 'medium',      # Good quality, stable
+        '-crf', '18',             # Excellent quality (visually lossless)
         '-profile:v', 'high',
         '-level', '4.1',
         '-pix_fmt', 'yuv420p',
-        '-c:a', 'aac',
-        '-b:a', '192k',
+        '-an',                    # No audio yet
         '-movflags', '+faststart',
-        video_ready
+        video_processed
     ]
     
     try:
-        subprocess.run(cmd_process, check=True, capture_output=True, timeout=600)
-        print(f"   ✅ Cropped, scaled, and sped up {speed_factor}x.")
+        subprocess.run(cmd_video, check=True, capture_output=True, timeout=600)
+        print(f"   ✅ Video processed (sped up {speed_factor}x, CRF 18).")
         os.unlink(gameplay_segment)
-        gameplay_segment = video_ready
+        gameplay_segment = video_processed
     except Exception as e:
-        print(f"   ⚠️ Processing failed: {e}")
-        raise Exception(f"Video processing failed: {e}")
+        print(f"   ⚠️ Video processing failed: {e}")
+        # Fallback: simpler processing
+        print("   🔄 Trying fallback with lower quality settings...")
+        cmd_video_fallback = [
+            'ffmpeg', '-y',
+            '-i', gameplay_segment,
+            '-vf', 
+            f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
+            f'scale=1080:1920,'
+            f'setpts={1/speed_factor}*PTS',
+            '-c:v', 'libx264',
+            '-preset', 'veryfast',
+            '-crf', '23',
+            '-an',
+            video_processed
+        ]
+        try:
+            subprocess.run(cmd_video_fallback, check=True, capture_output=True, timeout=600)
+            print(f"   ✅ Fallback succeeded (CRF 23, veryfast).")
+            os.unlink(gameplay_segment)
+            gameplay_segment = video_processed
+        except Exception as e2:
+            raise Exception(f"Video processing failed: {e2}")
 
     # 4. Get the actual duration after speed up
     actual_duration = get_duration(gameplay_segment)
     print(f"   ⏱️ Sped up video duration: {actual_duration:.2f}s")
 
-    # 5. Trim to match audio duration exactly (in case speed up made it longer/shorter)
+    # 5. Trim to match audio duration exactly
     if actual_duration > audio_duration:
         print(f"   ✂️ Trimming video to match audio ({audio_duration:.2f}s)...")
         video_trimmed = os.path.join(OUTPUT_DIR, f"video_trimmed_{int(time.time())}.mp4")
@@ -134,18 +147,17 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         except Exception as e:
             print(f"   ⚠️ Trim failed: {e}")
 
-    # 6. Add audio (max quality, no re-encode of video)
-    print("⚡ Step 2: Adding audio (max quality)...")
+    # 6. Add audio (high quality, no re-encode)
+    print("⚡ Step 2: Adding audio...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
-    # Use highest quality audio codec
     cmd_audio = [
         'ffmpeg', '-y',
         '-i', gameplay_segment,
         '-i', audio_path,
-        '-c:v', 'copy',        # Don't re-encode video (preserve quality)
-        '-c:a', 'aac',         # Best audio codec for compatibility
-        '-b:a', '256k',        # Highest bitrate for audio
+        '-c:v', 'copy',        # Don't re-encode video
+        '-c:a', 'aac',
+        '-b:a', '192k',
         '-shortest',
         '-movflags', '+faststart',
         final_output
@@ -153,7 +165,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     try:
         subprocess.run(cmd_audio, check=True, capture_output=True, timeout=120)
-        print(f"   ✅ Audio added (256kbps AAC).")
+        print(f"   ✅ Audio added.")
         os.unlink(gameplay_segment)
     except Exception as e:
         print(f"   ⚠️ Audio addition failed: {e}")
@@ -164,13 +176,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-i', audio_path,
             '-vf', 'scale=1080:1920',
             '-c:v', 'libx264',
-            '-preset', 'slow',
-            '-crf', '15',
-            '-profile:v', 'high',
-            '-level', '4.1',
-            '-pix_fmt', 'yuv420p',
+            '-preset', 'medium',
+            '-crf', '18',
             '-c:a', 'aac',
-            '-b:a', '256k',
+            '-b:a', '192k',
             '-shortest',
             '-movflags', '+faststart',
             final_output
@@ -194,6 +203,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"   📊 Video info:")
     print(f"      - Resolution: 1080x1920 (9:16)")
     print(f"      - Video codec: H.264 (High Profile)")
-    print(f"      - Audio codec: AAC 256kbps")
+    print(f"      - Audio codec: AAC 192kbps")
     print(f"      - Speed factor: {speed_factor}x")
+    print(f"      - Quality: CRF 18 (excellent)")
     return final_output
