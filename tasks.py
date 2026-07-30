@@ -11,6 +11,8 @@ from template_editor import overlay_text_on_template
 from video_compile import compile_video, get_duration
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
+from title_card_rendered import create_reddit_title_card
+
 # Celery setup
 app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
 
