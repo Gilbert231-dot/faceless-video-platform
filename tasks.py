@@ -72,6 +72,10 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
     # Generate Reddit title card
     from template_editor import overlay_text_on_template
     title_card_path = "title_card_rendered.png"
+
+    # After generating title card
+    print(f"🖼️ title_card_path: {title_card_path}")
+    print(f"🖼️ title_card_path exists: {os.path.exists(title_card_path) if title_card_path else 'None'}")
     
     if not subreddit:
         subreddit = topic if topic else "AITAH"
