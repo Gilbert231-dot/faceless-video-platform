@@ -92,6 +92,19 @@ class RedditStoryLoader:
             return None
         return max(files, key=os.path.getmtime)
     
+    def _get_story_id(self, story):
+        """
+        Get the story ID from a story dictionary.
+        Checks both 'story_id' and 'id' fields.
+        """
+        return story.get('story_id') or story.get('id')
+    
+    def _set_story_id(self, story, value):
+        """
+        Set the story ID using 'story_id' field.
+        """
+        story['story_id'] = value
+    
     def get_available_stories(self, subreddit=None):
         """
         Get all available stories from all subreddits or a specific one.
@@ -115,6 +128,9 @@ class RedditStoryLoader:
                     for story in stories:
                         if 'subreddit' not in story:
                             story['subreddit'] = subreddit
+                        # Ensure story has an ID
+                        if not self._get_story_id(story) and 'title' in story:
+                            self._set_story_id(story, story['title'][:30].replace(' ', '_'))
                     all_stories.extend(stories)
                     return all_stories
             
@@ -126,6 +142,8 @@ class RedditStoryLoader:
                     for story in stories:
                         if 'subreddit' not in story:
                             story['subreddit'] = subreddit
+                        if not self._get_story_id(story) and 'title' in story:
+                            self._set_story_id(story, story['title'][:30].replace(' ', '_'))
                     all_stories.extend(stories)
                     return all_stories
             
@@ -137,6 +155,8 @@ class RedditStoryLoader:
                     for story in stories:
                         if 'subreddit' not in story:
                             story['subreddit'] = subreddit
+                        if not self._get_story_id(story) and 'title' in story:
+                            self._set_story_id(story, story['title'][:30].replace(' ', '_'))
                     all_stories.extend(stories)
                     return all_stories
             
@@ -170,6 +190,8 @@ class RedditStoryLoader:
                         for story in stories:
                             if 'subreddit' not in story:
                                 story['subreddit'] = sub
+                            if not self._get_story_id(story) and 'title' in story:
+                                self._set_story_id(story, story['title'][:30].replace(' ', '_'))
                         all_stories.extend(stories)
                         print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
                         stories_loaded = True
@@ -185,6 +207,8 @@ class RedditStoryLoader:
                             for story in stories:
                                 if 'subreddit' not in story:
                                     story['subreddit'] = sub
+                                if not self._get_story_id(story) and 'title' in story:
+                                    self._set_story_id(story, story['title'][:30].replace(' ', '_'))
                             all_stories.extend(stories)
                             print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
                             stories_loaded = True
@@ -200,6 +224,8 @@ class RedditStoryLoader:
                             for story in stories:
                                 if 'subreddit' not in story:
                                     story['subreddit'] = sub
+                                if not self._get_story_id(story) and 'title' in story:
+                                    self._set_story_id(story, story['title'][:30].replace(' ', '_'))
                             all_stories.extend(stories)
                             print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
                             stories_loaded = True
@@ -224,7 +250,7 @@ class RedditStoryLoader:
         if force_real:
             self.debug_mode = False
         
-        all_stories = self.get_available_stories()
+        all_stories = self.get_available_stories(subreddit)
         
         self.debug_mode = original_debug_mode
         
@@ -232,23 +258,16 @@ class RedditStoryLoader:
             print(f"   ⚠️ No stories available!")
             return []
         
-        # Filter by subreddit if specified
-        if subreddit:
-            filtered = []
-            for story in all_stories:
-                story_sub = story.get('subreddit', '')
-                # Try to match in different ways
-                if (story_sub.lower() == subreddit.lower() or 
-                    story_sub.lower() == f"r/{subreddit.lower()}" or
-                    story_sub == subreddit):
-                    filtered.append(story)
-            all_stories = filtered
-            print(f"   📊 Filtered to {len(all_stories)} stories from r/{subreddit}")
+        # In DEBUG MODE, skip the used check entirely
+        if self.debug_mode:
+            print(f"   🔬 DEBUG MODE: Skipping used check, returning all {len(all_stories)} stories")
+            random.shuffle(all_stories)
+            return all_stories[:limit]
         
-        # Filter out used stories
+        # In PRODUCTION MODE, filter out used stories
         unused = []
         for story in all_stories:
-            story_id = story.get('id')
+            story_id = self._get_story_id(story)
             if story_id and story_id not in self.used_ids:
                 unused.append(story)
         
@@ -304,7 +323,17 @@ class RedditStoryLoader:
         all_stories = self.get_available_stories()
         total = len(all_stories)
         used = len(self.used_ids)
-        unused = total - used
+        
+        # In debug mode, all stories are "unused"
+        if self.debug_mode:
+            unused = total
+        else:
+            # Count how many have IDs in used list
+            unused = 0
+            for story in all_stories:
+                story_id = self._get_story_id(story)
+                if story_id and story_id not in self.used_ids:
+                    unused += 1
         
         subreddit_counts = {}
         has_comments_count = 0
@@ -354,3 +383,22 @@ if __name__ == "__main__":
     print(f"   Used stories: {stats['used_stories']}")
     print(f"   Unused stories: {stats['unused_stories']}")
     print(f"   Debug mode: {stats['debug_mode']}")
+    
+    # Test: get a random story
+    story = loader.get_random_story()
+    if story:
+        print(f"\n🎲 Random story:")
+        print(f"   Title: {story.get('title')}")
+        print(f"   Subreddit: {story.get('subreddit')}")
+        print(f"   Story ID: {loader._get_story_id(story)}")
+        print(f"   Story length: {len(story.get('story', ''))} chars")
+        
+        # Check if it has comment_script
+        if story.get('comment_script'):
+            print(f"   💬 Has comment script: Yes")
+        elif story.get('top_comments'):
+            print(f"   💬 Has top comments: {len(story.get('top_comments', []))}")
+        else:
+            print(f"   💬 Has comments: No")
+    else:
+        print("   ⚠️ No stories available!")
