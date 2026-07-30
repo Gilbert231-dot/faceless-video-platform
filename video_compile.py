@@ -24,8 +24,8 @@ def get_duration(media_path: str) -> float:
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None):
-    """Compile video with intro overlay, captions, fade transition, and correct aspect ratio."""
-    print("🎬 Starting video compilation (WITH FADE + CAPTIONS)...")
+    """Compile video with intro overlay, NO captions."""
+    print("🎬 Starting video compilation (NO CAPTIONS)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -68,7 +68,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 4. Crop to 9:16 (simple crop, NO SCALE)
+    # 4. Crop to 9:16
     print("⚡ Step 2: Cropping to 9:16...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
@@ -91,7 +91,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Video cropping failed: {e}")
 
-    # 5. Build final video with intro and captions
+    # 5. Build final video with intro
     print("⚡ Step 3: Building final video...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
 
@@ -120,12 +120,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         intro_video = None
         print("   ℹ️ No intro frame provided.")
 
-    # Step 3b: Combine intro + gameplay WITH FADE TRANSITION
+    # Step 3b: Combine intro + gameplay with fade
     temp_no_audio = os.path.join(OUTPUT_DIR, f"temp_no_audio_{int(time.time())}.mp4")
     
     if intro_video and os.path.exists(intro_video):
-        # Use crossfade for smooth transition (0.3 seconds)
-        # offset = intro_duration - 0.3 (so transition starts near the end of intro)
         fade_offset = intro_duration - 0.3
         if fade_offset < 0:
             fade_offset = 0
@@ -143,41 +141,16 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         ]
         try:
             subprocess.run(cmd_concat, check=True, capture_output=True, timeout=120)
-            print(f"   ✅ Video concatenated with fade transition.")
+            print(f"   ✅ Video concatenated with fade.")
         except Exception as e:
-            print(f"   ⚠️ Fade transition failed: {e}. Falling back to simple concat.")
-            # Fallback: simple concat without fade
-            concat_file = os.path.join(OUTPUT_DIR, f"concat_list_{int(time.time())}.txt")
-            with open(concat_file, 'w') as f:
-                f.write(f"file '{intro_video}'\n")
-                f.write(f"file '{gameplay_segment}'\n")
-            cmd_concat_simple = [
-                'ffmpeg', '-y',
-                '-f', 'concat',
-                '-safe', '0',
-                '-i', concat_file,
-                '-c:v', 'copy',
-                '-an',
-                temp_no_audio
-            ]
-            try:
-                subprocess.run(cmd_concat_simple, check=True, capture_output=True, timeout=120)
-                print(f"   ✅ Video concatenated (simple concat fallback).")
-                os.unlink(concat_file)
-            except Exception as e2:
-                print(f"   ⚠️ Simple concat also failed: {e2}. Using gameplay only.")
-                import shutil
-                shutil.copy(gameplay_segment, temp_no_audio)
-            finally:
-                try:
-                    os.unlink(concat_file)
-                except:
-                    pass
+            print(f"   ⚠️ Fade failed: {e}. Using simple concat.")
+            import shutil
+            shutil.copy(gameplay_segment, temp_no_audio)
     else:
         import shutil
         shutil.copy(gameplay_segment, temp_no_audio)
 
-    # Clean up intro video if it exists
+    # Clean up intro video
     if intro_video and os.path.exists(intro_video):
         try:
             os.unlink(intro_video)
@@ -190,7 +163,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         'ffmpeg', '-y',
         '-i', temp_no_audio,
         '-i', audio_path,
-        '-vf', 'scale=1080:1920',  # Scale to 1080x1920 here
+        '-vf', 'scale=1080:1920',
         '-c:v', 'libx264',
         '-preset', 'veryfast',
         '-crf', '18',
@@ -208,27 +181,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   ⚠️ Audio addition failed: {e}")
         os.rename(temp_no_audio, temp_with_audio)
 
-    # Step 3d: Burn captions (FIXED)
-    if subtitle_path and os.path.exists(subtitle_path):
-        print("⚡ Step 4: Burning captions...")
-        final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
-        cmd_burn = [
-            'ffmpeg', '-y',
-            '-i', temp_with_audio,
-            '-vf', f"subtitles={subtitle_path}:force_style='Fontsize=48, Bold=1, Alignment=10, OutlineColour=&H80000000'",
-            '-c:a', 'copy',
-            final_output
-        ]
-        try:
-            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
-            print(f"   ✅ Captions burned.")
-            os.unlink(temp_with_audio)
-        except Exception as e:
-            print(f"   ⚠️ Caption burn failed: {e}. Using video without captions.")
-            os.rename(temp_with_audio, final_output)
-    else:
-        final_output = temp_with_audio
-        print("   ℹ️ No captions to burn.")
+    # NO CAPTION BURNING - Removed!
+
+    final_output = temp_with_audio
 
     # 6. Clean up
     for path in [gameplay_segment, source_video]:
