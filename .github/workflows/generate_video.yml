@@ -121,26 +121,33 @@ jobs:
           fi
 
       # ------------------------------------------------------------
-      # RUN THE GENERATOR
+      # RUN THE GENERATOR (FIXED - using a Python script file)
       # ------------------------------------------------------------
       - name: Run the video generator
         run: |
-          if [ "${{ inputs.use_reddit_stories }}" = "true" ] && [ -d reddit_stories ]; then
-            echo "📖 Using real Reddit stories from local data..."
-            python -c "
-            from tasks import generate_video_from_reddit
-            subreddit = '${{ inputs.subreddit }}' if '${{ inputs.subreddit }}' != '' else None
-            result = generate_video_from_reddit(subreddit=subreddit)
-            print(result)
-            "
-          else
-            echo "🤖 Using AI-generated story..."
-            python -c "
-            from tasks import generate_video
-            result = generate_video(topic='${{ inputs.topic }}', use_reddit=False)
-            print(result)
-            "
-          fi
+          # Create a Python script to avoid indentation issues
+          cat > run_generator.py << 'EOF'
+          import os
+          import sys
+
+          use_reddit = ${{ inputs.use_reddit_stories }}
+          subreddit = "${{ inputs.subreddit }}" if "${{ inputs.subreddit }}" != "" else None
+          topic = "${{ inputs.topic }}"
+
+          if use_reddit and os.path.isdir("reddit_stories"):
+              print("📖 Using real Reddit stories from local data...")
+              from tasks import generate_video_from_reddit
+              result = generate_video_from_reddit(subreddit=subreddit)
+          else:
+              print("🤖 Using AI-generated story...")
+              from tasks import generate_video
+              result = generate_video(topic=topic, use_reddit=False)
+
+          print(result)
+          EOF
+
+          # Execute the script
+          python run_generator.py
 
       # ------------------------------------------------------------
       # COLLECT OUTPUT
