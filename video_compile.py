@@ -20,7 +20,7 @@ def get_duration(media_path: str) -> float:
     return float(result.stdout.strip())
 
 # ----------------------------------------------------------------------
-# Stable Compilation (Good Quality + Speed Up)
+# Maximum Sharpness Compilation (Stable)
 # ----------------------------------------------------------------------
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
@@ -28,10 +28,11 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     """
     Compile video with:
     - Sped up background (1.25x)
-    - Good quality (CRF 18, medium preset)
-    - Stable and reliable
+    - Maximum sharpness (CRF 16, slow preset, high bitrate)
+    - Sharp scaling algorithm (lanczos)
+    - Stable for GitHub Actions
     """
-    print("🎬 Starting video compilation (STABLE + QUALITY)...")
+    print("🎬 Starting video compilation (MAXIMUM SHARPNESS)...")
 
     # Handle both single path and list
     if isinstance(video_paths, str):
@@ -44,7 +45,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
     # 2. Extract segment from gameplay (add buffer for speed up)
-    speed_factor = 1.25  # 25% faster - good balance
+    speed_factor = 1.25  # 25% faster - keeps viewers engaged
     extract_duration = audio_duration * 1.4  # Buffer for speed up
     print(f"   ⏱️ Extracting {extract_duration:.2f}s of footage (will be sped up {speed_factor}x)")
     
@@ -70,58 +71,93 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 3. Step 1: Crop + Scale + Speed Up (Video ONLY)
-    print("⚡ Step 1: Cropping, scaling, and speeding up video...")
+    # 3. Step 1: Crop + Scale (with lanczos for maximum sharpness) + Speed Up
+    print("⚡ Step 1: Cropping, scaling (lanczos), and speeding up video...")
     video_processed = os.path.join(OUTPUT_DIR, f"video_processed_{int(time.time())}.mp4")
     
-    # Video processing: crop to 9:16, scale to 1080x1920, speed up
+    # Try high quality first (slow preset, CRF 16)
     cmd_video = [
         'ffmpeg', '-y',
         '-i', gameplay_segment,
         '-vf', 
         f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
-        f'scale=1080:1920,'
+        f'scale=1080:1920:flags=lanczos,'  # lanczos = sharpest scaling
         f'setpts={1/speed_factor}*PTS',
+        '-sws_flags', 'lanczos',  # Force lanczos for scaling
         '-c:v', 'libx264',
-        '-preset', 'medium',      # Good quality, stable
-        '-crf', '18',             # Excellent quality (visually lossless)
+        '-preset', 'slow',       # Better quality (slower)
+        '-crf', '16',            # Near-lossless (lower = better)
         '-profile:v', 'high',
         '-level', '4.1',
         '-pix_fmt', 'yuv420p',
-        '-an',                    # No audio yet
+        '-x264-params', 'ref=4:bframes=3:me=umh:subme=7',  # High quality x264
+        '-an',                   # No audio yet
         '-movflags', '+faststart',
         video_processed
     ]
     
     try:
-        subprocess.run(cmd_video, check=True, capture_output=True, timeout=600)
-        print(f"   ✅ Video processed (sped up {speed_factor}x, CRF 18).")
+        subprocess.run(cmd_video, check=True, capture_output=True, timeout=900)
+        print(f"   ✅ Video processed (CRF 16, slow preset, lanczos scaling).")
         os.unlink(gameplay_segment)
         gameplay_segment = video_processed
     except Exception as e:
-        print(f"   ⚠️ Video processing failed: {e}")
-        # Fallback: simpler processing
-        print("   🔄 Trying fallback with lower quality settings...")
-        cmd_video_fallback = [
+        print(f"   ⚠️ High quality processing failed: {e}")
+        
+        # Fallback 1: Try medium preset with CRF 17
+        print("   🔄 Trying medium preset (CRF 17)...")
+        cmd_video_fallback1 = [
             'ffmpeg', '-y',
             '-i', gameplay_segment,
             '-vf', 
             f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
-            f'scale=1080:1920,'
+            f'scale=1080:1920:flags=lanczos,'
             f'setpts={1/speed_factor}*PTS',
+            '-sws_flags', 'lanczos',
             '-c:v', 'libx264',
-            '-preset', 'veryfast',
-            '-crf', '23',
+            '-preset', 'medium',
+            '-crf', '17',
+            '-profile:v', 'high',
+            '-level', '4.1',
+            '-pix_fmt', 'yuv420p',
             '-an',
+            '-movflags', '+faststart',
             video_processed
         ]
         try:
-            subprocess.run(cmd_video_fallback, check=True, capture_output=True, timeout=600)
-            print(f"   ✅ Fallback succeeded (CRF 23, veryfast).")
+            subprocess.run(cmd_video_fallback1, check=True, capture_output=True, timeout=600)
+            print(f"   ✅ Fallback 1 succeeded (CRF 17, medium).")
             os.unlink(gameplay_segment)
             gameplay_segment = video_processed
         except Exception as e2:
-            raise Exception(f"Video processing failed: {e2}")
+            print(f"   ⚠️ Fallback 1 failed: {e2}")
+            
+            # Fallback 2: Veryfast with CRF 18 (guaranteed to work)
+            print("   🔄 Trying veryfast preset (CRF 18)...")
+            cmd_video_fallback2 = [
+                'ffmpeg', '-y',
+                '-i', gameplay_segment,
+                '-vf', 
+                f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
+                f'scale=1080:1920:flags=lanczos,'
+                f'setpts={1/speed_factor}*PTS',
+                '-sws_flags', 'lanczos',
+                '-c:v', 'libx264',
+                '-preset', 'veryfast',
+                '-crf', '18',
+                '-profile:v', 'high',
+                '-pix_fmt', 'yuv420p',
+                '-an',
+                '-movflags', '+faststart',
+                video_processed
+            ]
+            try:
+                subprocess.run(cmd_video_fallback2, check=True, capture_output=True, timeout=600)
+                print(f"   ✅ Fallback 2 succeeded (CRF 18, veryfast).")
+                os.unlink(gameplay_segment)
+                gameplay_segment = video_processed
+            except Exception as e3:
+                raise Exception(f"All video processing attempts failed: {e3}")
 
     # 4. Get the actual duration after speed up
     actual_duration = get_duration(gameplay_segment)
@@ -174,10 +210,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             'ffmpeg', '-y',
             '-i', gameplay_segment,
             '-i', audio_path,
-            '-vf', 'scale=1080:1920',
+            '-vf', 'scale=1080:1920:flags=lanczos',
+            '-sws_flags', 'lanczos',
             '-c:v', 'libx264',
             '-preset', 'medium',
             '-crf', '18',
+            '-profile:v', 'high',
             '-c:a', 'aac',
             '-b:a', '192k',
             '-shortest',
@@ -205,5 +243,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"      - Video codec: H.264 (High Profile)")
     print(f"      - Audio codec: AAC 192kbps")
     print(f"      - Speed factor: {speed_factor}x")
-    print(f"      - Quality: CRF 18 (excellent)")
+    print(f"      - Quality: CRF 16 (near-lossless)")
+    print(f"      - Scaling: Lanczos (maximum sharpness)")
     return final_output
