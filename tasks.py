@@ -16,7 +16,7 @@ from reddit_story_loader import RedditStoryLoader
 app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
 
 # Initialize the story loader
-STORY_DATA_PATH = "../Get_stories/reddit_stories"  # Adjust as needed
+STORY_DATA_PATH = "reddit_stories"  # Adjust as needed
 story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=DEBUG_MODE)
 
 # ===========================
