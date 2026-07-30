@@ -121,32 +121,45 @@ jobs:
           fi
 
       # ------------------------------------------------------------
-      # RUN THE GENERATOR (FIXED - using a Python script file)
+      # RUN THE GENERATOR (FIXED - proper boolean handling)
       # ------------------------------------------------------------
       - name: Run the video generator
         run: |
-          # Create a Python script to avoid indentation issues
           cat > run_generator.py << 'EOF'
           import os
           import sys
 
-          use_reddit = ${{ inputs.use_reddit_stories }}
+          # Convert GitHub Actions boolean strings to Python booleans
+          use_reddit_str = "${{ inputs.use_reddit_stories }}"
           subreddit = "${{ inputs.subreddit }}" if "${{ inputs.subreddit }}" != "" else None
           topic = "${{ inputs.topic }}"
 
+          # Handle boolean properly
+          use_reddit = use_reddit_str.lower() == "true"
+
+          print(f"🔧 Settings:")
+          print(f"   use_reddit: {use_reddit}")
+          print(f"   subreddit: {subreddit}")
+          print(f"   topic: {topic}")
+          print(f"   reddit_stories folder exists: {os.path.isdir('reddit_stories')}")
+
           if use_reddit and os.path.isdir("reddit_stories"):
-              print("📖 Using real Reddit stories from local data...")
+              print("\n📖 Using real Reddit stories from local data...")
               from tasks import generate_video_from_reddit
               result = generate_video_from_reddit(subreddit=subreddit)
           else:
-              print("🤖 Using AI-generated story...")
+              if use_reddit and not os.path.isdir("reddit_stories"):
+                  print("\n⚠️ Reddit stories requested but folder not found!")
+                  print("   Falling back to AI-generated story...")
+              else:
+                  print("\n🤖 Using AI-generated story...")
               from tasks import generate_video
               result = generate_video(topic=topic, use_reddit=False)
 
+          print("\n📊 Result:")
           print(result)
           EOF
 
-          # Execute the script
           python run_generator.py
 
       # ------------------------------------------------------------
