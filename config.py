@@ -6,6 +6,14 @@ load_dotenv()
 # --- CONFIG ---
 FAST_MODE = True  # Set to False for production quality
 
+# ===========================
+# MODE SELECTION
+# ===========================
+
+# Set to True for testing/debugging (stories won't be consumed)
+# Set to False for production (stories will be marked as used)
+DEBUG_MODE = True  # Change to False when ready to post real videos
+
 # --- API Keys ---
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 PEXELS_API_KEY = os.getenv('PEXELS_API_KEY')
