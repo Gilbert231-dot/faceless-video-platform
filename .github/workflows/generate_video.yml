@@ -59,20 +59,31 @@ jobs:
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
 
       # ------------------------------------------------------------
-      # UNZIP REDDIT STORIES DATA (if uploaded as zip)
+      # UNZIP REDDIT STORIES DATA (FIXED - handles nested structure)
       # ------------------------------------------------------------
       - name: Unzip reddit stories
         run: |
           if [ -f reddit_stories.zip ]; then
             echo "📦 Found reddit_stories.zip, unzipping..."
-            unzip -o reddit_stories.zip -d reddit_stories/
+            unzip -o reddit_stories.zip -d reddit_stories_extracted/
             rm reddit_stories.zip
+            
+            # If the zip contains a reddit_stories folder, move its contents up
+            if [ -d reddit_stories_extracted/reddit_stories ]; then
+              echo "📂 Detected nested reddit_stories folder, fixing structure..."
+              mv reddit_stories_extracted/reddit_stories/* reddit_stories_extracted/
+              rm -rf reddit_stories_extracted/reddit_stories
+            fi
+            
+            mv reddit_stories_extracted reddit_stories
             echo "✅ Unzipped reddit stories to reddit_stories/"
+            echo "--- Contents of reddit_stories ---"
             ls -la reddit_stories/
           else
             echo "ℹ️ No reddit_stories.zip found. Checking if reddit_stories folder exists..."
             if [ -d reddit_stories ]; then
               echo "✅ reddit_stories folder found!"
+              echo "--- Contents of reddit_stories ---"
               ls -la reddit_stories/
             else
               echo "⚠️ No reddit_stories data found! Will use AI-generated stories."
@@ -116,12 +127,18 @@ jobs:
           if [ -d reddit_stories ]; then
             echo "Found reddit_stories folder:"
             ls -la reddit_stories/
+            echo "--- First subreddit folder contents ---"
+            for sub in reddit_stories/*/; do
+              echo "Subreddit: $sub"
+              ls -la "$sub" | head -10
+              break
+            done
           else
             echo "No reddit_stories folder found"
           fi
 
       # ------------------------------------------------------------
-      # RUN THE GENERATOR (FIXED - proper boolean handling)
+      # RUN THE GENERATOR
       # ------------------------------------------------------------
       - name: Run the video generator
         run: |
@@ -129,12 +146,9 @@ jobs:
           import os
           import sys
 
-          # Convert GitHub Actions boolean strings to Python booleans
           use_reddit_str = "${{ inputs.use_reddit_stories }}"
           subreddit = "${{ inputs.subreddit }}" if "${{ inputs.subreddit }}" != "" else None
           topic = "${{ inputs.topic }}"
-
-          # Handle boolean properly
           use_reddit = use_reddit_str.lower() == "true"
 
           print(f"🔧 Settings:")
@@ -145,6 +159,10 @@ jobs:
 
           if use_reddit and os.path.isdir("reddit_stories"):
               print("\n📖 Using real Reddit stories from local data...")
+              # Check what's inside
+              print("   Contents of reddit_stories:")
+              for item in os.listdir("reddit_stories"):
+                  print(f"      - {item}")
               from tasks import generate_video_from_reddit
               result = generate_video_from_reddit(subreddit=subreddit)
           else:
