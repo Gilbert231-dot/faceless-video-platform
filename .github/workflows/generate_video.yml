@@ -7,9 +7,19 @@ on:
   workflow_dispatch:
     inputs:
       topic:
-        description: 'Topic for the video story'
-        required: true
+        description: 'Topic for the video story (AI generated)'
+        required: false
         default: 'wedding betrayal best friend'
+        type: string
+      use_reddit_stories:
+        description: 'Use real Reddit stories from local data'
+        required: false
+        default: true
+        type: boolean
+      subreddit:
+        description: 'Specific subreddit to use (optional, e.g., AITAH)'
+        required: false
+        default: ''
         type: string
 
 jobs:
@@ -29,7 +39,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg redis-server postgresql postgresql-contrib \
-                                  mpg123 sox lame
+                                  mpg123 sox lame unzip
 
       - name: Start Redis & PostgreSQL
         run: |
@@ -47,6 +57,27 @@ jobs:
           echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> $GITHUB_ENV
           echo "REDDIT_CLIENT_ID=${{ secrets.REDDIT_CLIENT_ID }}" >> $GITHUB_ENV
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
+
+      # ------------------------------------------------------------
+      # UNZIP REDDIT STORIES DATA (if uploaded as zip)
+      # ------------------------------------------------------------
+      - name: Unzip reddit stories
+        run: |
+          if [ -f reddit_stories.zip ]; then
+            echo "📦 Found reddit_stories.zip, unzipping..."
+            unzip -o reddit_stories.zip -d reddit_stories/
+            rm reddit_stories.zip
+            echo "✅ Unzipped reddit stories to reddit_stories/"
+            ls -la reddit_stories/
+          else
+            echo "ℹ️ No reddit_stories.zip found. Checking if reddit_stories folder exists..."
+            if [ -d reddit_stories ]; then
+              echo "✅ reddit_stories folder found!"
+              ls -la reddit_stories/
+            else
+              echo "⚠️ No reddit_stories data found! Will use AI-generated stories."
+            fi
+          fi
 
       # ------------------------------------------------------------
       # CACHING: video files (downloaded from Google Drive)
@@ -81,17 +112,35 @@ jobs:
           ls -la cached_videos/ || echo "(none yet)"
           echo "--- State file ---"
           cat clip_state.json 2>/dev/null || echo "(no state file yet)"
+          echo "--- Reddit stories ---"
+          if [ -d reddit_stories ]; then
+            echo "Found reddit_stories folder:"
+            ls -la reddit_stories/
+          else
+            echo "No reddit_stories folder found"
+          fi
 
       # ------------------------------------------------------------
       # RUN THE GENERATOR
       # ------------------------------------------------------------
       - name: Run the video generator
         run: |
-          python -c "
-          from tasks import generate_video
-          result = generate_video(topic='${{ inputs.topic }}', use_reddit=False)
-          print(result)
-          "
+          if [ "${{ inputs.use_reddit_stories }}" = "true" ] && [ -d reddit_stories ]; then
+            echo "📖 Using real Reddit stories from local data..."
+            python -c "
+            from tasks import generate_video_from_reddit
+            subreddit = '${{ inputs.subreddit }}' if '${{ inputs.subreddit }}' != '' else None
+            result = generate_video_from_reddit(subreddit=subreddit)
+            print(result)
+            "
+          else
+            echo "🤖 Using AI-generated story..."
+            python -c "
+            from tasks import generate_video
+            result = generate_video(topic='${{ inputs.topic }}', use_reddit=False)
+            print(result)
+            "
+          fi
 
       # ------------------------------------------------------------
       # COLLECT OUTPUT
@@ -100,6 +149,8 @@ jobs:
         run: |
           mkdir -p output
           mv final_*.mp4 output/ || echo "No final videos found"
+          mv output_*.mp4 output/ || echo "No output videos found"
+          echo "--- Output files ---"
           ls -la output/
 
       - name: Upload the generated videos
