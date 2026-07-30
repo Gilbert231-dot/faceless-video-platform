@@ -39,7 +39,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg redis-server postgresql postgresql-contrib \
-                                  mpg123 sox lame unzip
+                                  mpg123 sox lame unzip tree
 
       - name: Start Redis & PostgreSQL
         run: |
@@ -59,35 +59,59 @@ jobs:
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
 
       # ------------------------------------------------------------
-      # UNZIP REDDIT STORIES DATA (FIXED - handles nested structure)
+      # UNZIP REDDIT STORIES DATA (ROBUST VERSION)
       # ------------------------------------------------------------
       - name: Unzip reddit stories
         run: |
+          echo "📦 Checking for reddit_stories.zip..."
+          
           if [ -f reddit_stories.zip ]; then
-            echo "📦 Found reddit_stories.zip, unzipping..."
-            unzip -o reddit_stories.zip -d reddit_stories_extracted/
+            echo "✅ Found reddit_stories.zip"
+            echo "📂 Showing zip contents:"
+            unzip -l reddit_stories.zip | head -20
+            
+            echo "📂 Extracting..."
+            unzip -o reddit_stories.zip -d extracted/
+            
+            echo "📂 Extracted files:"
+            ls -la extracted/
+            
+            # Handle different possible structures
+            if [ -d extracted/reddit_stories ]; then
+              echo "📂 Found nested reddit_stories folder, moving contents up..."
+              # If there's a reddit_stories folder inside the extracted folder
+              if [ "$(ls -A extracted/reddit_stories)" ]; then
+                mkdir -p reddit_stories
+                cp -r extracted/reddit_stories/* reddit_stories/
+              else
+                echo "⚠️ extracted/reddit_stories is empty!"
+              fi
+            elif [ -d extracted/AITAH ] || [ -d extracted/AmItheAsshole ]; then
+              echo "📂 Found subreddit folders directly, moving..."
+              mkdir -p reddit_stories
+              # Move all subdirectories to reddit_stories
+              for dir in extracted/*/; do
+                if [ -d "$dir" ]; then
+                  cp -r "$dir" reddit_stories/
+                fi
+              done
+            else
+              echo "⚠️ Unknown structure! Keeping extracted folder as-is"
+              mv extracted reddit_stories
+            fi
+            
+            # Clean up
+            rm -rf extracted
             rm reddit_stories.zip
             
-            # If the zip contains a reddit_stories folder, move its contents up
-            if [ -d reddit_stories_extracted/reddit_stories ]; then
-              echo "📂 Detected nested reddit_stories folder, fixing structure..."
-              mv reddit_stories_extracted/reddit_stories/* reddit_stories_extracted/
-              rm -rf reddit_stories_extracted/reddit_stories
-            fi
-            
-            mv reddit_stories_extracted reddit_stories
-            echo "✅ Unzipped reddit stories to reddit_stories/"
-            echo "--- Contents of reddit_stories ---"
+            echo "✅ Final reddit_stories structure:"
             ls -la reddit_stories/
-          else
-            echo "ℹ️ No reddit_stories.zip found. Checking if reddit_stories folder exists..."
             if [ -d reddit_stories ]; then
-              echo "✅ reddit_stories folder found!"
-              echo "--- Contents of reddit_stories ---"
+              echo "📂 Subreddit folders found:"
               ls -la reddit_stories/
-            else
-              echo "⚠️ No reddit_stories data found! Will use AI-generated stories."
             fi
+          else
+            echo "ℹ️ No reddit_stories.zip found"
           fi
 
       # ------------------------------------------------------------
@@ -115,26 +139,30 @@ jobs:
             video-state-
 
       # ------------------------------------------------------------
-      # (Optional) Debug – show cached contents
+      # DEBUG - Show what we have
       # ------------------------------------------------------------
-      - name: List cached files
+      - name: Debug files
         run: |
-          echo "--- Cached videos ---"
-          ls -la cached_videos/ || echo "(none yet)"
-          echo "--- State file ---"
-          cat clip_state.json 2>/dev/null || echo "(no state file yet)"
-          echo "--- Reddit stories ---"
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Files in root ==="
+          ls -la
+          echo "=== reddit_stories folder ==="
           if [ -d reddit_stories ]; then
-            echo "Found reddit_stories folder:"
             ls -la reddit_stories/
-            echo "--- First subreddit folder contents ---"
+            echo "=== Subreddit folders ==="
             for sub in reddit_stories/*/; do
-              echo "Subreddit: $sub"
-              ls -la "$sub" | head -10
-              break
+              if [ -d "$sub" ]; then
+                echo "Subreddit: $sub"
+                ls -la "$sub" | head -5
+                # Check for narrator_script files
+                find "$sub" -name "narrator_script_*.json" | head -3
+              fi
             done
           else
-            echo "No reddit_stories folder found"
+            echo "❌ reddit_stories folder does NOT exist!"
+            echo "Creating empty reddit_stories folder as fallback..."
+            mkdir -p reddit_stories
           fi
 
       # ------------------------------------------------------------
@@ -155,18 +183,36 @@ jobs:
           print(f"   use_reddit: {use_reddit}")
           print(f"   subreddit: {subreddit}")
           print(f"   topic: {topic}")
-          print(f"   reddit_stories folder exists: {os.path.isdir('reddit_stories')}")
-
-          if use_reddit and os.path.isdir("reddit_stories"):
-              print("\n📖 Using real Reddit stories from local data...")
-              # Check what's inside
+          
+          # Check if reddit_stories exists
+          reddit_exists = os.path.isdir("reddit_stories")
+          print(f"   reddit_stories folder exists: {reddit_exists}")
+          
+          if reddit_exists:
               print("   Contents of reddit_stories:")
               for item in os.listdir("reddit_stories"):
                   print(f"      - {item}")
+              # Count total stories
+              total_stories = 0
+              for sub in os.listdir("reddit_stories"):
+                  sub_path = os.path.join("reddit_stories", sub)
+                  if os.path.isdir(sub_path):
+                      import glob
+                      files = glob.glob(os.path.join(sub_path, "narrator_script_*.json"))
+                      if files:
+                          import json
+                          with open(files[0], 'r') as f:
+                              stories = json.load(f)
+                              total_stories += len(stories)
+                              print(f"      r/{sub}: {len(stories)} stories")
+              print(f"   Total stories found: {total_stories}")
+
+          if use_reddit and reddit_exists:
+              print("\n📖 Using real Reddit stories from local data...")
               from tasks import generate_video_from_reddit
               result = generate_video_from_reddit(subreddit=subreddit)
           else:
-              if use_reddit and not os.path.isdir("reddit_stories"):
+              if use_reddit and not reddit_exists:
                   print("\n⚠️ Reddit stories requested but folder not found!")
                   print("   Falling back to AI-generated story...")
               else:
