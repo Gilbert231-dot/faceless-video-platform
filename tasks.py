@@ -7,11 +7,12 @@ from config import FAST_MODE
 from voiceover import generate_voiceover
 from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
-from template_editor import overlay_text_on_template
 from video_compile import compile_video, get_duration
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
-from title_card_rendered import create_reddit_title_card
+
+# REMOVED: from template_editor import overlay_text_on_template
+# REMOVED: from title_card_rendered import create_reddit_title_card
 
 # Celery setup
 app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
@@ -49,7 +50,7 @@ def concat_clips(clip_paths, output_path):
 # TASK: generate_single_video
 # ===========================
 def generate_single_video(title, script, part_label=None, topic=None, include_title_in_script=True, subreddit=None):
-    """Generate a single video with Reddit title card intro (NO CAPTIONS)."""
+    """Generate a single video with NO intro/title card."""
     
     if include_title_in_script:
         if part_label and part_label != "Part 1":
@@ -71,36 +72,18 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
     segment_path = get_next_segment(audio_duration)
     print(f"🎬 Using segment: {segment_path}")
 
-    # Generate Reddit title card
-    from template_editor import overlay_text_on_template
-    title_card_path = "title_card_rendered.png"
+    # ----- NO TITLE CARD GENERATION -----
+    # We're skipping the Reddit template entirely
+    title_card_path = None
+    print(f"   ℹ️ No title card - video will start with gameplay")
 
-    # After generating title card
-    print(f"🖼️ title_card_path: {title_card_path}")
-    print(f"🖼️ title_card_path exists: {os.path.exists(title_card_path) if title_card_path else 'None'}")
-    
-    if not subreddit:
-        subreddit = topic if topic else "AITAH"
-    
-    try:
-        overlay_text_on_template(
-            subreddit=subreddit,
-            title=title,
-            template_path="assets/templates/reddit_title_card.png",
-            output_path=title_card_path
-        )
-        print(f"🖼️ Title card generated: {title_card_path}")
-    except Exception as e:
-        print(f"⚠️ Title card generation failed: {e}")
-        title_card_path = None
-
-    # Compile video (NO subtitle_path)
+    # Compile video with NO intro frame
     final_video_path = compile_video(
         video_paths=[segment_path],
         audio_path=audio_path,
         script=full_script,
-        subtitle_path=None,  # <-- NO captions
-        intro_frame=title_card_path,
+        subtitle_path=None,  # No captions
+        intro_frame=title_card_path,  # This is now None
         title=title,
         part_label=part_label
     )
@@ -123,13 +106,13 @@ def generate_video(topic=None, subreddit=None, use_reddit=False):
             print(f"📝 Part 1: {len(part1_script)} words")
             if part2_script:
                 print(f"📝 Part 2: {len(part2_script)} words")
-            subreddit_name = used_subreddit  # <-- Use the actual subreddit
+            subreddit_name = used_subreddit
         else:
             part1_script = generate_story_script(topic)
             title = topic
             part_count = 1
             part2_script = None
-            subreddit_name = topic if topic else "AITAH"  # <-- Fallback
+            subreddit_name = topic if topic else "AITAH"
         
         print("🎬 GENERATING PART 1...")
         video_path_1 = generate_single_video(
@@ -138,7 +121,7 @@ def generate_video(topic=None, subreddit=None, use_reddit=False):
             part_label="Part 1" if part_count == 2 else None,
             topic=topic,
             include_title_in_script=True,
-            subreddit=subreddit_name  # <-- Pass subreddit here
+            subreddit=subreddit_name
         )
         print(f"✅ Part 1 ready: {video_path_1}")
         
@@ -151,7 +134,7 @@ def generate_video(topic=None, subreddit=None, use_reddit=False):
                 part_label="Part 2",
                 topic=topic,
                 include_title_in_script=True,
-                subreddit=subreddit_name  # <-- Same subreddit for Part 2
+                subreddit=subreddit_name
             )
             print(f"✅ Part 2 ready: {video_path_2}")
         
