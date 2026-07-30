@@ -3,7 +3,7 @@ import time
 import tempfile
 import subprocess
 from celery import Celery
-from config import FAST_MODE, DEBUG_MODE
+from config import FAST_MODE, DEBUG_MODE  # <-- Import DEBUG_MODE here
 from voiceover import generate_voiceover
 from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
@@ -16,8 +16,39 @@ from reddit_story_loader import RedditStoryLoader
 app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
 
 # Initialize the story loader
-STORY_DATA_PATH = "reddit_stories"  # Adjust as needed
+# The data path should point to where your reddit_stories folder is
+# If the folder is in the root of your repo, use "reddit_stories"
+STORY_DATA_PATH = "reddit_stories"  # <-- Change this if your data is elsewhere
 story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=DEBUG_MODE)
+
+# -------------------------------------------------------------------
+# Helper: concatenate video clips into a single MP4 (no re-encoding)
+# -------------------------------------------------------------------
+def concat_clips(clip_paths, output_path):
+    """
+    Concatenate multiple MP4 clips using FFmpeg's concat demuxer.
+    This is fast (copy‑codec) and preserves quality.
+    """
+    if len(clip_paths) == 1:
+        subprocess.run(['ffmpeg', '-y', '-i', clip_paths[0], '-c', 'copy', output_path], check=True)
+        return output_path
+
+    list_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
+    for clip in clip_paths:
+        list_file.write(f"file '{os.path.abspath(clip)}'\n")
+    list_file.close()
+
+    cmd = [
+        'ffmpeg', '-y',
+        '-f', 'concat',
+        '-safe', '0',
+        '-i', list_file.name,
+        '-c', 'copy',
+        output_path
+    ]
+    subprocess.run(cmd, check=True)
+    os.unlink(list_file.name)
+    return output_path
 
 # ===========================
 # TASK: generate_single_video
@@ -60,7 +91,6 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
     )
     
     return final_video_path
-
 
 # ===========================
 # TASK: generate_video_from_reddit
@@ -191,7 +221,6 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         traceback.print_exc()
         return {"status": "error", "detail": str(e)}
 
-
 # ===========================
 # TASK: generate_videos_batch
 # ===========================
@@ -232,7 +261,6 @@ def generate_videos_batch(subreddit=None, count=5, force_real=False):
         "debug_mode": DEBUG_MODE,
         "results": results
     }
-
 
 # ===========================
 # TASK: generate_video (Original - Keep for fallback)
