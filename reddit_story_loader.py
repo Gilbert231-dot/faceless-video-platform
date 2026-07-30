@@ -51,22 +51,23 @@ class RedditStoryLoader:
             json.dump(self.used_ids, f, indent=2)
     
     def _create_debug_copy(self):
-        """
-        Create a copy of the data for debugging/testing.
-        This prevents accidental consumption of real stories.
-        """
-        # Create a debug folder if it doesn't exist
-        debug_path = "reddit_stories_debug"
-        
-        # Only create the debug copy if it doesn't exist or if data_path has been updated
+    """Create a copy of the data for debugging/testing."""
+    debug_path = "reddit_stories_debug"
+    
+    # Only create the debug copy if source exists and debug doesn't exist
+    if os.path.exists(self.data_path):
         if not os.path.exists(debug_path):
             print(f"🔬 Creating debug copy from {self.data_path}...")
             shutil.copytree(self.data_path, debug_path)
             print(f"   ✅ Debug copy created at: {debug_path}")
         else:
             print(f"🔬 Using existing debug copy at: {debug_path}")
-        
-        return debug_path
+    else:
+        print(f"⚠️ Source data path does not exist: {self.data_path}")
+        print(f"   Creating empty debug folder as fallback...")
+        os.makedirs(debug_path, exist_ok=True)
+    
+    return debug_path
     
     def _get_active_data_path(self):
         """Return the active data path (debug or real)."""
