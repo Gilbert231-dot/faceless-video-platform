@@ -111,13 +111,7 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
 def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False):
     """
     Generate a video using real Reddit stories from your local data.
-    
-    Args:
-        subreddit: Optional specific subreddit to get stories from.
-                   If None, picks from all available subreddits.
-        mark_used: Whether to mark the story as used after generation.
-                   In debug mode, this is ignored (stories are never marked used).
-        force_real: If True, use real data even in debug mode.
+    Supports splitting long stories into Part 1 and Part 2.
     """
     try:
         # Check if we're in debug mode
@@ -153,7 +147,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         title = story.get('title', 'No Title')
         story_text = story.get('story', '')
         subreddit_name = story.get('subreddit', 'unknown')
-        story_id = story.get('id', 'unknown')
+        story_id = story.get('story_id') or story.get('id', 'unknown')
         score = story.get('score', 0)
         author = story.get('author', 'unknown')
         url = story.get('url', '')
@@ -174,13 +168,72 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 comment_script = " ".join(comment_lines)
                 print(f"   💬 Built comment script from {len(comments)} top comments")
         
-        # Combine story with comments
-        if comment_script:
-            full_narration = f"{story_text} {comment_script}"
-            print(f"   💬 Story has comment script ({len(comment_script)} chars)")
+        # --- SPLIT LOGIC: Only split if absolutely necessary ---
+        # Combine story + comments for full narration
+        full_narration = f"{story_text} {comment_script}" if comment_script else story_text
+        
+        # Max characters for ~2.5-3 minute video (approx 2500 chars)
+        MAX_CHARS_PER_VIDEO = 2800
+        
+        # Check if we need to split
+        needs_split = len(full_narration) > MAX_CHARS_PER_VIDEO
+        
+        if needs_split and comment_script:
+            # Try to keep comments in Part 1
+            # Strategy: If story alone is under the limit, keep all in one
+            if len(story_text) <= MAX_CHARS_PER_VIDEO:
+                # Story fits, but story + comments doesn't
+                # Keep as much of the story + all comments
+                truncated_story = story_text
+                # If total is still too long, truncate story slightly
+                if len(truncated_story) + len(comment_script) > MAX_CHARS_PER_VIDEO:
+                    # Find a good cut point in the story
+                    available_space = MAX_CHARS_PER_VIDEO - len(comment_script) - 50
+                    cut_point = available_space
+                    for char in ['. ', '? ', '! ']:
+                        last_pos = truncated_story[:cut_point].rfind(char)
+                        if last_pos != -1 and last_pos > cut_point * 0.6:
+                            cut_point = last_pos + len(char)
+                            break
+                    truncated_story = truncated_story[:cut_point]
+                
+                part1_script = f"{truncated_story} {comment_script}"
+                part2_script = None
+                part_count = 1
+                print(f"   📝 Story + comments fit in 1 video (truncated story slightly)")
+            else:
+                # Story itself is too long, split it
+                # Split the story at a natural break
+                split_point = MAX_CHARS_PER_VIDEO - len(comment_script) - 50
+                if split_point < 500:
+                    split_point = 500
+                
+                # Find sentence boundary
+                for char in ['. ', '? ', '! ', '\n\n']:
+                    last_pos = story_text[:split_point].rfind(char)
+                    if last_pos != -1 and last_pos > split_point * 0.6:
+                        split_point = last_pos + len(char)
+                        break
+                
+                part1_story = story_text[:split_point].strip()
+                part2_story = story_text[split_point:].strip()
+                
+                # Part 1: Story + Comments (comments at the end)
+                part1_script = f"{part1_story} {comment_script}" if comment_script else part1_story
+                
+                # Part 2: Continue the story (no comments, they're already in Part 1)
+                part2_script = f"Continuing the story... {part2_story}" if part2_story else None
+                part_count = 2 if part2_script else 1
+                
+                print(f"   📝 Story split into 2 parts (comments in Part 1)")
+                if part2_script:
+                    print(f"   📝 Part 2: {len(part2_script)} chars (continues story)")
         else:
-            full_narration = story_text
-            print(f"   📝 No comment script available, using story only")
+            # No split needed
+            part1_script = full_narration
+            part2_script = None
+            part_count = 1
+            print(f"   📝 Story fits in 1 video ({len(full_narration)} chars)")
         
         print(f"\n📖 Generating video from r/{subreddit_name}")
         print(f"   📝 Title: {title}")
@@ -188,23 +241,37 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         print(f"   🆔 Story ID: {story_id}")
         print(f"   👤 Author: {author}")
         print(f"   ⭐ Score: {score}")
+        print(f"   📊 Parts: {part_count}")
         
         if DEBUG_MODE:
             print(f"   🔬 This is a TEST video - story will NOT be consumed")
         else:
             print(f"   🚀 This is a PRODUCTION video - story will be marked as used")
         
-        # Generate the video
-        print("\n🎬 GENERATING VIDEO...")
-        video_path = generate_single_video(
+        # ----- GENERATE PART 1 -----
+        print("\n🎬 GENERATING PART 1...")
+        video_path_1 = generate_single_video(
             title=title,
-            script=full_narration,
-            part_label=None,
+            script=part1_script,
+            part_label=None,  # No "Part 1" spoken
             topic=title,
-            include_title_in_script=True,
+            include_title_in_script=True,  # Title is spoken
             subreddit=subreddit_name
         )
-        print(f"\n✅ Video ready: {video_path}")
+        print(f"✅ Part 1 ready: {video_path_1}")
+        
+        video_path_2 = None
+        if part_count == 2 and part2_script:
+            print("\n🎬 GENERATING PART 2...")
+            video_path_2 = generate_single_video(
+                title=title,
+                script=part2_script,
+                part_label="Part 2",  # "Part 2. Title" is spoken
+                topic=title,
+                include_title_in_script=True,
+                subreddit=subreddit_name
+            )
+            print(f"✅ Part 2 ready: {video_path_2}")
         
         # Mark the story as used (only in production mode)
         marked = False
@@ -215,7 +282,9 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         
         return {
             "status": "success",
-            "video_url": video_path,
+            "part_1_url": video_path_1,
+            "part_2_url": video_path_2,
+            "part_count": part_count,
             "story_id": story_id,
             "title": title,
             "subreddit": subreddit_name,
