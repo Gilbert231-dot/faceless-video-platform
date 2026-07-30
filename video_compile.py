@@ -2,6 +2,7 @@ import os
 import time
 import tempfile
 import subprocess
+import shutil
 from config import OUTPUT_DIR
 
 # ----------------------------------------------------------------------
@@ -19,7 +20,29 @@ def get_duration(media_path: str) -> float:
     return float(result.stdout.strip())
 
 # ----------------------------------------------------------------------
-# Main compilation function (No captions, maximum quality)
+# Helper: Force video to match standard format (30fps, 1080x1920, yuv420p)
+# ----------------------------------------------------------------------
+def normalize_video(input_path: str, output_path: str) -> str:
+    """Force a video to 30fps, 1080x1920, yuv420p for compatibility."""
+    cmd = [
+        'ffmpeg', '-y',
+        '-i', input_path,
+        '-vf', 'fps=30,scale=1080:1920,setsar=1,format=yuv420p',
+        '-c:v', 'libx264',
+        '-preset', 'veryfast',
+        '-crf', '18',
+        '-an',
+        output_path
+    ]
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, timeout=120)
+        return output_path
+    except Exception as e:
+        print(f"   ⚠️ Normalization failed: {e}")
+        return input_path
+
+# ----------------------------------------------------------------------
+# Main compilation function (WITH FADE TRANSITION FIXED)
 # ----------------------------------------------------------------------
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
@@ -37,7 +60,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
 
-    # 2. Determine intro duration
+    # 2. Determine intro duration based on title length
     intro_duration = 3.5
     if title:
         word_count = len(title.split())
@@ -68,7 +91,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
 
-    # 4. Crop to 9:16
+    # 4. Crop to 9:16 (but DON'T scale yet - we'll do that in normalization)
     print("⚡ Step 2: Cropping to 9:16...")
     video_cropped = os.path.join(OUTPUT_DIR, f"video_cropped_{int(time.time())}.mp4")
     
@@ -94,7 +117,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     # 5. Build final video with intro
     print("⚡ Step 3: Building final video...")
     
-    # Step 3a: Create intro video from title card
+    # Step 3a: Create intro video from title card (FORCED to 30fps, 1080x1920, yuv420p)
     intro_video = None
     if intro_frame and os.path.exists(intro_frame):
         print(f"   🖼️ Creating intro video from: {intro_frame}")
@@ -104,6 +127,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-loop', '1',
             '-i', intro_frame,
             '-t', str(intro_duration),
+            '-vf', 'fps=30,scale=1080:1920,setsar=1,format=yuv420p',
             '-c:v', 'libx264',
             '-preset', 'veryfast',
             '-crf', '18',
@@ -112,22 +136,37 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         ]
         try:
             subprocess.run(cmd_intro, check=True, capture_output=True, timeout=60)
-            print(f"   ✅ Intro video created.")
+            print(f"   ✅ Intro video created (30fps, 1080x1920, yuv420p).")
         except Exception as e:
             print(f"   ⚠️ Intro creation failed: {e}")
             intro_video = None
     else:
         print("   ℹ️ No intro frame provided.")
 
-    # Step 3b: Combine intro + gameplay (with fade if intro exists)
+    # Step 3b: NORMALIZE gameplay to match intro format BEFORE concat
+    if intro_video and os.path.exists(intro_video):
+        print("   🔄 Normalizing gameplay to match intro format...")
+        gameplay_normalized = os.path.join(OUTPUT_DIR, f"gameplay_normalized_{int(time.time())}.mp4")
+        normalized_path = normalize_video(gameplay_segment, gameplay_normalized)
+        
+        # If normalization worked, replace gameplay_segment
+        if normalized_path != gameplay_segment:
+            os.unlink(gameplay_segment)
+            gameplay_segment = normalized_path
+            print(f"   ✅ Gameplay normalized to 30fps, 1080x1920, yuv420p.")
+        else:
+            print(f"   ⚠️ Using original gameplay (normalization failed).")
+    
+    # Step 3c: Combine intro + gameplay with CROSSFADE (NOW MATCHING FORMATS)
     temp_no_audio = os.path.join(OUTPUT_DIR, f"temp_no_audio_{int(time.time())}.mp4")
     
     if intro_video and os.path.exists(intro_video):
-        # Use crossfade for smooth transition
+        # Calculate fade offset (fade starts 0.3s before intro ends)
         fade_offset = intro_duration - 0.3
         if fade_offset < 0:
             fade_offset = 0
         
+        print(f"   🎬 Applying crossfade (duration: 0.3s, offset: {fade_offset:.2f}s)...")
         cmd_concat = [
             'ffmpeg', '-y',
             '-i', intro_video,
@@ -136,16 +175,17 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-c:v', 'libx264',
             '-preset', 'veryfast',
             '-crf', '18',
+            '-pix_fmt', 'yuv420p',
             '-an',
             temp_no_audio
         ]
         try:
             subprocess.run(cmd_concat, check=True, capture_output=True, timeout=120)
-            print(f"   ✅ Video concatenated with fade transition.")
+            print(f"   ✅ Video concatenated with SMOOTH FADE transition.")
             # Clean up intro video
             os.unlink(intro_video)
         except Exception as e:
-            print(f"   ⚠️ Fade failed: {e}. Using simple concat.")
+            print(f"   ⚠️ Fade failed: {e}. Using simple concat fallback...")
             # Fallback: simple concat
             concat_file = os.path.join(OUTPUT_DIR, f"concat_list_{int(time.time())}.txt")
             with open(concat_file, 'w') as f:
@@ -162,20 +202,19 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             ]
             try:
                 subprocess.run(cmd_concat_simple, check=True, capture_output=True, timeout=120)
-                print(f"   ✅ Video concatenated (simple concat).")
+                print(f"   ✅ Video concatenated (simple concat fallback).")
                 os.unlink(concat_file)
                 os.unlink(intro_video)
             except Exception as e2:
                 print(f"   ⚠️ Concat failed: {e2}. Using gameplay only.")
-                import shutil
                 shutil.copy(gameplay_segment, temp_no_audio)
     else:
         # No intro: just copy gameplay
-        import shutil
+        print("   ℹ️ No intro - using gameplay only.")
         shutil.copy(gameplay_segment, temp_no_audio)
 
-    # Step 3c: Add audio AND scale to 1080x1920
-    print("⚡ Step 4: Adding audio and scaling to 1080x1920...")
+    # Step 3d: Add audio AND ensure final scaling to 1080x1920
+    print("⚡ Step 4: Adding audio and final scaling to 1080x1920...")
     final_output = os.path.join(OUTPUT_DIR, f"output_{int(time.time())}.mp4")
     
     cmd_audio = [
@@ -201,14 +240,19 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         os.rename(temp_no_audio, final_output)
 
     # 6. Clean up
-    for path in [gameplay_segment, source_video]:
+    cleanup_paths = [gameplay_segment, source_video]
+    for path in cleanup_paths:
         try:
-            os.unlink(path)
+            if os.path.exists(path):
+                os.unlink(path)
         except:
             pass
+    
+    # Also clean up any remaining temp files
     for path in video_paths + [audio_path]:
         try:
-            os.unlink(path)
+            if os.path.exists(path):
+                os.unlink(path)
         except:
             pass
 
