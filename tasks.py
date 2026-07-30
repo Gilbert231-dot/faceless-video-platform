@@ -47,9 +47,8 @@ def concat_clips(clip_paths, output_path):
 # TASK: generate_single_video
 # ===========================
 def generate_single_video(title, script, part_label=None, topic=None, include_title_in_script=True, subreddit=None):
-    """Generate a single video with Reddit title card intro."""
+    """Generate a single video with Reddit title card intro (NO CAPTIONS)."""
     
-    # Build the spoken script
     if include_title_in_script:
         if part_label and part_label != "Part 1":
             full_script = f"{title} {part_label}. {script}"
@@ -59,8 +58,8 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
     else:
         full_script = script
 
-    # Generate voiceover
-    audio_path, subtitle_path = generate_voiceover(full_script)
+    # Generate voiceover (audio only, NO subtitle_path needed)
+    audio_path, _ = generate_voiceover(full_script)  # Ignore subtitle_path
     print(f"🎙️ Voiceover saved to: {audio_path}")
 
     # Get audio duration
@@ -70,11 +69,10 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
     segment_path = get_next_segment(audio_duration)
     print(f"🎬 Using segment: {segment_path}")
 
-    # --- Generate Reddit title card ---
+    # Generate Reddit title card
     from template_editor import overlay_text_on_template
     title_card_path = "title_card_rendered.png"
     
-    # Use subreddit if provided, otherwise use topic or default
     if not subreddit:
         subreddit = topic if topic else "AITAH"
     
@@ -90,13 +88,13 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
         print(f"⚠️ Title card generation failed: {e}")
         title_card_path = None
 
-    # Compile video with title card as intro frame
+    # Compile video (NO subtitle_path)
     final_video_path = compile_video(
         video_paths=[segment_path],
         audio_path=audio_path,
         script=full_script,
-        subtitle_path=subtitle_path,
-        intro_frame=title_card_path,  # <-- Title card as intro
+        subtitle_path=None,  # <-- NO captions
+        intro_frame=title_card_path,
         title=title,
         part_label=part_label
     )
