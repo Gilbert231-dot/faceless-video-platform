@@ -216,7 +216,7 @@ class RedditStoryLoader:
         Get stories that haven't been used yet.
         
         Args:
-            subreddit: Optional specific subreddit
+            subreddit: Optional specific subreddit to filter by
             limit: Max number of stories to return
             force_real: If True, use real data even in debug mode
         """
@@ -224,7 +224,7 @@ class RedditStoryLoader:
         if force_real:
             self.debug_mode = False
         
-        all_stories = self.get_available_stories(subreddit)
+        all_stories = self.get_available_stories()
         
         self.debug_mode = original_debug_mode
         
@@ -232,6 +232,20 @@ class RedditStoryLoader:
             print(f"   ⚠️ No stories available!")
             return []
         
+        # Filter by subreddit if specified
+        if subreddit:
+            filtered = []
+            for story in all_stories:
+                story_sub = story.get('subreddit', '')
+                # Try to match in different ways
+                if (story_sub.lower() == subreddit.lower() or 
+                    story_sub.lower() == f"r/{subreddit.lower()}" or
+                    story_sub == subreddit):
+                    filtered.append(story)
+            all_stories = filtered
+            print(f"   📊 Filtered to {len(all_stories)} stories from r/{subreddit}")
+        
+        # Filter out used stories
         unused = []
         for story in all_stories:
             story_id = story.get('id')
