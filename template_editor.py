@@ -44,21 +44,21 @@ def overlay_text_on_template(
     subreddit_y = 170
     title_x = width // 2
     title_y = 250
-    title_max_width = width - 200  # 100px padding each side
+    title_max_width = width - 200
     
-    # ---- CRITICAL FIX: ERASE PLACEHOLDER TEXT ----
-    # Erase the "{Subreddit}:" placeholder with a white rectangle
+    # ---- CRITICAL FIX: ERASE THE ENTIRE TEXT AREAS ----
+    # Erase the ENTIRE top-left area (subreddit + username)
     draw.rectangle(
-        [subreddit_x - 10, subreddit_y - 10, subreddit_x + 600, subreddit_y + 50],
-        fill=(248, 248, 248)  # Match card background color
+        [50, 100, 600, 220],
+        fill=(248, 248, 248)
     )
     
-    # Erase the "Story_title" placeholder
+    # Erase the ENTIRE center area (title)
     draw.rectangle(
-        [title_x - 400, title_y - 30, title_x + 400, title_y + 100],
-        fill=(248, 248, 248)  # Match card background color
+        [200, 200, width - 200, 380],
+        fill=(248, 248, 248)
     )
-    # ------------------------------------------------
+    # -------------------------------------------------
     
     # 5. Draw subreddit
     draw.text((subreddit_x, subreddit_y), f"r/{subreddit}", fill=(16, 16, 16), font=font_bold)
