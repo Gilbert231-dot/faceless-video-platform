@@ -53,19 +53,32 @@ def concat_clips(clip_paths, output_path):
 # ===========================
 # TASK: generate_single_video
 # ===========================
+
 def generate_single_video(title, script, part_label=None, topic=None, include_title_in_script=True, subreddit=None):
-    """Generate a single video with NO intro/title card."""
+    """
+    Generate a single video with proper Part 1/Part 2 voiceover handling.
     
-    if include_title_in_script:
-        if part_label and part_label != "Part 1":
-            full_script = f"{title} {part_label}. {script}"
-        else:
-            full_script = f"{title}. {script}"
+    Part 1: Narrator says "Title" (no "Part 1")
+    Part 2: Narrator says "Part 2. Title" (reminds viewers)
+    """
+    
+    # Build the script with proper Part handling
+    if part_label == "Part 2":
+        # Part 2: Say "Part 2. Title" at the beginning
+        full_script = f"{part_label}. {title}. {script}"
+        print(f"   📝 Part 2 script: '{part_label}. {title}'")
+    elif part_label == "Part 1":
+        # Part 1: Just the title (no "Part 1")
+        full_script = f"{title}. {script}"
+        print(f"   📝 Part 1 script: '{title}' (no 'Part 1' spoken)")
+    elif include_title_in_script:
+        # No part label: Just the title
+        full_script = f"{title}. {script}"
         print(f"   📝 Prepended title to script: '{title}'")
     else:
         full_script = script
 
-    # Generate voiceover
+    # Generate voiceover (audio only, NO subtitle_path needed)
     audio_path, _ = generate_voiceover(full_script)
     print(f"🎙️ Voiceover saved to: {audio_path}")
 
@@ -91,7 +104,6 @@ def generate_single_video(title, script, part_label=None, topic=None, include_ti
     )
     
     return final_video_path
-
 # ===========================
 # TASK: generate_video_from_reddit
 # ===========================
