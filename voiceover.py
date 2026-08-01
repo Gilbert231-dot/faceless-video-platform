@@ -1,43 +1,48 @@
 import os
-import json
 import tempfile
-import asyncio
-import edge_tts
-import whisper
+from typing import Tuple, Optional
+from elevenlabs import generate, save
 
-def generate_voiceover(script):
-    """Generate voiceover using Edge TTS and transcribe with Whisper."""
-    voice = "en-US-JennyNeural"
-    audio_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
-    subtitle_file = tempfile.NamedTemporaryFile(delete=False, suffix='.json')
+# ElevenLabs API Key (set this in your environment or .env file)
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+
+if not ELEVENLABS_API_KEY:
+    raise ValueError("ELEVENLABS_API_KEY not set in environment variables!")
+
+# Voice IDs (Brian for male, Sarah for female)
+MALE_VOICE_ID = "nPczCjzI2devNBz1zQrb"      # Brian
+FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"    # Sarah
+DEFAULT_VOICE_ID = MALE_VOICE_ID
+
+def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str, Optional[str]]:
+    """
+    Generate voiceover using ElevenLabs.
     
-    print("🔊 Generating voiceover with Edge TTS (female)...")
+    Args:
+        script: Text to convert to speech
+        voice_id: ElevenLabs voice ID (if None, uses male voice)
     
-    async def generate():
-        communicate = edge_tts.Communicate(script, voice, rate="-5%")
-        await communicate.save(audio_file.name)
+    Returns:
+        audio_path: Path to the generated MP3
+        subtitle_path: None
+    """
+    if voice_id is None:
+        voice_id = DEFAULT_VOICE_ID
     
-    asyncio.run(generate())
-    print(f"   ✅ Voiceover saved: {audio_file.name}")
-    
-    print("🧠 Transcribing with Whisper...")
     try:
-        model = whisper.load_model("tiny")
-        result = model.transcribe(audio_file.name, word_timestamps=True)
-        words = []
-        for segment in result['segments']:
-            for word in segment['words']:
-                words.append({
-                    'text': word['word'].strip(),
-                    'start': word['start'],
-                    'end': word['end']
-                })
-        with open(subtitle_file.name, 'w') as f:
-            json.dump(words, f)
-        print(f"   ✅ Subtitle file saved: {subtitle_file.name}")
-        print(f"   📝 Found {len(words)} words with timestamps")
+        # Generate audio
+        audio = generate(
+            text=script,
+            voice=voice_id,
+            model="eleven_flash_v2",
+            api_key=ELEVENLABS_API_KEY
+        )
+        
+        # Save to temp file
+        audio_path = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
+        save(audio, audio_path)
+        
+        return audio_path, None
+        
     except Exception as e:
-        print(f"   ⚠️ Whisper failed: {e}. Using fallback.")
-        subtitle_file = None
-    
-    return audio_file.name, subtitle_file.name if subtitle_file else None
+        raise Exception(f"ElevenLabs voiceover failed: {e}")
