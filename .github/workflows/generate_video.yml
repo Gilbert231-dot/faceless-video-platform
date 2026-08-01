@@ -58,6 +58,7 @@ jobs:
           echo "REDDIT_CLIENT_ID=${{ secrets.REDDIT_CLIENT_ID }}" >> $GITHUB_ENV
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
           echo "ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }}" >> $GITHUB_ENV
+          echo "FAL_KEY=${{ secrets.FAL_KEY }}" >> $GITHUB_ENV
 
       # ------------------------------------------------------------
       # UNZIP REDDIT STORIES DATA (ROBUST VERSION)
