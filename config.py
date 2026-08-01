@@ -14,6 +14,14 @@ FAST_MODE = True  # Set to False for production quality
 # Set to False for production (stories will be marked as used)
 DEBUG_MODE = True  # Change to False when ready to post real videos
 
+# ===========================
+# CAPTIONS SETTINGS
+# ===========================
+
+# Set to True to add captions to videos (uses fal.ai API)
+# Set to False to skip captions (saves money)
+USE_CAPTIONS = True  # Change to False if you want to save credits
+
 # --- API Keys ---
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 PEXELS_API_KEY = os.getenv('PEXELS_API_KEY')
