@@ -14,5 +14,5 @@ uvicorn
 pillow
 numpy
 videocaptioner
-elevenlabs
+elevenlabs>=1.0.0
 fal-client
