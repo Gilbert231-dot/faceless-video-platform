@@ -152,6 +152,32 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         author = story.get('author', 'unknown')
         url = story.get('url', '')
         
+        # --- GENDER DETECTION FOR VOICE SELECTION ---
+        # Detect gender from username, subreddit, and story content
+        detected_gender = gender_detector.detect_gender(
+            username=author,
+            subreddit=subreddit_name,
+            story_text=story_text
+        )
+        
+        # Select the appropriate voice ID
+        selected_voice = gender_detector.get_voice_by_gender(
+            gender=detected_gender,
+            female_voice_id=FEMALE_VOICE_ID,  # Sarah
+            male_voice_id=MALE_VOICE_ID       # Brian
+        )
+        
+        # Voice display name for logging
+        voice_display = "Sarah (Female)" if detected_gender == 'female' else "Brian (Male)"
+        if detected_gender is None:
+            voice_display = "Brian (Male - Default)"
+        
+        print(f"\n🎤 VOICE SELECTION:")
+        print(f"   👤 Author: {author}")
+        print(f"   📂 Subreddit: {subreddit_name}")
+        print(f"   🎯 Detected gender: {detected_gender if detected_gender else 'Unknown (using default)'}")
+        print(f"   🎙️ Selected voice: {voice_display}")
+        
         # Check for comment script
         comment_script = story.get('comment_script', '')
         
@@ -242,6 +268,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         print(f"   👤 Author: {author}")
         print(f"   ⭐ Score: {score}")
         print(f"   📊 Parts: {part_count}")
+        print(f"   🎙️ Voice: {voice_display}")
         
         if DEBUG_MODE:
             print(f"   🔬 This is a TEST video - story will NOT be consumed")
@@ -256,7 +283,8 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             part_label=None,  # No "Part 1" spoken
             topic=title,
             include_title_in_script=True,  # Title is spoken
-            subreddit=subreddit_name
+            subreddit=subreddit_name,
+            voice_id=selected_voice  # <-- PASS THE VOICE ID HERE
         )
         print(f"✅ Part 1 ready: {video_path_1}")
         
@@ -269,7 +297,8 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 part_label="Part 2",  # "Part 2. Title" is spoken
                 topic=title,
                 include_title_in_script=True,
-                subreddit=subreddit_name
+                subreddit=subreddit_name,
+                voice_id=selected_voice  # <-- PASS THE VOICE ID HERE TOO
             )
             print(f"✅ Part 2 ready: {video_path_2}")
         
@@ -293,7 +322,9 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             "has_comments": bool(comment_script),
             "comment_count": len(story.get('top_comments', [])),
             "debug_mode": DEBUG_MODE,
-            "marked_used": marked
+            "marked_used": marked,
+            "detected_gender": detected_gender,
+            "voice_used": selected_voice
         }
         
     except Exception as e:
