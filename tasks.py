@@ -11,6 +11,8 @@ from video_compile import compile_video, get_duration
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
 from reddit_story_loader import RedditStoryLoader
+from caption_utils import add_subtitles_to_video
+
 
 # Celery setup
 app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localhost:6379/0')
