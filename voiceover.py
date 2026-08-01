@@ -20,8 +20,8 @@ if not ELEVENLABS_API_KEY:
     raise ValueError("ELEVENLABS_API_KEY not set in environment variables!")
 
 # Voice IDs
-MALE_VOICE_ID = "nPczCjzI2devNBz1zQrb"      # Brian
-FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"    # Sarah
+MALE_VOICE_ID = "bfGb7JTLUnZebZRiFYyq"      # Adam - Distinct, Deep and Engaging
+FEMALE_VOICE_ID = "S9NKLs1GeSTKzXd9D0Lf"    # Haley Maven - Social Media Bestie
 DEFAULT_VOICE_ID = MALE_VOICE_ID
 
 def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str, Optional[str]]:
