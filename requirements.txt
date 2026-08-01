@@ -15,3 +15,4 @@ pillow
 numpy
 videocaptioner
 elevenlabs
+fal-client
