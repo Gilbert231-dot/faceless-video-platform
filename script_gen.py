@@ -6,6 +6,42 @@ openai_client = OpenAI(
     base_url="https://api.groq.com/openai/v1"
 )
 
+# Add to script_gen.py
+SLANG_MAP = {
+    # Reddit-specific
+    "AITA": "Am I the jerk",
+    "AITAH": "Am I the jerk",
+    "NTA": "Not the jerk",
+    "YTA": "You're the jerk",
+    "ESH": "Everyone sucks here",
+    "NAH": "No jerks here",
+    
+    # Common internet slang
+    "IMO": "In my opinion",
+    "IMHO": "In my humble opinion",
+    "TBH": "To be honest",
+    "IDK": "I don't know",
+    "LOL": "Laughing out loud",
+    "OMG": "Oh my god",
+    "WTF": "What the heck",
+    
+    # Age/gender
+    "F": "female",       # e.g., "19F" → "19 year old female"
+    "M": "male",
+}
+
+def normalize_slang(text):
+    """Replace internet slang and acronyms with full phrases."""
+    for slang, full in SLANG_MAP.items():
+        # Handle standalone acronyms (with word boundaries)
+        import re
+        text = re.sub(rf'\b{slang}\b', full, text, flags=re.IGNORECASE)
+    
+    # Handle age+gender format: "19F" → "19 year old female"
+    text = re.sub(r'(\d+)(F|M)\b', r'\1 year old \2\ale', text, flags=re.IGNORECASE)
+    
+    return text
+
 def generate_story_script(topic, story_type="relationship"):
     """Generate a dramatic first-person story using Groq."""
     system_prompt = """You are a viral storyteller. Write a dramatic first-person story about betrayal, friendship, and a wedding or relationship.
