@@ -20,7 +20,7 @@ DEBUG_MODE = True  # Change to False when ready to post real videos
 
 # Set to True to add captions to videos (uses fal.ai API)
 # Set to False to skip captions (saves money)
-USE_CAPTIONS = True  # Change to False if you want to save credits
+USE_CAPTIONS = False  # Change to False if you want to save credits
 
 # --- API Keys ---
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
