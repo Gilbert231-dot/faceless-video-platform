@@ -141,3 +141,35 @@ The goal is to make the story feel fresh, personal, and engaging."""
         'part_label': None,
         'part2_script': None
     }
+
+def generate_hook(story_text, title, subreddit=None):
+    """
+    Generate a viral hook for a Reddit story.
+    Uses Groq to create a curiosity-gap hook.
+    """
+    prompt = f"""
+    You are a viral TikTok hook writer. Create ONE scroll-stopping hook for this Reddit story.
+    
+    Rules:
+    - MAX 15 words
+    - No greetings or introductions
+    - Create a curiosity gap (make people want to know what happens)
+    - Use conversational language
+    - Don't spoil the ending
+    
+    Story Title: {title}
+    Story Text: {story_text[:500]}...
+    Subreddit: {subreddit or 'unknown'}
+    
+    Hook:"""
+    
+    response = openai_client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=30,
+        temperature=0.9
+    )
+    
+    hook = response.choices[0].message.content.strip()
+    return hook
+
