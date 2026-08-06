@@ -1,0 +1,43 @@
+name: Post to YouTube
+
+on:
+  push:
+    paths:
+      - "videos/ready/*.mp4"
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install google-api-python-client google-auth-oauthlib
+
+      - name: Upload videos to YouTube
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          for video in videos/ready/*.mp4; do
+            if [ -f "$video" ]; then
+              echo "📤 Uploading: $video"
+              title=$(basename "$video" .mp4)
+              python -c "
+              from youtube_uploader import upload_to_youtube
+              upload_to_youtube('$video', '$title', 'Reddit story narrated with premium voice.', privacy_status='public')
+              "
+              mkdir -p videos/done
+              mv "$video" videos/done/
+            fi
+          done
