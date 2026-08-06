@@ -8,3 +8,4 @@ www.youtube.com_cookies.txt
 venv/
 __pycache__/
 cached_videos/
+.env
