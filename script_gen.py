@@ -12,15 +12,15 @@ openai_client = OpenAI(
 # ===========================
 
 SLANG_MAP = {
-    # Reddit-specific
     "AITA": "Am I the jerk",
     "AITAH": "Am I the jerk",
     "NTA": "Not the jerk",
     "YTA": "You're the jerk",
     "ESH": "Everyone sucks here",
     "NAH": "No jerks here",
-    
-    # Common internet slang
+    "TIFU": "Today I messed up",
+    "OP": "Original poster",
+    "TLDR": "Too long didn't read",
     "IMO": "In my opinion",
     "IMHO": "In my humble opinion",
     "TBH": "To be honest",
@@ -28,8 +28,6 @@ SLANG_MAP = {
     "LOL": "Laughing out loud",
     "OMG": "Oh my god",
     "WTF": "What the heck",
-    
-    # Age/gender
     "F": "female",
     "M": "male",
 }
@@ -39,9 +37,7 @@ def normalize_slang(text):
     for slang, full in SLANG_MAP.items():
         text = re.sub(rf'\b{slang}\b', full, text, flags=re.IGNORECASE)
     
-    # Handle age+gender format: "19F" → "19 year old female"
     text = re.sub(r'(\d+)(F|M)\b', r'\1 year old \2\ale', text, flags=re.IGNORECASE)
-    
     return text
 
 # ===========================
@@ -49,17 +45,14 @@ def normalize_slang(text):
 # ===========================
 
 def generate_hook(story_text, title, subreddit=None):
-    """
-    Generate a viral hook for a Reddit story.
-    Uses Groq to create a curiosity-gap hook.
-    """
+    """Generate a viral hook for a Reddit story."""
     prompt = f"""
     You are a viral TikTok hook writer. Create ONE scroll-stopping hook for this Reddit story.
     
     Rules:
     - MAX 15 words
     - No greetings or introductions
-    - Create a curiosity gap (make people want to know what happens)
+    - Create a curiosity gap
     - Use conversational language
     - Don't spoil the ending
     
@@ -80,14 +73,11 @@ def generate_hook(story_text, title, subreddit=None):
     return hook
 
 # ===========================
-# GEN Z "BESTIE" STYLE PROMPS
+# GEN Z "BESTIE" STYLE
 # ===========================
 
 def get_gen_z_style(include_hook=True):
-    """
-    Returns the Gen Z "bestie" style instructions for the AI.
-    This creates the fast-paced, relatable, "I'm better than you" vibe.
-    """
+    """Returns Gen Z "bestie" style instructions."""
     base_style = """
     NARRATION STYLE: Gen Z Bestie Mode
     
@@ -95,32 +85,22 @@ def get_gen_z_style(include_hook=True):
     - A confident friend telling tea to their bestie
     - Like you're better than the people in the story
     - Fast-paced, conversational, with an attitude
-    - Like you're in on the joke and the viewer isn't
     - Slightly condescending but in a cute way
     
     SPECIFIC TRAITS:
-    - Use Gen Z slang: "bruh", "bestie", "tea", "spill", "the audacity", "in this economy?"
-    - Drop unnecessary words (e.g., "Gonna" instead of "Going to")
+    - Use Gen Z slang: "bruh", "bestie", "tea", "spill", "the audacity"
+    - Drop unnecessary words
     - Add vocal fillers: "like", "literally", "honestly"
     - Speak in short, punchy sentences
-    - Add commentary in parentheses: "(I know, right?)", "(literally insane)"
-    - React to the story as you tell it
-    - Use rhetorical questions: "What was she thinking?", "Like, seriously?"
-    - Maintain a "I'm better than them" energy
-    - Sound like you're side-eyeing the characters
-    
-    EXAMPLES:
-    - "So, like, my bestie invited me to her wedding. Cute, right? Wrong. Dead wrong."
-    - "Bruh. The audacity. She literally thought she could get away with it."
-    - "And then he said—wait for it—'I'm not the father.' The TEA."
-    - "Honestly, I'm not even mad. I'm just... disappointed. In this economy? Iconic."
+    - Add commentary: "(I know, right?)", "(literally insane)"
+    - Use rhetorical questions
+    - Maintain "I'm better than them" energy
     
     RULES:
     - Keep the core story accurate
     - Don't over-exaggerate
-    - Maintain first-person ("I", "my", "me")
+    - Maintain first-person
     - Keep it engaging and fast-paced
-    - Use the hook as the very first sentence
     """
     
     if include_hook:
@@ -131,68 +111,24 @@ def get_gen_z_style(include_hook=True):
     return base_style
 
 # ===========================
-# STORY SCRIPT GENERATION (AI-GENERATED STORIES)
+# REDDIT STORY ADAPTATION (FIXED)
 # ===========================
 
-def generate_story_script(topic, story_type="relationship"):
-    """Generate a dramatic first-person story using Groq with Gen Z style."""
-    
-    gen_z_style = get_gen_z_style(include_hook=True)
-    
-    system_prompt = f"""You are a viral storyteller. Write a dramatic first-person story about betrayal, friendship, and a wedding or relationship.
-
-{gen_z_style}
-
-STRUCTURE (8 phases):
-1. HOOK: A shocking discovery (e.g., "Before my wedding, I heard them through the wall.")
-2. IMMEDIATE BETRAYAL: Discover someone close is plotting against you.
-3. PERSONAL BACKSTORY: How you met the betrayer (5+ years of history).
-4. ROMANTIC CONTEXT: The relationship that's being threatened.
-5. RETROSPECTIVE WARNING SIGNS: Behaviors that seemed innocent but now look suspicious.
-6. ESCALATION: The conspiracy expands (new people involved, bigger plan).
-7. EVIDENCE COLLECTION: You start recording or gathering proof.
-8. DELAYED REVENGE/CLIFFHANGER: You don't act immediately—you wait and plan.
-
-The story should feel like someone is telling you something deeply personal that happened to them.
-Keep the script 400-600 words (approximately 3-5 minutes of narration)."""
-    
-    response = openai_client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Write a dramatic story about: {topic}"}
-        ],
-        max_tokens=700,
-        temperature=0.85
-    )
-    return response.choices[0].message.content
-
-
-# ===========================
-# REDDIT STORY ADAPTATION (With Slang + Hook + Gen Z Style)
-# ===========================
-
-def adapt_reddit_story(title, story, max_words=400, split_threshold=600, use_hook=True):
+def adapt_reddit_story(title, story, max_words=2000, split_threshold=800, use_hook=True):
     """
     Rewrite a Reddit story and return script + part labels.
-    Now includes slang normalization, hook generation, and Gen Z style.
+    GUARANTEES the script is complete.
     
     Args:
-        title: Original Reddit title
-        story: Original Reddit story text
-        max_words: Maximum words for the script
-        split_threshold: Words threshold to split into parts
-        use_hook: If True, generate a hook and replace the title in narration
-    
-    Returns:
-        dict with script, part_count, part_label, part2_script
+        max_words: Maximum words for a single part (increased to 2000)
+        split_threshold: Words threshold to split into 2 parts (decreased to 800, so more stories get a Part 2)
     """
     
-    # Step 1: Normalize slang in the story
+    # Normalize slang
     story = normalize_slang(story)
     title = normalize_slang(title)
     
-    # Step 2: Generate a hook (optional)
+    # Generate hook
     hook = None
     if use_hook:
         try:
@@ -200,18 +136,15 @@ def adapt_reddit_story(title, story, max_words=400, split_threshold=600, use_hoo
             print(f"   🪝 Generated hook: {hook}")
         except Exception as e:
             print(f"   ⚠️ Hook generation failed: {e}")
-            hook = title  # Fallback to original title
+            hook = title
     
-    # Step 3: Use the hook as the narration title if available
     narration_title = hook if hook else title
-    
-    # Step 4: Get Gen Z style
     gen_z_style = get_gen_z_style(include_hook=False)
     
-    # Step 5: Generate the script with Gen Z style
     word_count = len(story.split())
     split_required = word_count > split_threshold
 
+    # --- INCREASED MAX TOKENS ---
     if split_required:
         system_prompt = f"""You are a viral storyteller. The following Reddit story is long ({word_count} words). Split it into TWO parts.
 
@@ -222,13 +155,19 @@ IMPORTANT RULES:
 - Part 2 should resolve the story.
 - Both parts should be approximately {max_words // 2} words each.
 - Write in first-person ("I", "my", "me").
-- DO NOT include the title in the narration—it will be spoken separately.
-- DO NOT include "Part 1", "Part 2", or any part labels in the spoken script.
-- The hook should be the first sentence of Part 1 if it exists.
+- **COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.**
+- **END WITH A FINAL SENTENCE THAT CLOSES THE STORY.**
+- **If the story doesn't have a natural ending, create a satisfying conclusion.**
+- **DO NOT include "Part 1", "Part 2", or any part labels in the spoken script.**
+- **The hook should be the first sentence of Part 1 if it exists.**
+- **In Part 2, start with a smooth transition like "So here's what happened next..." or "Continuing the story..."**
 
 OUTPUT FORMAT:
 Part 1: [script text for part 1]
 Part 2: [script text for part 2]"""
+        
+        max_tokens_value = 2500  # Increased from 1800
+        
     else:
         system_prompt = f"""You are a viral storyteller. Rewrite the following Reddit story as a dramatic first-person narration.
 
@@ -236,43 +175,68 @@ Part 2: [script text for part 2]"""
 
 IMPORTANT RULES:
 - Keep the core story the same, but rewrite it in your own words.
-- If the story is unfinished, complete it with a satisfying ending.
+- **If the story is unfinished, COMPLETE IT with a satisfying ending.**
 - Write in first-person ("I", "my", "me").
 - The hook should be the first sentence of the narration if available.
 - Keep it under {max_words} words.
-- DO NOT include the title in the narration—it will be spoken separately.
-- DO NOT include "Part 1" or any part labels in the spoken script.
+- **COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.**
+- **END WITH A FINAL SENTENCE THAT CLOSES THE STORY.**
+- **If the story doesn't have a natural ending, create a satisfying conclusion.**
+- **DO NOT include the title in the narration—it will be spoken separately.**
+- **DO NOT include "Part 1" or any part labels in the spoken script.**
 
 The goal is to make the story feel fresh, personal, and engaging."""
 
-    # Step 6: Build the prompt with the hook
-    hook_text = f"HOOK: {narration_title}\n\n" if hook else ""
-    user_content = f"{hook_text}Title: {title}\n\nStory: {story}"
+        max_tokens_value = 1500  # Increased from 1200
+
+    user_content = f"Title: {title}\n\nStory: {story}"
     
+    # --- INCREASED MAX TOKENS FOR COMPLETE STORIES ---
     response = openai_client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content}
         ],
-        max_tokens=800 if split_required else 500,
+        max_tokens=max_tokens_value,
         temperature=0.85
     )
     script_text = response.choices[0].message.content
 
-    # Step 7: Parse the response for parts
+    # --- FORCE COMPLETE ENDING ---
+    script_text = normalize_slang(script_text)
+    
+    # Check if script ends with a period, question mark, or exclamation
+    if script_text and not script_text.strip().endswith(('.', '!', '?')):
+        script_text = script_text.strip() + " And that's how it all went down."
+
+    # Parse parts
     if split_required:
         part1_match = re.search(r'(?:Part 1:?)\s*(.*?)(?=Part 2:?|$)', script_text, re.DOTALL)
         part2_match = re.search(r'(?:Part 2:?)\s*(.*)', script_text, re.DOTALL)
         if part1_match and part2_match:
+            part1_script = part1_match.group(1).strip()
+            part2_script = part2_match.group(1).strip()
+            
+            # --- FORCE COMPLETE ENDING FOR PART 2 ---
+            if part2_script and not part2_script.strip().endswith(('.', '!', '?')):
+                part2_script = part2_script.strip() + " And that's the end of the story."
+            
+            part1_script = normalize_slang(part1_script)
+            part2_script = normalize_slang(part2_script)
+            
             return {
-                'script': part1_match.group(1).strip(),
+                'script': part1_script,
                 'part_count': 2,
                 'part_label': 'Part 1',
-                'part2_script': part2_match.group(1).strip(),
+                'part2_script': part2_script,
                 'hook': hook,
                 'normalized_title': narration_title
             }
+    
+    # --- FORCE COMPLETE ENDING FOR SINGLE PART ---
+    if script_text and not script_text.strip().endswith(('.', '!', '?')):
+        script_text = script_text.strip() + " And that's the end of the story."
     
     return {
         'script': script_text,
@@ -283,13 +247,102 @@ The goal is to make the story feel fresh, personal, and engaging."""
         'normalized_title': narration_title
     }
 
+# ===========================
+# AI-GENERATED STORY (Fallback)
+# ===========================
 
-# ===========================
-# QUICK TEST FUNCTION
-# ===========================
+def generate_story_script(topic, story_type="relationship"):
+    """Generate a dramatic first-person story using Groq with Gen Z style."""
+    gen_z_style = get_gen_z_style(include_hook=True)
+    
+    system_prompt = f"""You are a viral storyteller. Write a dramatic first-person story about betrayal, friendship, and a wedding or relationship.
+
+{gen_z_style}
+
+STRUCTURE (8 phases):
+1. HOOK: A shocking discovery
+2. IMMEDIATE BETRAYAL
+3. PERSONAL BACKSTORY
+4. ROMANTIC CONTEXT
+5. RETROSPECTIVE WARNING SIGNS
+6. ESCALATION
+7. EVIDENCE COLLECTION
+8. DELAYED REVENGE/CLIFFHANGER
+
+COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.
+Keep the script 500-700 words."""
+    
+    response = openai_client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Write a dramatic story about: {topic}"}
+        ],
+        max_tokens=800,
+        temperature=0.85
+    )
+    
+    script = response.choices[0].message.content
+    script = normalize_slang(script)
+    
+    # --- CHECK FOR INCOMPLETE SENTENCES ---
+    if script and not script.endswith(('.', '!', '?')):
+        script += "..."
+    
+    return script
+
+
+def filter_comments_to_two(comments):
+    """
+    Filter comments to only include the top 2.
+    Ensures comments are complete and not truncated.
+    """
+    if not comments:
+        return []
+    
+    # Only keep top 2 comments
+    top_two = comments[:2]
+    
+    # Ensure each comment is complete
+    filtered_comments = []
+    for comment in top_two:
+        body = comment.get('body', '').strip()
+        if body:
+            filtered_comments.append({
+                'author': comment.get('author', 'user'),
+                'body': body,
+                'score': comment.get('score', 0)
+            })
+    
+    return filtered_comments
+
+
+def build_comment_script(comments, max_comments=2):
+    """
+    Build the comment script with exactly max_comments.
+    """
+    if not comments:
+        return ""
+    
+    # Take only the top 2
+    top_comments = comments[:max_comments]
+    
+    if not top_comments:
+        return ""
+    
+    # Build the script
+    comment_lines = ["The top comments say:"]
+    
+    for i, comment in enumerate(top_comments, 1):
+        body = comment.get('body', '').strip()
+        author = comment.get('author', 'user')
+        if body:
+            comment_lines.append(f"Number {i} comment from {author}: {body}")
+    
+    return " ".join(comment_lines)
 
 if __name__ == "__main__":
-    # Test the Gen Z style adaptation
+    # Quick test
     test_title = "AITAH for telling my sister the truth about her fiancé?"
     test_story = """
     My sister Sarah has been engaged to Mark for 6 months. I found out last week that 
@@ -299,15 +352,82 @@ if __name__ == "__main__":
     But I feel like I did the right thing. AITAH?
     """
     
-    print("🎯 Testing Gen Z Reddit Story Adaptation")
-    print("=" * 60)
-    
     result = adapt_reddit_story(test_title, test_story, use_hook=True)
-    
-    print(f"📝 Hook: {result.get('hook')}")
-    print(f"📝 Normalized Title: {result.get('normalized_title')}")
-    print(f"📝 Part Count: {result['part_count']}")
+    print(f"🪝 Hook: {result.get('hook')}")
     print(f"📝 Script: {result['script'][:300]}...")
+
+
+def filter_comments_by_length(comments, max_comment_length=300, max_comments=2):
+    """
+    Filter comments to only include the top N comments that are under the max length.
+    If no comments meet the criteria, skip comments entirely.
     
-    if result['part_count'] == 2:
-        print(f"📝 Part 2: {result['part2_script'][:300]}...")
+    Args:
+        comments: List of comment dictionaries
+        max_comment_length: Maximum characters allowed per comment (default: 300)
+        max_comments: Maximum number of comments to include (default: 2)
+    
+    Returns:
+        filtered_comments: List of comments that meet the criteria
+        reason: String explaining why comments were filtered or skipped
+    """
+    if not comments:
+        return [], "No comments available"
+    
+    # Sort comments by score (highest first) if available
+    sorted_comments = sorted(comments, key=lambda x: x.get('score', 0), reverse=True)
+    
+    # Filter comments by length
+    valid_comments = []
+    for comment in sorted_comments:
+        body = comment.get('body', '').strip()
+        if body and len(body) <= max_comment_length:
+            valid_comments.append({
+                'author': comment.get('author', 'user'),
+                'body': body,
+                'score': comment.get('score', 0)
+            })
+    
+    # Take only the top N valid comments
+    selected_comments = valid_comments[:max_comments]
+    
+    if len(selected_comments) < max_comments:
+        reason = f"Only found {len(selected_comments)} valid comments (needed {max_comments})"
+    else:
+        reason = f"Found {len(selected_comments)} valid comments"
+    
+    return selected_comments, reason
+
+
+def build_comment_script(comments, max_comment_length=300, max_comments=2):
+    """
+    Build the comment script with smart filtering.
+    Only includes comments that are under the max length.
+    If no valid comments, returns an empty string.
+    """
+    if not comments:
+        return "", "No comments available"
+    
+    # Filter comments
+    valid_comments, reason = filter_comments_by_length(
+        comments=comments,
+        max_comment_length=max_comment_length,
+        max_comments=max_comments
+    )
+    
+    if not valid_comments:
+        print(f"   ⚠️ No valid comments: {reason}")
+        return "", reason
+    
+    # Build the script
+    comment_lines = ["The top comments say:"]
+    
+    for i, comment in enumerate(valid_comments, 1):
+        body = comment.get('body', '').strip()
+        author = comment.get('author', 'user')
+        if body:
+            comment_lines.append(f"Number {i} comment from {author}: {body}")
+    
+    script = " ".join(comment_lines)
+    print(f"   ✅ Comment script built: {len(valid_comments)} comments, {len(script)} chars")
+    return script, f"Included {len(valid_comments)} comments"

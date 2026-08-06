@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- CONFIG ---
-FAST_MODE = True  # Set to False for production quality
+FAST_MODE = False  # Set to False for production quality
 
 # ===========================
 # MODE SELECTION
@@ -12,15 +12,17 @@ FAST_MODE = True  # Set to False for production quality
 
 # Set to True for testing/debugging (stories won't be consumed)
 # Set to False for production (stories will be marked as used)
-DEBUG_MODE = True  # Change to False when ready to post real videos
+DEBUG_MODE = False  # Change to False when ready to post real videos
 
+# Voice speed (used in video_compile and tasks)
+VOICE_SPEED = 1.12  # Same value as in video_compile
 # ===========================
 # CAPTIONS SETTINGS
 # ===========================
 
 # Set to True to add captions to videos (uses fal.ai API)
 # Set to False to skip captions (saves money)
-USE_CAPTIONS = False  # Change to False if you want to save credits
+USE_CAPTIONS = True  # Change to False if you want to save credits
 
 # --- API Keys ---
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')

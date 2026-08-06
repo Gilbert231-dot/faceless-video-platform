@@ -2,25 +2,31 @@ import os
 import tempfile
 from typing import Tuple, Optional
 
-# Import the ElevenLabs client (v1.0.0+)
-from elevenlabs.client import ElevenLabs
-from elevenlabs import play, save
-from elevenlabs.types import VoiceSettings
+# Try the new ElevenLabs import style (v1.0.0+)
+try:
+    from elevenlabs.client import ElevenLabs
+    from elevenlabs import play, save
+    from elevenlabs.types import VoiceSettings
+    ELEVENLABS_V1 = True
+except ImportError:
+    # Fallback to old style (v0.x)
+    from elevenlabs import generate, save
+    ELEVENLABS_V1 = False
 
-# API Key
+# API Key (set in environment)
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
 if not ELEVENLABS_API_KEY:
     raise ValueError("ELEVENLABS_API_KEY not set in environment variables!")
 
 # Voice IDs
-MALE_VOICE_ID = "bfGb7JTLUnZebZRiFYyq"      # Adam - Distinct, Deep and Engaging
-FEMALE_VOICE_ID = "S9NKLs1GeSTKzXd9D0Lf"    # Haley Maven - Social Media Bestie
+MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"      # Custom Gen Z voice
+FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"    # Sarah
 DEFAULT_VOICE_ID = MALE_VOICE_ID
 
 def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str, Optional[str]]:
     """
-    Generate voiceover using ElevenLabs v1.0.0+.
+    Generate voiceover using ElevenLabs.
     
     Args:
         script: Text to convert to speech
@@ -34,40 +40,29 @@ def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str
         voice_id = DEFAULT_VOICE_ID
     
     try:
-        # Initialize the client
-        client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
-        
-        print(f"   🔊 Generating with ElevenLabs (voice: {voice_id[:8]}...)")
-        
-        # Generate audio using the correct v1.0.0+ method
-        audio_generator = client.text_to_speech.convert(
-            voice_id=voice_id,
-            text=script,
-            model_id="eleven_flash_v2"  # Most cost-effective model
-        )
-        
-        # Collect the audio bytes from the generator
-        audio_bytes = b"".join(audio_generator)
-        
-        if len(audio_bytes) < 1000:
-            raise Exception(f"Generated audio too small: {len(audio_bytes)} bytes")
-        
-        # Save to temp file
-        audio_path = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
-        with open(audio_path, "wb") as f:
-            f.write(audio_bytes)
-        
-        print(f"   ✅ Voiceover saved: {audio_path} ({len(audio_bytes)} bytes)")
-        return audio_path, None
-        
-    except AttributeError as e:
-        # If the method name is different, try alternative
-        print(f"   ⚠️ AttributeError: {e}")
-        print("   🔄 Trying alternative method...")
-        
-        try:
-            # Try the older style (just in case)
-            from elevenlabs import generate
+        if ELEVENLABS_V1:
+            # New ElevenLabs v1.0.0+ API
+            client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+            
+            audio_generator = client.text_to_speech.convert(
+                voice_id=voice_id,
+                text=script,
+                model_id="eleven_flash_v2"
+            )
+            
+            # Convert generator to bytes
+            audio_bytes = b"".join(audio_generator)
+            
+            # Save to temp file
+            audio_path = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
+            with open(audio_path, "wb") as f:
+                f.write(audio_bytes)
+            
+            print(f"   ✅ Voiceover saved: {audio_path}")
+            return audio_path, None
+            
+        else:
+            # Old ElevenLabs v0.x API
             audio = generate(
                 text=script,
                 voice=voice_id,
@@ -77,13 +72,10 @@ def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str
             
             audio_path = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
             save(audio, audio_path)
-            print(f"   ✅ Voiceover saved (fallback): {audio_path}")
+            
+            print(f"   ✅ Voiceover saved: {audio_path}")
             return audio_path, None
             
-        except Exception as fallback_error:
-            print(f"   ❌ Fallback also failed: {fallback_error}")
-            raise Exception(f"Voiceover generation failed: {e}")
-        
     except Exception as e:
         print(f"   ❌ ElevenLabs failed: {e}")
         raise Exception(f"Voiceover generation failed: {e}")

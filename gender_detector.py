@@ -150,29 +150,104 @@ class GenderDetector:
         Detect gender using all available signals.
         Returns: 'male' or 'female' (with fallback to default)
         """
-        # Priority order: username > subreddit > story content > default
+        # Priority: username > subreddit > story content > default
         
-        # 1. Check username
+        # 1. Check username (if available)
         if username:
             result = self.detect_from_username(username)
             if result:
+                print(f"   🎯 Gender detected from username: {result}")
                 return result
         
-        # 2. Check subreddit
+        # 2. Check subreddit (if available)
         if subreddit:
             result = self.detect_from_subreddit(subreddit)
             if result:
+                print(f"   🎯 Gender detected from subreddit: {result}")
                 return result
         
-        # 3. Check story content
+        # 3. Check story content (more thorough)
         if story_text:
             result = self.detect_from_story(story_text)
             if result:
+                print(f"   🎯 Gender detected from story: {result}")
                 return result
         
-        # 4. Fallback to default
+        # 4. Default fallback
+        print(f"   🎯 No gender detected, using default: {self.default_voice}")
         return self.default_voice
-    
+
+
+    def detect_from_story(self, story_text):
+        """Improved gender detection from story content."""
+        if not story_text:
+            return None
+        
+        story_lower = story_text.lower()
+        
+        # Female indicators (expanded)
+        female_patterns = [
+            r'my (girlfriend|wife|fiancée|sister|mom|mother|aunt|daughter)',
+            r'my (best friend|friend) .* she',
+            r'my (best friend|friend) .* her',
+            r'i am a (girl|woman|lady|mom|mother)',
+            r'i\'m a (girl|woman|lady|mom|mother)',
+            r'i (am|was) a (girl|woman|lady)',
+            r'my mom',
+            r'my mother',
+            r'my sister',
+            r'my daughter',
+            # NEW: Female narrator referring to a male partner
+            r'my (ex|boyfriend|husband|fiancé) .* (he|him|his)',
+            r'he .* (my boyfriend|my husband|my ex)',
+            r'i caught him',
+            r'he was (controlling|manipulating|cheating)',
+            r'he said to me',
+            r'he told me',
+            r'he would',
+        ]
+        
+        # Male indicators (expanded)
+        male_patterns = [
+            r'my (boyfriend|husband|fiancé|brother|dad|father|uncle|son)',
+            r'my (best friend|friend) .* he',
+            r'my (best friend|friend) .* him',
+            r'i am a (guy|man|dad|father)',
+            r'i\'m a (guy|man|dad|father)',
+            r'i (am|was) a (guy|man)',
+            r'my dad',
+            r'my father',
+            r'my brother',
+            r'my son',
+            # NEW: Male narrator referring to a female partner
+            r'my (ex|girlfriend|wife|fiancée) .* (she|her)',
+            r'she .* (my girlfriend|my wife|my ex)',
+            r'i caught her',
+            r'my (wife|girlfriend) .* (she|her)',
+            r'she said to me',
+            r'she told me',
+            r'she would',
+        ]
+        
+        female_count = 0
+        male_count = 0
+        
+        for pattern in female_patterns:
+            if re.search(pattern, story_lower, re.IGNORECASE):
+                female_count += 1
+        
+        for pattern in male_patterns:
+            if re.search(pattern, story_lower, re.IGNORECASE):
+                male_count += 1
+        
+        # Determine gender
+        if female_count > male_count:
+            return 'female'
+        elif male_count > female_count:
+            return 'male'
+        else:
+            return None
+        
     def get_voice_by_gender(self, gender, female_voice_id="Jessica", male_voice_id="Brian"):
         """
         Get the appropriate voice ID based on detected gender.

@@ -2,8 +2,9 @@ import os
 import time
 import tempfile
 import subprocess
+import glob
 from celery import Celery
-from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS  # <-- Added USE_CAPTIONS
+from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED
 from voiceover import generate_voiceover
 from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
@@ -11,12 +12,12 @@ from video_compile import compile_video, get_duration
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
 from reddit_story_loader import RedditStoryLoader
-from caption_utils import add_subtitles_to_video  # <-- Already imported
-from gender_detector import GenderDetector  # <-- Need to import this
+from caption_utils import add_subtitles_to_video
+from gender_detector import GenderDetector
 
 # ElevenLabs Voice IDs
-MALE_VOICE_ID = "nPczCjzI2devNBz1zQrb"      # Brian
-FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"    # Sarah
+MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"  # Custom Gen Z voice
+FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Sarah
 DEFAULT_VOICE_ID = MALE_VOICE_ID
 
 # Initialize gender detector
@@ -29,14 +30,80 @@ app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localh
 STORY_DATA_PATH = "reddit_stories"
 story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=DEBUG_MODE)
 
-# -------------------------------------------------------------------
-# Helper: concatenate video clips into a single MP4 (no re-encoding)
-# -------------------------------------------------------------------
+def clean_script_for_tts(text):
+    """
+    Clean the script before sending to ElevenLabs.
+    Fixes common TTS mispronunciations.
+    """
+    corrections = {
+        "I'm ale": "I'm",          # <-- The exact fix
+        "I'm aale": "I'm",         # Extra safety
+        "ale": "",            # Fallback
+        "alright": "alright",
+        "gonna": "gonna",
+        "wanna": "wonna",
+        "kinda": "kinda",
+        "sorta": "sorta",
+    }
+    
+    for wrong, correct in corrections.items():
+        text = text.replace(wrong, correct)
+    
+    return text
+
+# ============================================================
+# HELPER: CLEANUP INTERMEDIATE FILES
+# ============================================================
+
+def cleanup_intermediate_files(base_path):
+    """Delete intermediate files created during captioning."""
+    print(f"   🗑️ Cleaning up intermediate files for: {os.path.basename(base_path)}")
+    
+    patterns = [
+        f"{base_path}.mp4",                    # Original video (no captions)
+        f"{base_path}_extracted.mp3",          # Extracted audio
+        f"{base_path}_extracted.srt",          # SRT file
+        f"{base_path}_captioned_*.mp4.tmp",    # Temp files
+    ]
+    
+    deleted_count = 0
+    for pattern in patterns:
+        for f in glob.glob(pattern):
+            if os.path.exists(f) and os.path.isfile(f):
+                try:
+                    os.remove(f)
+                    print(f"      🗑️ Deleted: {os.path.basename(f)}")
+                    deleted_count += 1
+                except Exception as e:
+                    print(f"      ⚠️ Could not delete: {os.path.basename(f)} - {e}")
+    
+    if deleted_count == 0:
+        print("      ℹ️ No intermediate files found to clean up")
+
+
+def final_cleanup(video_path):
+    """Delete all extracted and temporary files associated with the final video."""
+    base = video_path.replace(".mp4", "")
+    patterns = [
+        f"{base}_extracted.mp3",
+        f"{base}_extracted.srt",
+        f"{base}_captioned_*.mp4.tmp",
+    ]
+    for pattern in patterns:
+        for f in glob.glob(pattern):
+            if os.path.exists(f) and os.path.isfile(f):
+                try:
+                    os.remove(f)
+                except:
+                    pass
+
+
+# ============================================================
+# HELPER: CONCATENATE CLIPS
+# ============================================================
+
 def concat_clips(clip_paths, output_path):
-    """
-    Concatenate multiple MP4 clips using FFmpeg's concat demuxer.
-    This is fast (copy‑codec) and preserves quality.
-    """
+    """Concatenate multiple MP4 clips using FFmpeg's concat demuxer."""
     if len(clip_paths) == 1:
         subprocess.run(['ffmpeg', '-y', '-i', clip_paths[0], '-c', 'copy', output_path], check=True)
         return output_path
@@ -58,70 +125,60 @@ def concat_clips(clip_paths, output_path):
     os.unlink(list_file.name)
     return output_path
 
-# ===========================
+
+# ============================================================
 # TASK: generate_single_video
-# ===========================
-def generate_single_video(title, script, part_label=None, topic=None, 
+# ============================================================
+
+def generate_single_video(title, script, part_label=None, topic=None,
                           include_title_in_script=True, subreddit=None,
-                          voice_id=None):  # <-- Added voice_id parameter
-    """
-    Generate a single video with proper Part 1/Part 2 voiceover handling.
-    
-    Part 1: Narrator says "Title" (no "Part 1")
-    Part 2: Narrator says "Part 2. Title" (reminds viewers)
-    """
+                          voice_id=None):
+    """Generate a single video with proper Part 1/Part 2 voiceover handling."""
     
     # Build the script with proper Part handling
     if part_label == "Part 2":
         full_script = f"{part_label}. {title}. {script}"
         print(f"   📝 Part 2 script: '{part_label}. {title}'")
-    elif part_label == "Part 1":
-        full_script = f"{title}. {script}"
-        print(f"   📝 Part 1 script: '{title}' (no 'Part 1' spoken)")
     elif include_title_in_script:
         full_script = f"{title}. {script}"
         print(f"   📝 Prepended title to script: '{title}'")
     else:
         full_script = script
+    
+    # --- CLEAN THE SCRIPT FOR TTS (fix "I'm ale" and other glitches) ---
+    full_script = clean_script_for_tts(full_script)
 
-    # Generate voiceover with the selected voice
-    audio_path, _ = generate_voiceover(full_script, voice_id=voice_id)  # <-- Pass voice_id
+    # --- IMPORTANT: Do NOT modify contractions. Keep original script. ---
+    # The TTS glitch (I'm l) is a voice model issue; we keep "I'm" as is.
+
+    audio_path, _ = generate_voiceover(full_script, voice_id=voice_id)
     print(f"🎙️ Voiceover saved to: {audio_path}")
 
-    # Get audio duration
     audio_duration = get_duration(audio_path)
-
-    # Get next segment from Drive
     segment_path = get_next_segment(audio_duration)
     print(f"🎬 Using segment: {segment_path}")
 
-    # No title card
-    title_card_path = None
-
-    # Compile video with NO intro frame
     final_video_path = compile_video(
         video_paths=[segment_path],
         audio_path=audio_path,
         script=full_script,
         subtitle_path=None,
-        intro_frame=title_card_path,
+        intro_frame=None,
         title=title,
         part_label=part_label
     )
     
     return final_video_path
 
-# ===========================
+
+# ============================================================
 # TASK: generate_video_from_reddit
-# ===========================
+# ============================================================
+
 @app.task
 def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False):
-    """
-    Generate a video using real Reddit stories from your local data.
-    Supports splitting long stories into Part 1 and Part 2.
-    """
+    """Generate a video using real Reddit stories from your local data."""
     try:
-        # Check if we're in debug mode
         if DEBUG_MODE:
             print("\n🔬 DEBUG MODE ACTIVE")
             print("   ⚠️ Stories will NOT be marked as used")
@@ -131,7 +188,6 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             print("\n🚀 PRODUCTION MODE ACTIVE")
             print("   ✅ Stories will be marked as used after generation\n")
         
-        # Get stats first
         stats = story_loader.get_stats()
         print(f"📊 Available stories: {stats['unused_stories']} unused out of {stats['total_stories']} total")
         
@@ -141,7 +197,6 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 "detail": "No unused stories available! Run story_manager.py to add more stories."
             }
         
-        # Get a random unused story
         story = story_loader.get_random_story(subreddit, force_real=force_real)
         
         if not story:
@@ -150,23 +205,36 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 "detail": f"No unused stories available in {'r/' + subreddit if subreddit else 'any subreddit'}"
             }
         
-        # Extract story data
         title = story.get('title', 'No Title')
         story_text = story.get('story', '')
         subreddit_name = story.get('subreddit', 'unknown')
         story_id = story.get('story_id') or story.get('id', 'unknown')
         score = story.get('score', 0)
         author = story.get('author', 'unknown')
-        url = story.get('url', '')
         
-        # --- GENDER DETECTION FOR VOICE SELECTION ---
+        # --- ADAPT REDDIT STORY (Generate Hook + Normalize Slang) ---
+        print(f"\n🪝 Generating hook and normalizing slang...")
+        adapted = adapt_reddit_story(title, story_text, use_hook=True)
+        
+        hook = adapted.get('hook')
+        normalized_title = adapted.get('normalized_title')
+        story_text = adapted['script']
+        
+        if hook:
+            title = hook
+            print(f"   🪝 Hook: {hook}")
+        else:
+            title = normalized_title or title
+        
+        print(f"   📝 Normalized title: {title}")
+        
+        # --- GENDER DETECTION ---
         detected_gender = gender_detector.detect_gender(
             username=author,
             subreddit=subreddit_name,
             story_text=story_text
         )
         
-        # Select the appropriate voice ID
         selected_voice = gender_detector.get_voice_by_gender(
             gender=detected_gender,
             female_voice_id=FEMALE_VOICE_ID,
@@ -183,64 +251,68 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         print(f"   🎯 Detected gender: {detected_gender if detected_gender else 'Unknown (using default)'}")
         print(f"   🎙️ Selected voice: {voice_display}")
         
-        # Check for comment script
+        # --- COMMENT EXTRACTION ---
         comment_script = story.get('comment_script', '')
         
         if not comment_script and 'top_comments' in story and story['top_comments']:
+            from script_gen import build_comment_script
             comments = story['top_comments']
             if comments:
-                comment_lines = ["The top comments say:"]
-                for i, comment in enumerate(comments[:5], 1):
-                    body = comment.get('body', '').strip()
-                    comment_author = comment.get('author', 'user')
-                    if body:
-                        comment_lines.append(f"Number {i} comment from {comment_author}: {body}")
-                comment_script = " ".join(comment_lines)
-                print(f"   💬 Built comment script from {len(comments)} top comments")
+                comment_script, reason = build_comment_script(
+                    comments=comments,
+                    max_comment_length=500,
+                    max_comments=2
+                )
+                print(f"   💬 {reason}")
+
+        if not comment_script and 'comments' in story and story['comments']:
+            comments = story['comments']
+            if isinstance(comments, list) and comments:
+                from script_gen import build_comment_script
+                comment_script, reason = build_comment_script(
+                    comments=comments,
+                    max_comment_length=600,
+                    max_comments=2
+                )
+                print(f"   💬 {reason} (from 'comments' field)")
+
+        if not comment_script:
+            print(f"   💬 No valid comments found - skipping comments for this video")
         
-        # --- SPLIT LOGIC ---
+        #--- SPLIT LOGIC ---
+        MAX_CHARS_PER_VIDEO = 12000
+        MIN_PART_2_CHARS = 2000
+
         full_narration = f"{story_text} {comment_script}" if comment_script else story_text
-        MAX_CHARS_PER_VIDEO = 2800
         needs_split = len(full_narration) > MAX_CHARS_PER_VIDEO
-        
-        if needs_split and comment_script:
-            if len(story_text) <= MAX_CHARS_PER_VIDEO:
-                truncated_story = story_text
-                if len(truncated_story) + len(comment_script) > MAX_CHARS_PER_VIDEO:
-                    available_space = MAX_CHARS_PER_VIDEO - len(comment_script) - 50
-                    cut_point = available_space
-                    for char in ['. ', '? ', '! ']:
-                        last_pos = truncated_story[:cut_point].rfind(char)
-                        if last_pos != -1 and last_pos > cut_point * 0.6:
-                            cut_point = last_pos + len(char)
-                            break
-                    truncated_story = truncated_story[:cut_point]
-                
-                part1_script = f"{truncated_story} {comment_script}"
+
+        if needs_split:
+            split_point = max(int(len(story_text) * 0.5), len(story_text) - 1500)
+            
+            for char in ['. ', '? ', '! ', '\n\n']:
+                last_pos = story_text[:split_point].rfind(char)
+                if last_pos != -1 and last_pos > int(len(story_text) * 0.35):
+                    split_point = last_pos + len(char)
+                    break
+            
+            part1_story = story_text[:split_point].strip()
+            part2_story = story_text[split_point:].strip()
+            
+            if len(part2_story) < MIN_PART_2_CHARS:
+                part1_script = full_narration
                 part2_script = None
                 part_count = 1
-                print(f"   📝 Story + comments fit in 1 video (truncated story slightly)")
+                print(f"   📝 Story fits in 1 video (Part 2 too short)")
             else:
-                split_point = MAX_CHARS_PER_VIDEO - len(comment_script) - 50
-                if split_point < 500:
-                    split_point = 500
+                if comment_script:
+                    part1_script = f"{part1_story} {comment_script}"
+                else:
+                    part1_script = part1_story
                 
-                for char in ['. ', '? ', '! ', '\n\n']:
-                    last_pos = story_text[:split_point].rfind(char)
-                    if last_pos != -1 and last_pos > split_point * 0.6:
-                        split_point = last_pos + len(char)
-                        break
+                part2_script = f"Continuing the story... {part2_story}"
+                part_count = 2
                 
-                part1_story = story_text[:split_point].strip()
-                part2_story = story_text[split_point:].strip()
-                
-                part1_script = f"{part1_story} {comment_script}" if comment_script else part1_story
-                part2_script = f"Continuing the story... {part2_story}" if part2_story else None
-                part_count = 2 if part2_script else 1
-                
-                print(f"   📝 Story split into 2 parts (comments in Part 1)")
-                if part2_script:
-                    print(f"   📝 Part 2: {len(part2_script)} chars (continues story)")
+                print(f"   📝 Split into 2 parts (Part 1: {len(part1_story)} chars, Part 2: {len(part2_story)} chars)")
         else:
             part1_script = full_narration
             part2_script = None
@@ -274,22 +346,40 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         )
         print(f"✅ Part 1 ready: {video_path_1}")
         
-        # ----- ADD CAPTIONS TO PART 1 (if enabled) -----
+        # ----- ADD CAPTIONS TO PART 1 -----
         if USE_CAPTIONS:
             print("\n🎬 ADDING CAPTIONS TO PART 1...")
             try:
-                captioned_video_path_1 = add_subtitles_to_video(
-                    video_url=video_path_1,  # This will need to be a URL or local path
-                    output_path=video_path_1.replace(".mp4", "_captioned.mp4"),
-                    preset="glass"
+                captioned_path = add_subtitles_to_video(
+                    video_path=video_path_1,
+                    output_path=video_path_1.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
+                    whisper_model="tiny",
+                    font_size=18,   # smaller for speed
+                    speed_factor=0.98 / VOICE_SPEED,  # <-- Imported from config
+                    bold=True,
+                    alignment=10,
+                    margin_v=90
                 )
-                video_path_1 = captioned_video_path_1
-                print(f"✅ Part 1 captions added: {video_path_1}")
+                
+                # Check if a NEW file was created
+                if captioned_path and captioned_path != video_path_1 and os.path.exists(captioned_path) and os.path.getsize(captioned_path) > 1000000:
+                    base_name = video_path_1.replace(".mp4", "")
+                    cleanup_intermediate_files(base_name)
+                    video_path_1 = captioned_path
+                    print(f"✅ Part 1 captions added: {video_path_1}")
+                else:
+                    print(f"⚠️ Captioning didn't produce a new file, keeping original")
+                    # Ensure we delete the extracted files anyway
+                    base_name = video_path_1.replace(".mp4", "")
+                    final_cleanup(base_name)
             except Exception as e:
                 print(f"⚠️ Captioning failed for Part 1: {e}")
-                print("   Continuing without captions...")
+                print("   Keeping original video without captions")
+                # Clean up extracted files
+                base_name = video_path_1.replace(".mp4", "")
+                final_cleanup(base_name)
         
-        # ----- GENERATE PART 2 (if needed) -----
+        # ----- GENERATE PART 2 -----
         video_path_2 = None
         if part_count == 2 and part2_script:
             print("\n🎬 GENERATING PART 2...")
@@ -304,20 +394,34 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             )
             print(f"✅ Part 2 ready: {video_path_2}")
             
-            # ----- ADD CAPTIONS TO PART 2 (if enabled) -----
+            # ----- ADD CAPTIONS TO PART 2 -----
             if USE_CAPTIONS:
                 print("\n🎬 ADDING CAPTIONS TO PART 2...")
                 try:
-                    captioned_video_path_2 = add_subtitles_to_video(
-                        video_url=video_path_2,
-                        output_path=video_path_2.replace(".mp4", "_captioned.mp4"),
-                        preset="glass"
+                    captioned_path_2 = add_subtitles_to_video(
+                        video_path=video_path_2,
+                        output_path=video_path_2.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
+                        whisper_model="tiny",
+                        font_size=18,
+                        bold=True,
+                        alignment=10,
+                        margin_v=90
                     )
-                    video_path_2 = captioned_video_path_2
-                    print(f"✅ Part 2 captions added: {video_path_2}")
+                    
+                    if captioned_path_2 and captioned_path_2 != video_path_2 and os.path.exists(captioned_path_2) and os.path.getsize(captioned_path_2) > 1000000:
+                        base_name = video_path_2.replace(".mp4", "")
+                        cleanup_intermediate_files(base_name)
+                        video_path_2 = captioned_path_2
+                        print(f"✅ Part 2 captions added: {video_path_2}")
+                    else:
+                        print(f"⚠️ Captioning didn't produce a new file, keeping original")
+                        base_name = video_path_2.replace(".mp4", "")
+                        final_cleanup(base_name)
                 except Exception as e:
                     print(f"⚠️ Captioning failed for Part 2: {e}")
-                    print("   Continuing without captions...")
+                    print("   Keeping original video without captions")
+                    base_name = video_path_2.replace(".mp4", "")
+                    final_cleanup(base_name)
         
         # Mark the story as used (only in production mode)
         marked = False
@@ -351,14 +455,14 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         traceback.print_exc()
         return {"status": "error", "detail": str(e)}
 
-# ===========================
+
+# ============================================================
 # TASK: generate_videos_batch
-# ===========================
+# ============================================================
+
 @app.task
 def generate_videos_batch(subreddit=None, count=5, force_real=False):
-    """
-    Generate multiple videos in one go.
-    """
+    """Generate multiple videos in one go."""
     print(f"\n📦 BATCH GENERATION: {count} videos")
     print(f"   Debug mode: {'ON (stories safe)' if DEBUG_MODE else 'OFF (stories consumed)'}")
     print(f"   Captions: {'ON' if USE_CAPTIONS else 'OFF'}")
@@ -389,9 +493,11 @@ def generate_videos_batch(subreddit=None, count=5, force_real=False):
         "results": results
     }
 
-# ===========================
+
+# ============================================================
 # TASK: generate_video (Original - Keep for fallback)
-# ===========================
+# ============================================================
+
 @app.task
 def generate_video(topic=None, subreddit=None, use_reddit=False):
     """Original task - kept for compatibility."""
