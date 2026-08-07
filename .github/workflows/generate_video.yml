@@ -10,6 +10,11 @@ on:
         required: true
         default: '2'
         type: string
+      test_mode:
+        description: 'Test mode (does NOT mark stories as used)'
+        required: false
+        default: true
+        type: boolean
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -17,7 +22,7 @@ env:
 jobs:
   generate:
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # 6-hour max
+    timeout-minutes: 360
 
     steps:
       - name: Checkout code
@@ -52,12 +57,9 @@ jobs:
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
           echo "ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }}" >> $GITHUB_ENV
           echo "FAL_KEY=${{ secrets.FAL_KEY }}" >> $GITHUB_ENV
-          echo "DEBUG_MODE=False" >> $GITHUB_ENV
+          echo "DEBUG_MODE=${{ inputs.test_mode == 'true' && 'True' || 'False' }}" >> $GITHUB_ENV
           echo "FAST_MODE=True" >> $GITHUB_ENV
 
-      # ------------------------------------------------------------
-      # UNZIP REDDIT STORIES DATA (if uploaded as zip)
-      # ------------------------------------------------------------
       - name: Unzip reddit stories
         run: |
           if [ -f reddit_stories.zip ]; then
@@ -75,9 +77,6 @@ jobs:
             fi
           fi
 
-      # ------------------------------------------------------------
-      # CACHING: video files (downloaded from Google Drive)
-      # ------------------------------------------------------------
       - name: Cache downloaded videos
         uses: actions/cache@v4
         id: video-cache
@@ -87,9 +86,6 @@ jobs:
           restore-keys: |
             video-cache-
 
-      # ------------------------------------------------------------
-      # CACHING: clip state (progress across runs)
-      # ------------------------------------------------------------
       - name: Cache video state (clip_state.json)
         uses: actions/cache@v4
         id: state-cache
@@ -99,21 +95,17 @@ jobs:
           restore-keys: |
             video-state-
 
-      # ------------------------------------------------------------
-      # GENERATE VIDEOS
-      # ------------------------------------------------------------
       - name: Generate videos
         id: generate
         run: |
-          # Set the number of videos to generate
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             COUNT="${{ inputs.count }}"
           else
-            COUNT="2"  # Default for scheduled runs
+            COUNT="2"
           fi
           echo "📹 Generating $COUNT videos..."
+          echo "🔬 DEBUG_MODE is set to: ${{ env.DEBUG_MODE }}"
 
-          # Run the generation loop (cleanup after each)
           for i in $(seq 1 $COUNT); do
             echo ""
             echo "======================================"
@@ -130,7 +122,6 @@ jobs:
             echo "✅ Video $i done"
             echo "🧹 Cleaning up..."
 
-            # Clean up temporary files to save disk space
             rm -rf output/caption_segments_* 2>/dev/null
             rm -f output/segment_* 2>/dev/null
             rm -f output/gameplay_segment_* 2>/dev/null
@@ -148,29 +139,22 @@ jobs:
 
           echo "✅ All videos generated"
 
-      # ------------------------------------------------------------
-      # MOVE VIDEOS TO READY FOLDER AND PUSH
-      # ------------------------------------------------------------
       - name: Move videos to ready folder and push
         run: |
           echo "📦 Moving videos to videos/ready/..."
 
           mkdir -p videos/ready
 
-          # Copy videos (captioned) from output folder
           cp output/*_captioned_*.mp4 videos/ready/ 2>/dev/null || cp output/*.mp4 videos/ready/ 2>/dev/null
-          # Copy metadata if exists
           cp output/*_metadata.json videos/ready/ 2>/dev/null
 
           VIDEO_COUNT=$(ls -1 videos/ready/*.mp4 2>/dev/null | wc -l)
           echo "✅ $VIDEO_COUNT videos ready for upload"
 
           if [ $VIDEO_COUNT -gt 0 ]; then
-            # Configure git
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            # Add and push
             git add videos/ready/*.mp4 videos/ready/*.json
             git commit -m "Add $VIDEO_COUNT new videos (auto-generated)"
             git push origin main
@@ -180,9 +164,6 @@ jobs:
             echo "ℹ️ No videos to push."
           fi
 
-      # ------------------------------------------------------------
-      # CLEANUP FINAL
-      # ------------------------------------------------------------
       - name: Final cleanup
         run: |
           rm -rf output/*.mp4
