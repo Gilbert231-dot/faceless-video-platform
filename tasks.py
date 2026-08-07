@@ -1,19 +1,20 @@
 import os
+import glob
+import json
 import time
 import tempfile
 import subprocess
-import glob
 from celery import Celery
-from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED
 from voiceover import generate_voiceover
+from gender_detector import GenderDetector
 from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
+from caption_utils import add_subtitles_to_video
+from reddit_story_loader import RedditStoryLoader
 from video_compile import compile_video, get_duration
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
-from reddit_story_loader import RedditStoryLoader
-from caption_utils import add_subtitles_to_video
-from gender_detector import GenderDetector
+from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED
 
 # ElevenLabs Voice IDs
 MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"  # Custom Gen Z voice
@@ -30,7 +31,6 @@ app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localh
 STORY_DATA_PATH = "reddit_stories"
 story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=DEBUG_MODE)
 
-import json
 
 def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
     """Save story metadata alongside the video for YouTube upload."""
