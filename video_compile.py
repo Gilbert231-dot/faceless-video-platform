@@ -8,7 +8,6 @@ from config import VOICE_SPEED
 
 # Helper: Get duration (seconds)
 def get_duration(media_path: str) -> float:
-    """Return duration in seconds using ffprobe."""
     cmd = [
         'ffprobe', '-v', 'error',
         '-show_entries', 'format=duration',
@@ -18,21 +17,20 @@ def get_duration(media_path: str) -> float:
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return float(result.stdout.strip())
 
-
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None,
                   voice_id=None):
     """
     Compile video with segmented rendering.
-    Includes gender-specific voice volume (both increased).
+    Now outputs YouTube-compatible format (yuv420p, faststart, aac audio).
     """
     print("🎬 Starting video compilation (SEGMENTED, HIGH QUALITY)...")
     
-    # --- VOICE VOLUME (Increased for both) ---
-    if voice_id == "EXAVITQu4vr4xnSDxMaL":  # Sarah (female)
-        VOICE_VOLUME = 1.8   # Female voice at 180%
+    # --- VOICE VOLUME ---
+    if voice_id == "EXAVITQu4vr4xnSDxMaL":
+        VOICE_VOLUME = 1.8
     else:
-        VOICE_VOLUME = 1.5   # Male voice at 150%
+        VOICE_VOLUME = 1.5
     
     # --- OTHER SETTINGS ---
     SPEED_FACTOR = 1.6
@@ -47,7 +45,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     MUSIC_PATH = "/workspaces/faceless-video-platform/assets/music/Caleb Arredondo - Feeling Blue.mp3"
     MUSIC_VOLUME = 0.35
     
-    # Check if music exists
     music_available = os.path.exists(MUSIC_PATH)
     if music_available:
         print(f"   🎵 Background music found: {MUSIC_PATH}")
@@ -56,17 +53,14 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   ⚠️ Background music not found at: {MUSIC_PATH}")
         print("   Continuing without music...")
     
-    # Handle both single path and list
     if isinstance(video_paths, str):
         video_paths = [video_paths]
     if not video_paths:
         raise Exception("No video paths provided")
     
-    # Get audio duration
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
     
-    # Extract gameplay segment
     extract_duration = audio_duration * 1.5
     print(f"   ⏱️ Extracting {extract_duration:.2f}s of footage (will be sped up {SPEED_FACTOR}x)")
     
@@ -98,11 +92,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     video_duration = get_duration(gameplay_segment)
     print(f"   📊 Video duration: {video_duration:.2f}s")
     
-    # Segment processing with quality tiers
     total_segments = int(video_duration / SEGMENT_DURATION) + 1
     print(f"   📦 Splitting into {total_segments} segments")
     print(f"   📊 Quality tiers: CRF 18 (segment 1), CRF 20 (segment 2), CRF 22+ (segments 3+)")
-
+    
     segment_files = []
     pbar = tqdm(total=total_segments, desc="🎬 Rendering segments", unit="segment")
     
@@ -128,9 +121,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             print(f"   ⚠️ Failed to extract segment {i+1}: {e}")
             continue
         
-        # --- CHECK FOR SHORT SEGMENT (skip processing) ---
+        # --- SHORT SEGMENT HANDLING ---
         if segment_duration < 5.0:
-            # Very short segment: just copy it without processing
             segment_output = os.path.join(output_dir, f"segment_processed_{i}_{int(time.time())}.mp4")
             subprocess.run([
                 'ffmpeg', '-y',
@@ -146,7 +138,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 os.unlink(segment_input)
             continue
         
-        # --- QUALITY TIERS BASED ON SEGMENT POSITION ---
+        # --- QUALITY TIERS ---
         if i == 0:
             segment_crf = 18
             segment_preset = "medium"
@@ -164,21 +156,21 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         
         segment_output = os.path.join(output_dir, f"segment_processed_{i}_{int(time.time())}.mp4")
         
-        # Build FFmpeg command with segment-specific settings
+        # YouTube-compatible format
         cmd_process = [
             'ffmpeg', '-y',
             '-i', segment_input,
             '-vf', 
             f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
             f'scale=1080:1920:flags=lanczos,'
-            f'setpts={1/SPEED_FACTOR}*PTS',
+            f'setpts={1/SPEED_FACTOR}*PTS,'
+            f'format=yuv420p',
             '-sws_flags', 'lanczos',
             '-c:v', 'libx264',
             '-preset', segment_preset,
             '-crf', str(segment_crf),
             '-profile:v', 'high',
-            '-level', '4.1',
-            '-pix_fmt', 'yuv420p',
+            '-level', '4.0',
             '-an',
             '-movflags', '+faststart',
             segment_output
@@ -191,19 +183,22 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             print(f"   ✅ Segment {i+1}/{total_segments} complete ({quality_label})")
         except Exception as e:
             print(f"   ⚠️ Segment {i+1} failed: {e}")
-            # Fallback: even lower quality
             print(f"   🔄 Using fallback for segment {i+1}...")
             cmd_fallback = [
                 'ffmpeg', '-y',
                 '-i', segment_input,
                 '-vf', 
                 f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
-                f'scale=1080:1920:flags=lanczos',
+                f'scale=1080:1920:flags=lanczos,'
+                f'format=yuv420p',
                 '-sws_flags', 'lanczos',
                 '-c:v', 'libx264',
                 '-preset', 'veryfast',
                 '-crf', '25',
+                '-profile:v', 'high',
+                '-level', '4.0',
                 '-an',
+                '-movflags', '+faststart',
                 segment_output
             ]
             subprocess.run(cmd_fallback, check=True, capture_output=True, timeout=300)
@@ -238,25 +233,15 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         os.unlink(seg)
     os.unlink(concat_file)
     
-    # --- FULL AUDIO PROCESSING ---
-    print("⚡ Processing audio (premium TikTok voice chain)...")
-    
+    # --- AUDIO PROCESSING ---
+    print("⚡ Processing audio...")
     audio_processed = os.path.join(output_dir, f"audio_processed_{int(time.time())}.mp3")
     
     cmd_audio_process = [
         'ffmpeg', '-y',
         '-i', audio_path,
         '-filter_complex',
-        f'[0:a]atempo={VOICE_SPEED},'
-        f'volume={VOICE_VOLUME},'
-        f'highpass=f=80,'
-        f'equalizer=f=300:width_type=octave:width=0.5:g=-2,'
-        f'equalizer=f=3000:width_type=octave:width=0.5:g=2,'
-        f'equalizer=f=9000:width_type=octave:width=0.5:g=1.5,'
-        f'compand=attacks=0.015:decays=0.1:points=-80/-80|-30/-15|-20/-10|-12/-9|-6/-6|0/-3|20/-3,'
-        f'deesser=amount=0.2:type=bandpass:bands=5,'
-        f'loudnorm=I=-18:LRA=7:TP=-1,'
-        f'volume=0.5',
+        f'atempo={VOICE_SPEED},volume={VOICE_VOLUME}',
         '-ac', '1',
         '-acodec', 'mp3',
         '-b:a', '192k',
@@ -265,29 +250,17 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     try:
         subprocess.run(cmd_audio_process, check=True, capture_output=True, timeout=120)
-        print(f"   ✅ Audio processed (premium TikTok voice)")
+        print(f"   ✅ Audio processed")
     except Exception as e:
-        print(f"   ⚠️ Premium processing failed: {e}")
-        print("   🔄 Falling back to basic processing...")
-        cmd_audio_fallback = [
-            'ffmpeg', '-y',
-            '-i', audio_path,
-            '-filter_complex',
-            f'atempo={VOICE_SPEED},volume={VOICE_VOLUME}',
-            '-ac', '1',
-            '-acodec', 'mp3',
-            '-b:a', '192k',
-            audio_processed
-        ]
-        subprocess.run(cmd_audio_fallback, check=True, capture_output=True, timeout=60)
-        print(f"   ✅ Audio processed (basic fallback)")
+        print(f"   ⚠️ Audio processing failed: {e}")
+        audio_processed = audio_path
     
-    # --- ADD BACKGROUND MUSIC ---
+    # --- BACKGROUND MUSIC ---
     final_audio = audio_processed
     music_added = False
     
     if music_available:
-        print("🎵 Mixing background music (looped, ducking applied)...")
+        print("🎵 Mixing background music...")
         audio_with_music = os.path.join(output_dir, f"audio_with_music_{int(time.time())}.mp3")
         voice_duration = get_duration(audio_processed)
         
@@ -306,30 +279,33 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 '-b:a', '192k',
                 audio_with_music
             ]
-            
             subprocess.run(cmd_mix, check=True, capture_output=True, timeout=120)
             music_added = True
-            print(f"   ✅ Music looped and mixed (music volume: {int(MUSIC_VOLUME*100)}%)")
+            print(f"   ✅ Music looped and mixed")
             if audio_processed != audio_path:
                 os.unlink(audio_processed)
             final_audio = audio_with_music
-            
         except Exception as e:
             print(f"   ⚠️ Music mixing failed: {e}")
             print("   Continuing without music...")
     
-    # --- ADD AUDIO TO VIDEO ---
+    # --- FINAL VIDEO COMPILATION (YouTube-Compatible) ---
     print("⚡ Adding audio to video...")
     final_output = os.path.join(output_dir, f"output_{int(time.time())}.mp4")
     cmd_audio = [
         'ffmpeg', '-y',
         '-i', video_combined,
         '-i', final_audio,
-        '-c:v', 'copy',
+        '-c:v', 'libx264',
+        '-preset', 'medium',
+        '-crf', '18',
+        '-profile:v', 'high',
+        '-level', '4.0',
+        '-pix_fmt', 'yuv420p',
         '-c:a', 'aac',
         '-b:a', '192k',
-        '-shortest',
         '-movflags', '+faststart',
+        '-shortest',
         final_output
     ]
     
@@ -354,19 +330,17 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"      - Video speed: {SPEED_FACTOR}x")
     print(f"      - Voice speed: {VOICE_SPEED}x")
     print(f"      - Voice volume: {int(VOICE_VOLUME*100)}%")
-    print(f"      - Music: {'✅ Added (looped, ducked)' if music_added else '❌ Skipped'}")
-    print(f"      - Music volume: {int(MUSIC_VOLUME*100)}%")
-    print(f"      - Quality: CRF {CRF_VALUE} (excellent)")
-    print(f"      - Scaling: Lanczos (maximum sharpness)")
+    print(f"      - Music: {'✅ Added' if music_added else '❌ Skipped'}")
+    print(f"      - Quality: CRF {CRF_VALUE}")
+    print(f"      - Scaling: Lanczos")
     print(f"      - File size: {final_size:.1f} MB")
     print(f"      - Duration: {final_duration:.1f}s")
+    print(f"   ✅ YouTube-compatible format (yuv420p, faststart, AAC)")
     
-    # --- ADD PART NUMBER OVERLAY (if part_label exists) ---
+    # --- PART NUMBER OVERLAY ---
     if part_label and "Part" in part_label:
         print(f"\n📌 Adding Part number overlay: {part_label}")
-        
         overlay_output = final_output.replace(".mp4", f"_with_part.mp4")
-        
         cmd_overlay = [
             'ffmpeg', '-y',
             '-i', final_output,
@@ -385,40 +359,36 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-c:v', 'libx264',
             '-preset', 'medium',
             '-crf', str(CRF_VALUE),
+            '-profile:v', 'high',
+            '-level', '4.0',
+            '-pix_fmt', 'yuv420p',
             '-c:a', 'copy',
             '-movflags', '+faststart',
             overlay_output
         ]
-        
         try:
             subprocess.run(cmd_overlay, check=True, capture_output=True, timeout=120)
-            print(f"   ✅ Part number overlay added: {overlay_output}")
             os.unlink(final_output)
             final_output = overlay_output
         except Exception as e:
             print(f"   ⚠️ Failed to add part number overlay: {e}")
     
-    # --- CLEANUP: Remove ALL temporary files ---
+    # --- CLEANUP ---
     print("   🗑️ Cleaning up temporary files...")
-    
     temp_files = []
     for f in os.listdir(output_dir):
         if f.startswith(("segment_input_", "segment_processed_", "gameplay_segment_")):
             temp_files.append(os.path.join(output_dir, f))
-    
     for f in os.listdir(output_dir):
         if f.startswith("caption_segments_"):
-            import shutil
             shutil.rmtree(os.path.join(output_dir, f))
             print(f"      🗑️ Removed folder: {f}")
-    
     for file_path in temp_files:
         try:
             os.remove(file_path)
             print(f"      🗑️ Removed: {os.path.basename(file_path)}")
         except:
             pass
-    
     print(f"   ✅ Cleanup complete")
     
     return final_output
