@@ -12,35 +12,32 @@ on:
 jobs:
   upload:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check if videos exist (skip if none)
-        id: check
-        run: |
-          if [ -z "$(ls -A videos/ready/*.mp4 2>/dev/null)" ]; then
-            echo "has_videos=false" >> $GITHUB_OUTPUT
-            echo "No videos found, skipping upload."
-          else
-            echo "has_videos=true" >> $GITHUB_OUTPUT
-          fi
-        continue-on-error: true
-
       - name: Checkout code
-        if: steps.check.outputs.has_videos == 'true'
         uses: actions/checkout@v5
 
+      - name: Check if posting is enabled
+        id: check_posting
+        run: |
+          if [ -f POSTING_ENABLED ] && grep -q "true" POSTING_ENABLED; then
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "enabled=false" >> $GITHUB_OUTPUT
+            echo "⏸️ Posting is paused. To enable, set POSTING_ENABLED to 'true'."
+          fi
+
       - name: Set up Python
-        if: steps.check.outputs.has_videos == 'true'
+        if: steps.check_posting.outputs.enabled == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        if: steps.check.outputs.has_videos == 'true'
+        if: steps.check_posting.outputs.enabled == 'true'
         run: pip install google-api-python-client google-auth-oauthlib
 
       - name: Upload videos to YouTube
-        if: steps.check.outputs.has_videos == 'true'
+        if: steps.check_posting.outputs.enabled == 'true'
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
