@@ -1,30 +1,23 @@
-name: Generate Faceless Video
+name: Generate Faceless Videos
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # Daily at 2 AM UTC
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'Number of videos to generate'
+        required: true
+        default: '2'
+        type: string
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-on:
-  workflow_dispatch:
-    inputs:
-      topic:
-        description: 'Topic for the video story (AI generated)'
-        required: false
-        default: 'wedding betrayal best friend'
-        type: string
-      use_reddit_stories:
-        description: 'Use real Reddit stories from local data'
-        required: false
-        default: true
-        type: boolean
-      subreddit:
-        description: 'Specific subreddit to use (optional, e.g., AITAH)'
-        required: false
-        default: ''
-        type: string
-
 jobs:
-  generate-video:
+  generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6-hour max
 
     steps:
       - name: Checkout code
@@ -59,61 +52,27 @@ jobs:
           echo "REDDIT_CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
           echo "ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }}" >> $GITHUB_ENV
           echo "FAL_KEY=${{ secrets.FAL_KEY }}" >> $GITHUB_ENV
+          echo "DEBUG_MODE=False" >> $GITHUB_ENV
+          echo "FAST_MODE=True" >> $GITHUB_ENV
 
       # ------------------------------------------------------------
-      # UNZIP REDDIT STORIES DATA (ROBUST VERSION)
+      # UNZIP REDDIT STORIES DATA (if uploaded as zip)
       # ------------------------------------------------------------
       - name: Unzip reddit stories
         run: |
-          echo "📦 Checking for reddit_stories.zip..."
-          
           if [ -f reddit_stories.zip ]; then
-            echo "✅ Found reddit_stories.zip"
-            echo "📂 Showing zip contents:"
-            unzip -l reddit_stories.zip | head -20
-            
-            echo "📂 Extracting..."
-            unzip -o reddit_stories.zip -d extracted/
-            
-            echo "📂 Extracted files:"
-            ls -la extracted/
-            
-            # Handle different possible structures
-            if [ -d extracted/reddit_stories ]; then
-              echo "📂 Found nested reddit_stories folder, moving contents up..."
-              # If there's a reddit_stories folder inside the extracted folder
-              if [ "$(ls -A extracted/reddit_stories)" ]; then
-                mkdir -p reddit_stories
-                cp -r extracted/reddit_stories/* reddit_stories/
-              else
-                echo "⚠️ extracted/reddit_stories is empty!"
-              fi
-            elif [ -d extracted/AITAH ] || [ -d extracted/AmItheAsshole ]; then
-              echo "📂 Found subreddit folders directly, moving..."
-              mkdir -p reddit_stories
-              # Move all subdirectories to reddit_stories
-              for dir in extracted/*/; do
-                if [ -d "$dir" ]; then
-                  cp -r "$dir" reddit_stories/
-                fi
-              done
-            else
-              echo "⚠️ Unknown structure! Keeping extracted folder as-is"
-              mv extracted reddit_stories
-            fi
-            
-            # Clean up
-            rm -rf extracted
+            echo "📦 Found reddit_stories.zip, unzipping..."
+            unzip -o reddit_stories.zip -d reddit_stories/
             rm reddit_stories.zip
-            
-            echo "✅ Final reddit_stories structure:"
+            echo "✅ Unzipped reddit stories"
             ls -la reddit_stories/
-            if [ -d reddit_stories ]; then
-              echo "📂 Subreddit folders found:"
-              ls -la reddit_stories/
-            fi
           else
-            echo "ℹ️ No reddit_stories.zip found"
+            echo "ℹ️ No reddit_stories.zip found, checking if folder exists..."
+            if [ -d reddit_stories ]; then
+              echo "✅ reddit_stories folder found"
+            else
+              echo "⚠️ No reddit_stories data found! Will use AI-generated stories."
+            fi
           fi
 
       # ------------------------------------------------------------
@@ -141,107 +100,91 @@ jobs:
             video-state-
 
       # ------------------------------------------------------------
-      # DEBUG - Show what we have
+      # GENERATE VIDEOS
       # ------------------------------------------------------------
-      - name: Debug files
+      - name: Generate videos
+        id: generate
         run: |
-          echo "=== Current directory ==="
-          pwd
-          echo "=== Files in root ==="
-          ls -la
-          echo "=== reddit_stories folder ==="
-          if [ -d reddit_stories ]; then
-            ls -la reddit_stories/
-            echo "=== Subreddit folders ==="
-            for sub in reddit_stories/*/; do
-              if [ -d "$sub" ]; then
-                echo "Subreddit: $sub"
-                ls -la "$sub" | head -5
-                # Check for narrator_script files
-                find "$sub" -name "narrator_script_*.json" | head -3
-              fi
-            done
+          # Set the number of videos to generate
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            COUNT="${{ inputs.count }}"
           else
-            echo "❌ reddit_stories folder does NOT exist!"
-            echo "Creating empty reddit_stories folder as fallback..."
-            mkdir -p reddit_stories
+            COUNT="2"  # Default for scheduled runs
+          fi
+          echo "📹 Generating $COUNT videos..."
+
+          # Run the generation loop (cleanup after each)
+          for i in $(seq 1 $COUNT); do
+            echo ""
+            echo "======================================"
+            echo "🎬 Video $i of $COUNT"
+            echo "======================================"
+
+            python -c "from tasks import generate_video_from_reddit; result = generate_video_from_reddit(); print(result)"
+
+            if [ $? -ne 0 ]; then
+              echo "❌ Video $i failed. Stopping..."
+              break
+            fi
+
+            echo "✅ Video $i done"
+            echo "🧹 Cleaning up..."
+
+            # Clean up temporary files to save disk space
+            rm -rf output/caption_segments_* 2>/dev/null
+            rm -f output/segment_* 2>/dev/null
+            rm -f output/gameplay_segment_* 2>/dev/null
+            rm -f output/audio_processed_* 2>/dev/null
+            rm -f output/video_combined_* 2>/dev/null
+            rm -rf cached_videos/*.mp4 2>/dev/null
+            rm -rf cached_videos/*.part 2>/dev/null
+            pip cache purge 2>/dev/null
+            sudo apt-get clean 2>/dev/null
+
+            df -h | grep overlay
+            echo "⏳ Waiting 30 seconds before next video..."
+            sleep 30
+          done
+
+          echo "✅ All videos generated"
+
+      # ------------------------------------------------------------
+      # MOVE VIDEOS TO READY FOLDER AND PUSH
+      # ------------------------------------------------------------
+      - name: Move videos to ready folder and push
+        run: |
+          echo "📦 Moving videos to videos/ready/..."
+
+          mkdir -p videos/ready
+
+          # Copy videos (captioned) from output folder
+          cp output/*_captioned_*.mp4 videos/ready/ 2>/dev/null || cp output/*.mp4 videos/ready/ 2>/dev/null
+          # Copy metadata if exists
+          cp output/*_metadata.json videos/ready/ 2>/dev/null
+
+          VIDEO_COUNT=$(ls -1 videos/ready/*.mp4 2>/dev/null | wc -l)
+          echo "✅ $VIDEO_COUNT videos ready for upload"
+
+          if [ $VIDEO_COUNT -gt 0 ]; then
+            # Configure git
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            # Add and push
+            git add videos/ready/*.mp4 videos/ready/*.json
+            git commit -m "Add $VIDEO_COUNT new videos (auto-generated)"
+            git push origin main
+
+            echo "✅ Push complete! Upload workflow will trigger."
+          else
+            echo "ℹ️ No videos to push."
           fi
 
       # ------------------------------------------------------------
-      # RUN THE GENERATOR
+      # CLEANUP FINAL
       # ------------------------------------------------------------
-      - name: Run the video generator
+      - name: Final cleanup
         run: |
-          cat > run_generator.py << 'EOF'
-          import os
-          import sys
-
-          use_reddit_str = "${{ inputs.use_reddit_stories }}"
-          subreddit = "${{ inputs.subreddit }}" if "${{ inputs.subreddit }}" != "" else None
-          topic = "${{ inputs.topic }}"
-          use_reddit = use_reddit_str.lower() == "true"
-
-          print(f"🔧 Settings:")
-          print(f"   use_reddit: {use_reddit}")
-          print(f"   subreddit: {subreddit}")
-          print(f"   topic: {topic}")
-          
-          # Check if reddit_stories exists
-          reddit_exists = os.path.isdir("reddit_stories")
-          print(f"   reddit_stories folder exists: {reddit_exists}")
-          
-          if reddit_exists:
-              print("   Contents of reddit_stories:")
-              for item in os.listdir("reddit_stories"):
-                  print(f"      - {item}")
-              # Count total stories
-              total_stories = 0
-              for sub in os.listdir("reddit_stories"):
-                  sub_path = os.path.join("reddit_stories", sub)
-                  if os.path.isdir(sub_path):
-                      import glob
-                      files = glob.glob(os.path.join(sub_path, "narrator_script_*.json"))
-                      if files:
-                          import json
-                          with open(files[0], 'r') as f:
-                              stories = json.load(f)
-                              total_stories += len(stories)
-                              print(f"      r/{sub}: {len(stories)} stories")
-              print(f"   Total stories found: {total_stories}")
-
-          if use_reddit and reddit_exists:
-              print("\n📖 Using real Reddit stories from local data...")
-              from tasks import generate_video_from_reddit
-              result = generate_video_from_reddit(subreddit=subreddit)
-          else:
-              if use_reddit and not reddit_exists:
-                  print("\n⚠️ Reddit stories requested but folder not found!")
-                  print("   Falling back to AI-generated story...")
-              else:
-                  print("\n🤖 Using AI-generated story...")
-              from tasks import generate_video
-              result = generate_video(topic=topic, use_reddit=False)
-
-          print("\n📊 Result:")
-          print(result)
-          EOF
-
-          python run_generator.py
-
-      # ------------------------------------------------------------
-      # COLLECT OUTPUT
-      # ------------------------------------------------------------
-      - name: Prepare output directory and collect videos
-        run: |
-          mkdir -p output
-          mv final_*.mp4 output/ || echo "No final videos found"
-          mv output_*.mp4 output/ || echo "No output videos found"
-          echo "--- Output files ---"
-          ls -la output/
-
-      - name: Upload the generated videos
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-videos
-          path: output/*.mp4
-          retention-days: 7
+          rm -rf output/*.mp4
+          rm -rf cached_videos/*.mp4
+          df -h
