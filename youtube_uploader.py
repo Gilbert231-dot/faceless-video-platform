@@ -40,8 +40,11 @@ def upload_to_youtube(video_path, metadata_path=None, privacy_status="public"):
             "categoryId": "22"
         },
         "status": {
-            "privacyStatus": privacy_status,
-            "selfDeclaredMadeForKids": False
+            "privacyStatus": privacy_status,            # ✅ Public
+            "selfDeclaredMadeForKids": False,           # ✅ Not for kids
+            "madeForKids": False,
+            "selfDeclaredContentType": "ai",            # ✅ AI-generated content
+            "contentType": "ai"
         }
     }
     
