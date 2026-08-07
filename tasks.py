@@ -30,6 +30,25 @@ app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localh
 STORY_DATA_PATH = "reddit_stories"
 story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=DEBUG_MODE)
 
+import json
+
+def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
+    """Save story metadata alongside the video for YouTube upload."""
+    metadata = {
+        "title": title,
+        "subreddit": subreddit_name,
+        "score": score,
+        "author": author,
+        "description": f"Story from r/{subreddit_name}\n\n{title}\n\nSubscribe for more Reddit stories! 🔔",
+        "tags": ["RedditStories", "Storytime", subreddit_name, "TrueStory", "FacelessContent"],
+        "video_path": video_path
+    }
+    metadata_path = video_path.replace(".mp4", "_metadata.json")
+    with open(metadata_path, "w") as f:
+        json.dump(metadata, f, indent=2)
+    print(f"   📝 Metadata saved: {metadata_path}")
+    return metadata_path
+
 def clean_script_for_tts(text):
     """
     Clean the script before sending to ElevenLabs.
