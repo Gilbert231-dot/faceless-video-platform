@@ -42,7 +42,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"   🎙️ Voice speed: {VOICE_SPEED}x")
     
     # --- BACKGROUND MUSIC ---
-    MUSIC_PATH = "/workspaces/faceless-video-platform/assets/music/Caleb Arredondo - Feeling Blue.mp3"
+    MUSIC_PATH = "assets/music/Caleb Arredondo - Feeling Blue.mp3"
     MUSIC_VOLUME = 0.35
     
     music_available = os.path.exists(MUSIC_PATH)
