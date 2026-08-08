@@ -56,18 +56,27 @@ def generate_srt_from_audio(
                     index += 1
                 continue
             
-            chunk_size = 3
+            # FIXED: word-by-word captions (classic faceless-shorts style) —
+            # one word per subtitle cue instead of 3-word chunks.
+            # Whisper's word timestamps can slightly overlap, so each word's
+            # start is clamped to the previous word's end to keep the SRT valid
+            # (overlapping cues make the subtitles filter drop one of them).
+            chunk_size = 1
+            last_end_raw = 0.0
             for i in range(0, len(words), chunk_size):
                 chunk = words[i:i+chunk_size]
                 if chunk:
-                    start_time = chunk[0].get('start', 0) / speed_factor
-                    end_time = chunk[-1].get('end', start_time + 0.5) / speed_factor
+                    start_raw = max(chunk[0].get('start', last_end_raw), last_end_raw)
+                    end_raw = max(chunk[-1].get('end', start_raw + 0.4), start_raw + 0.15)
+                    start_time = start_raw / speed_factor
+                    end_time = end_raw / speed_factor
                     text = ' '.join([w.get('word', '').strip() for w in chunk]).strip()
                     if text:
                         f.write(f"{index}\n")
                         f.write(f"{_format_time(start_time)} --> {_format_time(end_time)}\n")
                         f.write(f"{text}\n\n")
                         index += 1
+                        last_end_raw = end_raw
     
     # Clean up common Whisper errors
     _clean_srt_text(output_srt_path)
@@ -156,7 +165,7 @@ def burn_subtitles_segmented(
     total_segments = int(duration / segment_duration) + 1
     print(f"      Splitting into {total_segments} segments of {segment_duration}s each")
     print(f"      Quality: uniform CRF {os.environ.get('VIDEO_CRF', '18')}, "
-          f"preset {os.environ.get('VIDEO_PRESET', 'veryfast')} (every segment)")
+          f"preset {os.environ.get('VIDEO_PRESET', 'slow')} (every segment)")
     
     temp_dir = os.path.join(os.path.dirname(video_path), f"caption_segments_{int(time.time())}")
     os.makedirs(temp_dir, exist_ok=True)
@@ -217,10 +226,11 @@ def burn_subtitles_segmented(
         seg_output = os.path.join(temp_dir, f"seg_captioned_{i:04d}.mp4")
         
         # Uniform CRF 18 for the captioned video (was 20/22/25 tiers).
-        # CRF controls quality, preset controls speed — CRF 18 + veryfast
-        # keeps the quality you asked for while staying fast on the runner.
+        # CRF controls quality, preset controls speed — CRF 18 + slow keeps
+        # the captions as sharp as the background (no softness from a fast
+        # preset's crude motion estimation).
         seg_crf = int(os.environ.get("VIDEO_CRF", "18"))
-        seg_preset = os.environ.get("VIDEO_PRESET", "veryfast")
+        seg_preset = os.environ.get("VIDEO_PRESET", "slow")
         quality_label = f"CRF {seg_crf} ({seg_preset})"
         
         cmd_burn = [

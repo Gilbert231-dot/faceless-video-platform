@@ -33,14 +33,16 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         VOICE_VOLUME = 1.5
     
     # --- OTHER SETTINGS ---
-    SPEED_FACTOR = 1.6
+    # Background footage playback speed. Lower = calmer/slower movement.
+    SPEED_FACTOR = 1.35
     SEGMENT_DURATION = 45
     # Uniform CRF for the WHOLE background video (was 18/20/22 per segment).
-    # CRF controls quality; the preset controls encode speed. Keeping CRF 18
-    # with preset=veryfast gives the quality you asked for while encoding fast
-    # enough to stay inside the GitHub Actions job timeout.
+    # CRF controls quality; the preset controls encode speed. preset=slow
+    # gives much sharper motion than veryfast (better motion estimation),
+    # which is what the user asked for — videos upload straight to YouTube,
+    # so the slower encode is fine.
     CRF_VALUE = int(os.environ.get("VIDEO_CRF", "18"))
-    PRESET = os.environ.get("VIDEO_PRESET", "veryfast")
+    PRESET = os.environ.get("VIDEO_PRESET", "slow")
     
     print(f"   🎙️ Voice volume: {int(VOICE_VOLUME * 100)}%")
     print(f"   🎙️ Voice speed: {VOICE_SPEED}x")

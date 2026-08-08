@@ -175,7 +175,11 @@ def generate_single_video(title, script, part_label=None, topic=None,
     print(f"🎙️ Voiceover saved to: {audio_path}")
 
     audio_duration = get_duration(audio_path)
-    segment_path = get_next_segment(audio_duration)
+    # FIXED: compile_video() extracts audio_duration * 1.5 of footage (so that
+    # after the 1.35x speedup the background still covers the full narration).
+    # Supplying only 1x meant the sped-up video ended BEFORE the narration and
+    # -shortest cut the last ~30% of every story. Supply the full amount.
+    segment_path = get_next_segment(audio_duration * 1.5)
     print(f"🎬 Using segment: {segment_path}")
 
     final_video_path, final_audio_path = compile_video(
@@ -378,8 +382,8 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                     audio_path=audio_path_1,       # raw voiceover -> whisper transcribes this
                     mux_audio_path=final_audio_1,  # exact audio in the video (sped + music)
                     output_path=video_path_1.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
-                    whisper_model="tiny",
-                    font_size=18,   # smaller for speed
+                    whisper_model="base",   # more accurate word-by-word captions
+                    font_size=18,
                     speed_factor=VOICE_SPEED,  # timestamps map exactly onto the sped-up audio
                     bold=True,
                     alignment=10,
@@ -435,7 +439,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                         audio_path=audio_path_2,       # raw voiceover -> whisper transcribes this
                         mux_audio_path=final_audio_2,  # exact audio in the video (sped + music)
                         output_path=video_path_2.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
-                        whisper_model="tiny",
+                        whisper_model="base",   # more accurate word-by-word captions
                         font_size=18,
                         # FIXED: Part 2 was missing speed_factor, so its captions
                         # were timed to the raw voice while the video played the
