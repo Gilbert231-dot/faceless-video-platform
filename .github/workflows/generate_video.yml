@@ -62,29 +62,21 @@ jobs:
         run: |
           if [ -f reddit_stories.zip ]; then
             echo "📦 Found reddit_stories.zip. Extracting..."
-            unzip -o reddit_stories.zip -d extracted/
-            echo "📂 Extracted contents:"
-            ls -la extracted/
+            
+            # Remove any existing reddit_stories folder to avoid conflicts
+            rm -rf reddit_stories
+            
+            # Extract the zip directly
+            unzip -o reddit_stories.zip
             
             # If the zip extracted a `reddit_stories` folder, move its contents up
-            if [ -d extracted/reddit_stories ]; then
+            if [ -d reddit_stories ]; then
               echo "📂 Found nested reddit_stories folder, moving contents up..."
-              mv extracted/reddit_stories/* .
-              rm -rf extracted/reddit_stories
-            else
-              # Move all subdirectories from extracted/ to the root
-              echo "📂 Moving subdirectories from extracted/ to the root..."
-              for dir in extracted/*/; do
-                if [ -d "$dir" ]; then
-                  mv "$dir" .
-                fi
-              done
+              mv reddit_stories/* ./
+              rm -rf reddit_stories
             fi
             
-            # Clean up extracted folder
-            rm -rf extracted
-            
-            # Now create reddit_stories folder and move subdirectories into it
+            # Now ensure all subdirectories are inside reddit_stories/
             mkdir -p reddit_stories
             for sub in AITAH AmItheAsshole confession offmychest ProRevenge TalesFromRetail relationship_advice pettyrevenge MaliciousCompliance unpopularopinion self TalesFromTheFrontDesk tifu TrueOffMyChest EntitledPeople; do
               if [ -d "$sub" ]; then
