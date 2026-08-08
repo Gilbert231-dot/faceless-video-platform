@@ -106,113 +106,83 @@ class RedditStoryLoader:
         story['story_id'] = value
     
     def get_available_stories(self, subreddit=None):
-    """
-    Get all available stories from all subreddits or a specific one.
-    Prioritizes narrator_script_*.json files (which have comments).
-    """
-    all_stories = []
-    active_path = self._get_active_data_path()
-    
-    # If specific subreddit requested
-    if subreddit:
-        subreddit_path = os.path.join(active_path, subreddit)
-        if not os.path.exists(subreddit_path):
-            print(f"⚠️ Subreddit folder not found: {subreddit_path}")
-            return []
+        """
+        Get all available stories from all subreddits or a specific one.
+        Prioritizes narrator_script_*.json files (which have comments).
+        """
+        all_stories = []
+        active_path = self._get_active_data_path()
         
-        # Try narrator_script_*.json first
-        narrator_file = self._find_latest_file(subreddit_path, "narrator_script_*.json")
-        if not narrator_file:
-            narrator_file = self._find_latest_file(subreddit_path, "comment_*.json")
-        if narrator_file:
-            with open(narrator_file, 'r') as f:
-                stories = json.load(f)
-                for story in stories:
-                    if 'subreddit' not in story:
-                        story['subreddit'] = subreddit
-                all_stories.extend(stories)
-                return all_stories
-        
-        # Try stories_with_comments_*.json
-        stories_with_comments = self._find_latest_file(subreddit_path, "stories_with_comments_*.json")
-        if stories_with_comments:
-            with open(stories_with_comments, 'r') as f:
-                stories = json.load(f)
-                for story in stories:
-                    if 'subreddit' not in story:
-                        story['subreddit'] = subreddit
-                all_stories.extend(stories)
-                return all_stories
-        
-        # Fallback to stories_*.json
-        stories_file = self._find_latest_file(subreddit_path, "stories_*.json")
-        if stories_file:
-            with open(stories_file, 'r') as f:
-                stories = json.load(f)
-                for story in stories:
-                    if 'subreddit' not in story:
-                        story['subreddit'] = subreddit
-                all_stories.extend(stories)
-                return all_stories
-        
-        print(f"   ⚠️ No stories file found in {subreddit_path}")
-        return []
-    
-    # Get stories from ALL subreddits
-    if not os.path.exists(active_path):
-        print(f"⚠️ Data path not found: {active_path}")
-        return []
-        
-    subreddits = [d for d in os.listdir(active_path) 
-                 if os.path.isdir(os.path.join(active_path, d))]
-    
-    if not subreddits:
-        print(f"⚠️ No subreddit folders found in {active_path}")
-        return []
-    
-    print(f"   📂 Found {len(subreddits)} subreddit folders")
-    
-    for sub in subreddits:
-        sub_path = os.path.join(active_path, sub)
-        stories_loaded = False
-        
-        # Try narrator_script_*.json
-        narrator_file = self._find_latest_file(sub_path, "narrator_script_*.json")
-        if not narrator_file:
-            narrator_file = self._find_latest_file(sub_path, "comment_*.json")
-        if narrator_file:
-            try:
+        # If specific subreddit requested
+        if subreddit:
+            subreddit_path = os.path.join(active_path, subreddit)
+            if not os.path.exists(subreddit_path):
+                print(f"⚠️ Subreddit folder not found: {subreddit_path}")
+                return []
+            
+            # Try narrator_script_*.json first
+            narrator_file = self._find_latest_file(subreddit_path, "narrator_script_*.json")
+            if not narrator_file:
+                narrator_file = self._find_latest_file(subreddit_path, "comment_*.json")
+            if narrator_file:
                 with open(narrator_file, 'r') as f:
                     stories = json.load(f)
                     for story in stories:
                         if 'subreddit' not in story:
-                            story['subreddit'] = sub
+                            story['subreddit'] = subreddit
                     all_stories.extend(stories)
-                    print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
-                    stories_loaded = True
-            except Exception as e:
-                print(f"   ⚠️ Error loading {narrator_file}: {e}")
-        
-        if not stories_loaded:
-            stories_with_comments = self._find_latest_file(sub_path, "stories_with_comments_*.json")
+                    return all_stories
+            
+            # Try stories_with_comments_*.json
+            stories_with_comments = self._find_latest_file(subreddit_path, "stories_with_comments_*.json")
             if stories_with_comments:
-                try:
-                    with open(stories_with_comments, 'r') as f:
-                        stories = json.load(f)
-                        for story in stories:
-                            if 'subreddit' not in story:
-                                story['subreddit'] = sub
-                        all_stories.extend(stories)
-                        print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
-                        stories_loaded = True
-                except Exception as e:
-                    print(f"   ⚠️ Error loading {stories_with_comments}: {e}")
-        
-        if not stories_loaded:
-            stories_file = self._find_latest_file(sub_path, "stories_*.json")
+                with open(stories_with_comments, 'r') as f:
+                    stories = json.load(f)
+                    for story in stories:
+                        if 'subreddit' not in story:
+                            story['subreddit'] = subreddit
+                    all_stories.extend(stories)
+                    return all_stories
+            
+            # Fallback to stories_*.json
+            stories_file = self._find_latest_file(subreddit_path, "stories_*.json")
             if stories_file:
+                with open(stories_file, 'r') as f:
+                    stories = json.load(f)
+                    for story in stories:
+                        if 'subreddit' not in story:
+                            story['subreddit'] = subreddit
+                    all_stories.extend(stories)
+                    return all_stories
+            
+            print(f"   ⚠️ No stories file found in {subreddit_path}")
+            return []
+        
+        # Get stories from ALL subreddits
+        if not os.path.exists(active_path):
+            print(f"⚠️ Data path not found: {active_path}")
+            return []
+            
+        subreddits = [d for d in os.listdir(active_path) 
+                     if os.path.isdir(os.path.join(active_path, d))]
+        
+        if not subreddits:
+            print(f"⚠️ No subreddit folders found in {active_path}")
+            return []
+        
+        print(f"   📂 Found {len(subreddits)} subreddit folders")
+        
+        for sub in subreddits:
+            sub_path = os.path.join(active_path, sub)
+            stories_loaded = False
+            
+            # Try narrator_script_*.json
+            narrator_file = self._find_latest_file(sub_path, "narrator_script_*.json")
+            if not narrator_file:
+                narrator_file = self._find_latest_file(sub_path, "comment_*.json")
+            if narrator_file:
                 try:
-                    with open(stories_file, 'r') as f:
+                    with open(narrator_file, 'r') as f:
                         stories = json.load(f)
                         for story in stories:
                             if 'subreddit' not in story:
@@ -221,12 +191,42 @@ class RedditStoryLoader:
                         print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
                         stories_loaded = True
                 except Exception as e:
-                    print(f"   ⚠️ Error loading {stories_file}: {e}")
+                    print(f"   ⚠️ Error loading {narrator_file}: {e}")
+            
+            if not stories_loaded:
+                stories_with_comments = self._find_latest_file(sub_path, "stories_with_comments_*.json")
+                if stories_with_comments:
+                    try:
+                        with open(stories_with_comments, 'r') as f:
+                            stories = json.load(f)
+                            for story in stories:
+                                if 'subreddit' not in story:
+                                    story['subreddit'] = sub
+                            all_stories.extend(stories)
+                            print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
+                            stories_loaded = True
+                    except Exception as e:
+                        print(f"   ⚠️ Error loading {stories_with_comments}: {e}")
+            
+            if not stories_loaded:
+                stories_file = self._find_latest_file(sub_path, "stories_*.json")
+                if stories_file:
+                    try:
+                        with open(stories_file, 'r') as f:
+                            stories = json.load(f)
+                            for story in stories:
+                                if 'subreddit' not in story:
+                                    story['subreddit'] = sub
+                            all_stories.extend(stories)
+                            print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
+                            stories_loaded = True
+                    except Exception as e:
+                        print(f"   ⚠️ Error loading {stories_file}: {e}")
+            
+            if not stories_loaded:
+                print(f"   ⚠️ No stories file found in r/{sub}")
         
-        if not stories_loaded:
-            print(f"   ⚠️ No stories file found in r/{sub}")
-    
-    return all_stories
+        return all_stories
     
     def get_unused_stories(self, subreddit=None, limit=10, force_real=False):
         """
