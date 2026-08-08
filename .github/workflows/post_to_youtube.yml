@@ -8,10 +8,29 @@ on:
     - cron: "0 6 * * *"
     - cron: "0 18 * * *"
   workflow_dispatch:
+    inputs:
+      privacy:
+        description: 'Privacy of uploaded videos'
+        required: false
+        default: 'public'
+        type: choice
+        options:
+          - public
+          - unlisted
+          - private
+
+permissions:
+  contents: write   # needed to move uploaded videos to videos/done and push
+
+concurrency:
+  group: youtube-upload
+  cancel-in-progress: false
 
 jobs:
   upload:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -42,16 +61,79 @@ jobs:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          PRIVACY_STATUS: ${{ inputs.privacy || 'public' }}
         run: |
-          for video in videos/ready/*.mp4; do
-            if [ -f "$video" ]; then
-              echo "📤 Uploading: $video"
-              metadata="${video%.mp4}_metadata.json"
-              python -c "import os; from youtube_uploader import upload_to_youtube; metadata_path='$metadata' if os.path.exists('$metadata') else None; upload_to_youtube('$video', metadata_path=metadata_path, privacy_status='public')"
-              mkdir -p videos/done
-              mv "$video" videos/done/
-              if [ -f "$metadata" ]; then
-                mv "$metadata" videos/done/
-              fi
-            fi
-          done
+          mkdir -p videos/done
+          python - <<'PY'
+          import os
+          import glob
+          import shutil
+          import sys
+
+          from youtube_uploader import upload_to_youtube
+
+          LOG = "videos/uploaded.log"
+          uploaded = set()
+          if os.path.exists(LOG):
+              with open(LOG) as f:
+                  uploaded = {line.strip() for line in f if line.strip()}
+
+          privacy = os.environ.get("PRIVACY_STATUS", "public")
+          videos = sorted(glob.glob("videos/ready/*.mp4"))
+
+          if not videos:
+              print("ℹ️ No videos to upload.")
+              sys.exit(0)
+
+          failed = False
+
+          for video in videos:
+              name = os.path.basename(video)
+              if name in uploaded:
+                  print(f"⏭️ Skipping already-uploaded: {name}")
+                  continue
+
+              metadata = video[:-4] + "_metadata.json"
+              if not os.path.exists(metadata):
+                  metadata = None
+
+              print(f"📤 Uploading: {name}")
+              try:
+                  video_id = upload_to_youtube(
+                      video,
+                      metadata_path=metadata,
+                      privacy_status=privacy,
+                  )
+                  print(f"✅ Uploaded {name} -> {video_id}")
+
+                  # Move the video + metadata out of videos/ready so they are
+                  # never uploaded again.
+                  shutil.move(video, os.path.join("videos/done", name))
+                  if metadata:
+                      shutil.move(metadata, os.path.join("videos/done", os.path.basename(metadata)))
+                  with open(LOG, "a") as f:
+                      f.write(name + "\n")
+              except Exception as e:
+                  # Quota / auth / validation errors: stop now, keep the video
+                  # in videos/ready, and let the next run (or a manual retry)
+                  # pick it up. The log below makes sure already-uploaded ones
+                  # are never re-uploaded.
+                  print(f"❌ FAILED {name}: {e}")
+                  failed = True
+                  break
+
+          # Exit non-zero on failure AFTER the git step below has run, so the
+          # move + dedup log are always pushed back.
+          if failed:
+              print("❌ Some uploads failed.")
+              sys.exit(1)
+          print("🎉 All videos uploaded successfully.")
+          PY
+
+          # FIXED: always push back the moves + upload log, so uploaded videos
+          # are never re-uploaded by later runs. (GITHUB_TOKEN pushes do not
+          # re-trigger this workflow, so there is no loop.)
+          git add -A videos/
+          git -c user.name="github-actions[bot]" -c user.email="github-actions[bot]@users.noreply.github.com" \
+              commit -m "Move uploaded videos to videos/done" 2>/dev/null || echo "ℹ️ Nothing to commit"
+          git push origin main || echo "⚠️ Push failed (videos stay in videos/done locally)"
