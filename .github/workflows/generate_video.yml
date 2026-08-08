@@ -60,38 +60,57 @@ jobs:
 
       - name: Unzip reddit stories
         run: |
-          echo "📂 Current directory contents:"
+          echo "📂 Current directory:"
           ls -la
           
           if [ -f reddit_stories.zip ]; then
-            echo "📦 Found reddit_stories.zip!"
-            echo "📂 Zip file size:"
-            ls -la reddit_stories.zip
-            
-            echo "📂 Unzipping..."
+            echo "📦 Found reddit_stories.zip. Extracting..."
             unzip -o reddit_stories.zip
             
-            echo "📂 After unzip, contents:"
+            echo "📂 After extraction:"
             ls -la
             
-            # Check if the zip extracted a reddit_stories folder or individual subreddit folders
+            # If the zip extracted a `reddit_stories` folder, move its contents up
             if [ -d reddit_stories ]; then
-              echo "✅ Found reddit_stories folder!"
-              ls -la reddit_stories/
-            elif [ -d AITAH ] || [ -d confession ]; then
-              echo "✅ Found subreddit folders directly, moving to reddit_stories/"
-              mkdir -p reddit_stories
-              mv AITAH AmItheAsshole confession offmychest ProRevenge TalesFromRetail relationship_advice pettyrevenge MaliciousCompliance unpopularopinion self TalesFromTheFrontDesk tifu TrueOffMyChest EntitledPeople reddit_stories/ 2>/dev/null || true
-              ls -la reddit_stories/
+              echo "📂 Found reddit_stories folder"
+              # Look for JSON files inside subfolders
+              for sub in reddit_stories/*/; do
+                if [ -d "$sub" ]; then
+                  echo "📂 Checking $sub"
+                  ls -la "$sub"
+                  # If there are JSON files, they are already in place
+                fi
+              done
             else
-              echo "⚠️ No expected folders found!"
-              echo "📂 Contents of current directory:"
-              ls -la
+              # If subfolders are directly in the root, move them into reddit_stories/
+              mkdir -p reddit_stories
+              for dir in AITAH AmItheAsshole confession offmychest ProRevenge TalesFromRetail relationship_advice pettyrevenge MaliciousCompliance unpopularopinion self TalesFromTheFrontDesk tifu TrueOffMyChest EntitledPeople; do
+                if [ -d "$dir" ]; then
+                  echo "📂 Moving $dir to reddit_stories/"
+                  mv "$dir" reddit_stories/
+                fi
+              done
+            fi
+            
+            # Verify JSON files exist
+            echo "📂 Verifying JSON files in reddit_stories/"
+            find reddit_stories/ -name "*.json" | head -10
+            
+            if [ -z "$(find reddit_stories/ -name '*.json' | head -1)" ]; then
+              echo "❌ No JSON files found in reddit_stories/!"
+              echo "📂 Contents of reddit_stories/:"
+              ls -la reddit_stories/
+              for sub in reddit_stories/*/; do
+                echo "📂 $sub contents:"
+                ls -la "$sub" || true
+              done
+              exit 1
+            else
+              echo "✅ JSON files found!"
             fi
           else
             echo "❌ reddit_stories.zip not found!"
-            echo "📂 Current directory contents:"
-            ls -la
+            exit 1
           fi
       - name: Cache downloaded videos
         uses: actions/cache@v4
