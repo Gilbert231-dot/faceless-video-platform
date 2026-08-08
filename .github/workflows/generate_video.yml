@@ -60,21 +60,39 @@ jobs:
 
       - name: Unzip reddit stories
         run: |
+          echo "📂 Current directory contents:"
+          ls -la
+          
           if [ -f reddit_stories.zip ]; then
-            echo "📦 Found reddit_stories.zip, unzipping..."
-            unzip -o reddit_stories.zip -d reddit_stories/
-            rm reddit_stories.zip
-            echo "✅ Unzipped reddit stories"
-            ls -la reddit_stories/
-          else
-            echo "ℹ️ No reddit_stories.zip found, checking if folder exists..."
+            echo "📦 Found reddit_stories.zip!"
+            echo "📂 Zip file size:"
+            ls -la reddit_stories.zip
+            
+            echo "📂 Unzipping..."
+            unzip -o reddit_stories.zip
+            
+            echo "📂 After unzip, contents:"
+            ls -la
+            
+            # Check if the zip extracted a reddit_stories folder or individual subreddit folders
             if [ -d reddit_stories ]; then
-              echo "✅ reddit_stories folder found"
+              echo "✅ Found reddit_stories folder!"
+              ls -la reddit_stories/
+            elif [ -d AITAH ] || [ -d confession ]; then
+              echo "✅ Found subreddit folders directly, moving to reddit_stories/"
+              mkdir -p reddit_stories
+              mv AITAH AmItheAsshole confession offmychest ProRevenge TalesFromRetail relationship_advice pettyrevenge MaliciousCompliance unpopularopinion self TalesFromTheFrontDesk tifu TrueOffMyChest EntitledPeople reddit_stories/ 2>/dev/null || true
+              ls -la reddit_stories/
             else
-              echo "⚠️ No reddit_stories data found! Will use AI-generated stories."
+              echo "⚠️ No expected folders found!"
+              echo "📂 Contents of current directory:"
+              ls -la
             fi
+          else
+            echo "❌ reddit_stories.zip not found!"
+            echo "📂 Current directory contents:"
+            ls -la
           fi
-
       - name: Cache downloaded videos
         uses: actions/cache@v4
         id: video-cache
