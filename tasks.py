@@ -29,7 +29,10 @@ app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localh
 
 # Initialize the story loader
 STORY_DATA_PATH = "reddit_stories"
-story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=DEBUG_MODE)
+import os
+# Use the environment variable if set, otherwise fallback to config
+_debug_mode = os.environ.get('DEBUG_MODE', 'False').lower() == 'true'
+story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=_debug_mode)
 
 
 def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
