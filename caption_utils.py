@@ -19,7 +19,6 @@ def get_duration(media_path: str) -> float:
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return float(result.stdout.strip())
 
-
 # ============================================================
 # PART 1: TRANSCRIBE WITH WHISPER → SRT
 # ============================================================
@@ -28,13 +27,11 @@ def generate_srt_from_audio(
     audio_path: str,
     output_srt_path: Optional[str] = None,
     model_size: str = "tiny",
-    speed_factor: float = 1.0  # <-- NEW: Voice speed factor
+    speed_factor: float = 1.0
 ) -> str:
-    """Transcribe audio with Whisper and generate SRT file with timestamp scaling."""
     import whisper
     
     print(f"   🎤 Transcribing audio with Whisper (model: {model_size})...")
-    
     model = whisper.load_model(model_size)
     result = model.transcribe(audio_path, word_timestamps=True)
     
@@ -77,28 +74,23 @@ def generate_srt_from_audio(
 
 
 def _clean_srt_text(srt_path: str):
-    """Fix common Whisper mishearings in the SRT file."""
+    corrections = {
+        "I'm ale": "I'm",
+        "I'm aale": "I'm",
+        "ale": "about",
+        "alright": "all right",
+        "gonna": "going to",
+        "wanna": "want to",
+        "kinda": "kind of",
+        "sorta": "sort of",
+    }
     with open(srt_path, 'r') as f:
         content = f.read()
-    
-    # Fix common errors
-    corrections = {
-        "I'm ale": "I'm",          # <-- FIX: removes "ale" after "I'm"
-        "I'm aale": "I'm",         # <-- Extra safety
-        "ale": "about",            # <-- Fallback: "ale" → "about"
-        "alright": "alright",
-        "gonna": "gonna",
-        "wanna": "wanna",
-        "kinda": "kinda",
-        "sorta": "sorta",
-    }
-    
     for wrong, correct in corrections.items():
         content = content.replace(wrong, correct)
-    
     with open(srt_path, 'w') as f:
         f.write(content)
-    print(f"   ✅ SRT cleaned up")
+
 
 def _shift_srt_timestamps(srt_path: str, shift_seconds: float, output_path: str):
     """Shift all timestamps in an SRT file by -shift_seconds."""
@@ -140,11 +132,13 @@ def _shift_srt_timestamps(srt_path: str, shift_seconds: float, output_path: str)
 # ============================================================
 # PART 2: BURN SUBTITLES ON SEGMENTS (WITH TIMESTAMP SHIFT)
 # ============================================================
+
 def burn_subtitles_segmented(
     video_path: str,
     srt_path: str,
     output_path: str,
-    font_size: int = 18,
+    audio_path: Optional[str] = None,   # <-- NEW: pass the original audio
+    font_size: int = 20,
     segment_duration: int = 30,
 ) -> str:
     print(f"   🎬 Burning subtitles (segmented, shifted)...")
@@ -161,21 +155,26 @@ def burn_subtitles_segmented(
     temp_dir = os.path.join(os.path.dirname(video_path), f"caption_segments_{int(time.time())}")
     os.makedirs(temp_dir, exist_ok=True)
     
-    # Extract audio once
-    audio_path = os.path.join(temp_dir, "audio.aac")
-    cmd_extract_audio = [
-        'ffmpeg', '-y',
-        '-i', video_path,
-        '-vn',
-        '-acodec', 'copy',
-        audio_path
-    ]
-    try:
-        subprocess.run(cmd_extract_audio, check=True, capture_output=True, timeout=60)
-        print(f"      ✅ Audio extracted")
-    except Exception as e:
-        print(f"      ⚠️ Audio extraction failed: {e}")
-        audio_path = None
+    # Use provided audio file if available, otherwise try to extract
+    if audio_path and os.path.exists(audio_path):
+        audio_file = audio_path
+        print(f"      ✅ Using provided audio: {audio_file}")
+    else:
+        # Fallback: extract audio from video (this may fail)
+        audio_file = os.path.join(temp_dir, "audio.aac")
+        cmd_extract_audio = [
+            'ffmpeg', '-y',
+            '-i', video_path,
+            '-vn',
+            '-acodec', 'copy',
+            audio_file
+        ]
+        try:
+            subprocess.run(cmd_extract_audio, check=True, capture_output=True, timeout=60)
+            print(f"      ✅ Audio extracted")
+        except Exception as e:
+            print(f"      ⚠️ Audio extraction failed: {e}")
+            audio_file = None
     
     segment_files = []
     abs_srt = os.path.abspath(srt_path)
@@ -185,22 +184,6 @@ def burn_subtitles_segmented(
         seg_duration = min(segment_duration, duration - start_time)
         if seg_duration <= 0:
             break
-        
-        # --- QUALITY TIERS FOR CAPTION BURNING (Optimized for Codespace) ---
-        if i == 0:
-            seg_crf = 20
-            seg_preset = "veryfast"
-            quality_label = "CRF 20 (Fast)"
-        elif i == 1:
-            seg_crf = 22
-            seg_preset = "veryfast"
-            quality_label = "CRF 22 (Fast)"
-        else:
-            seg_crf = 25
-            seg_preset = "ultrafast"
-            quality_label = "CRF 25 (Ultra Fast)"
-        
-        print(f"   📌 Segment {i+1}/{total_segments}: {quality_label} ({seg_duration:.1f}s)")
         
         # Extract video segment
         seg_input = os.path.join(temp_dir, f"seg_input_{i:04d}.mp4")
@@ -219,8 +202,23 @@ def burn_subtitles_segmented(
         shifted_srt = os.path.join(temp_dir, f"shifted_{i:04d}.srt")
         _shift_srt_timestamps(abs_srt, start_time, shifted_srt)
         
-        # Burn subtitles on segment with segment-specific settings
+        # Burn subtitles on segment
         seg_output = os.path.join(temp_dir, f"seg_captioned_{i:04d}.mp4")
+        
+        # --- QUALITY TIERS ---
+        if i == 0:
+            seg_crf = 20
+            seg_preset = "veryfast"
+            quality_label = "CRF 20 (Fast)"
+        elif i == 1:
+            seg_crf = 22
+            seg_preset = "veryfast"
+            quality_label = "CRF 22 (Fast)"
+        else:
+            seg_crf = 25
+            seg_preset = "ultrafast"
+            quality_label = "CRF 25 (Ultra Fast)"
+        
         cmd_burn = [
             'ffmpeg', '-y',
             '-i', seg_input,
@@ -279,12 +277,12 @@ def burn_subtitles_segmented(
     os.unlink(concat_file)
     
     # Mux audio
-    if audio_path and os.path.exists(audio_path):
+    if audio_file and os.path.exists(audio_file):
         print(f"   🔗 Muxing audio...")
         cmd_mux = [
             'ffmpeg', '-y',
             '-i', video_combined,
-            '-i', audio_path,
+            '-i', audio_file,
             '-c:v', 'copy',
             '-c:a', 'aac',
             '-b:a', '192k',
@@ -294,15 +292,16 @@ def burn_subtitles_segmented(
         ]
         subprocess.run(cmd_mux, check=True, capture_output=True, timeout=120)
     else:
+        # No audio, just move video
         os.rename(video_combined, output_path)
     
     # Clean up temp directory
-    if audio_path and os.path.exists(audio_path):
-        os.unlink(audio_path)
+    if audio_file and audio_file != audio_path and os.path.exists(audio_file):
+        os.unlink(audio_file)
     os.unlink(video_combined)
     os.rmdir(temp_dir)
     
-    print(f"   ✅ Captions burned successfully (segmented, shifted, tiered quality)")
+    print(f"   ✅ Captions burned successfully (segmented, shifted)")
     return output_path
 
 
@@ -315,8 +314,8 @@ def add_subtitles_to_video(
     output_path: Optional[str] = None,
     audio_path: Optional[str] = None,
     whisper_model: str = "tiny",
-    font_size: int = 18,
-    speed_factor: float = 1.0,  # <-- NEW
+    font_size: int = 20,
+    speed_factor: float = 1.0,
     font_name: str = "Arial",
     bold: bool = True,
     alignment: int = 10,
@@ -328,8 +327,8 @@ def add_subtitles_to_video(
     if not os.path.exists(video_path):
         raise Exception(f"Input video not found: {video_path}")
     
-    # Get audio
-    if audio_path is None:
+    # Use provided audio file; if none, try to extract
+    if audio_path is None or not os.path.exists(audio_path):
         audio_path = video_path.replace(".mp4", "_extracted.mp3")
         if not os.path.exists(audio_path):
             print(f"   🔄 Extracting audio from video...")
@@ -347,8 +346,10 @@ def add_subtitles_to_video(
             except Exception as e:
                 print(f"   ❌ Audio extraction failed: {e}")
                 raise Exception("Audio extraction failed")
+    else:
+        print(f"   ✅ Using provided audio: {audio_path}")
     
-    # Generate SRT with speed scaling
+    # Generate SRT from audio
     srt_path = audio_path.replace(".mp3", ".srt")
     if not os.path.exists(srt_path):
         try:
@@ -356,28 +357,13 @@ def add_subtitles_to_video(
                 audio_path=audio_path,
                 output_srt_path=srt_path,
                 model_size=whisper_model,
-                speed_factor=speed_factor  # <-- Pass speed factor
+                speed_factor=speed_factor
             )
         except Exception as e:
             print(f"   ❌ Transcription failed: {e}")
             raise Exception("Transcription failed")
     
-    # ... rest of function
-    
-    # Generate SRT
-    srt_path = audio_path.replace(".mp3", ".srt")
-    if not os.path.exists(srt_path):
-        try:
-            srt_path = generate_srt_from_audio(
-                audio_path=audio_path,
-                output_srt_path=srt_path,
-                model_size=whisper_model
-            )
-        except Exception as e:
-            print(f"   ❌ Transcription failed: {e}")
-            raise Exception("Transcription failed")
-    
-    # Burn subtitles using segmented+shifted method
+    # Burn subtitles using segmented method
     if output_path is None:
         timestamp = int(time.time())
         output_path = video_path.replace(".mp4", f"_captioned_{timestamp}.mp4")
@@ -388,6 +374,7 @@ def add_subtitles_to_video(
         video_path=video_path,
         srt_path=srt_path,
         output_path=output_path,
+        audio_path=audio_path,  # Pass the audio file directly
         font_size=font_size
     )
     
