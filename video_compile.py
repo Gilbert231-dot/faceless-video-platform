@@ -6,6 +6,19 @@ import shutil
 from tqdm import tqdm
 from config import VOICE_SPEED
 
+# --- ENCODING CONSTANTS (module-level so tasks.py can stay in sync) ---
+# Background footage playback speed. Lower = calmer/slower movement.
+SPEED_FACTOR = 1.35
+SEGMENT_DURATION = 45
+# How much footage to grab relative to the narration: the background plays at
+# SPEED_FACTOR x and the voice is sped to VOICE_SPEED x, so to cover the whole
+# narration (with 10% slack) we need:
+#   footage = audio_duration * SPEED_FACTOR / VOICE_SPEED * 1.1
+# This replaces the old hardcoded 1.5x which (a) rendered ~25% more footage
+# than needed and (b) combined with a 1x supply from get_next_segment, made
+# the sped-up video end BEFORE the narration so -shortest cut stories short.
+EXTRACT_FACTOR = round((SPEED_FACTOR / VOICE_SPEED) * 1.1, 3)
+
 # Helper: Get duration (seconds)
 def get_duration(media_path: str) -> float:
     cmd = [
@@ -33,9 +46,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         VOICE_VOLUME = 1.5
     
     # --- OTHER SETTINGS ---
-    # Background footage playback speed. Lower = calmer/slower movement.
-    SPEED_FACTOR = 1.35
-    SEGMENT_DURATION = 45
     # Uniform CRF for the WHOLE background video (was 18/20/22 per segment).
     # CRF controls quality; the preset controls encode speed. preset=slow
     # gives much sharper motion than veryfast (better motion estimation),
@@ -67,7 +77,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
     
-    extract_duration = audio_duration * 1.5
+    extract_duration = audio_duration * EXTRACT_FACTOR
     print(f"   ⏱️ Extracting {extract_duration:.2f}s of footage (will be sped up {SPEED_FACTOR}x)")
     
     output_dir = os.environ.get('OUTPUT_DIR', '.')
@@ -128,15 +138,37 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             continue
         
         # --- SHORT SEGMENT HANDLING ---
+        # FIXED: a failed -c:v copy used to kill the whole video. Now it falls
+        # back to a re-encode, and only skips the sliver as a last resort.
         if segment_duration < 5.0:
             segment_output = os.path.join(output_dir, f"segment_processed_{i}_{int(time.time())}.mp4")
-            subprocess.run([
-                'ffmpeg', '-y',
-                '-i', segment_input,
-                '-c:v', 'copy',
-                '-an',
-                segment_output
-            ], check=True, capture_output=True, timeout=60)
+            try:
+                subprocess.run([
+                    'ffmpeg', '-y',
+                    '-i', segment_input,
+                    '-c:v', 'copy',
+                    '-an',
+                    segment_output
+                ], check=True, capture_output=True, timeout=60)
+            except Exception as e:
+                print(f"   ⚠️ Short segment {i+1} copy failed ({e}); re-encoding...")
+                try:
+                    subprocess.run([
+                        'ffmpeg', '-y',
+                        '-i', segment_input,
+                        '-c:v', 'libx264',
+                        '-preset', PRESET,
+                        '-crf', str(CRF_VALUE),
+                        '-pix_fmt', 'yuv420p',
+                        '-an',
+                        segment_output
+                    ], check=True, capture_output=True, timeout=120)
+                except Exception as e2:
+                    print(f"   ⚠️ Short segment {i+1} still failed ({e2}); skipping it")
+                    if os.path.exists(segment_input):
+                        os.unlink(segment_input)
+                    pbar.update(1)
+                    continue
             segment_files.append(segment_output)
             pbar.update(1)
             print(f"   ✅ Segment {i+1}/{total_segments} complete (copied, no processing)")

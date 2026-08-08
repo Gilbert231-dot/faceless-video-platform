@@ -162,6 +162,11 @@ jobs:
           echo "📹 Generating $COUNT videos..."
           echo "🔬 DEBUG_MODE is set to: ${{ env.DEBUG_MODE }}"
 
+          # Free the ~3 GB pip cache BEFORE the heavy encoding so the runner
+          # disk has headroom while rendering segments (ffmpeg I/O errors like
+          # exit 234 happened when the disk got tight).
+          pip cache purge >/dev/null 2>&1 || true
+
           for i in $(seq 1 $COUNT); do
             echo ""
             echo "======================================"
@@ -219,8 +224,8 @@ jobs:
           videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
 
           if not videos:
-              print("ℹ️ No videos to upload.")
-              raise SystemExit(0)
+              print("❌ No videos were generated — the run produced nothing.")
+              raise SystemExit(1)
 
           for video in videos:
               metadata = video[:-4] + "_metadata.json"

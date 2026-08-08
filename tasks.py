@@ -11,7 +11,7 @@ from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
 from caption_utils import add_subtitles_to_video
 from reddit_story_loader import RedditStoryLoader
-from video_compile import compile_video, get_duration
+from video_compile import compile_video, get_duration, EXTRACT_FACTOR
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
 from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED
@@ -175,11 +175,11 @@ def generate_single_video(title, script, part_label=None, topic=None,
     print(f"🎙️ Voiceover saved to: {audio_path}")
 
     audio_duration = get_duration(audio_path)
-    # FIXED: compile_video() extracts audio_duration * 1.5 of footage (so that
-    # after the 1.35x speedup the background still covers the full narration).
-    # Supplying only 1x meant the sped-up video ended BEFORE the narration and
-    # -shortest cut the last ~30% of every story. Supply the full amount.
-    segment_path = get_next_segment(audio_duration * 1.5)
+    # FIXED: compile_video() extracts EXTRACT_FACTOR x the audio length of
+    # footage. Supplying only 1x meant the sped-up video ended BEFORE the
+    # narration and -shortest cut the last ~30% of every story. Supply the
+    # exact amount the compiler needs (same constant, always in sync).
+    segment_path = get_next_segment(audio_duration * EXTRACT_FACTOR)
     print(f"🎬 Using segment: {segment_path}")
 
     final_video_path, final_audio_path = compile_video(
