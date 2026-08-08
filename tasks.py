@@ -187,7 +187,7 @@ def generate_single_video(title, script, part_label=None, topic=None,
         part_label=part_label
     )
     
-    return final_video_path
+    return final_video_path, audio_path
 
 
 # ============================================================
@@ -354,7 +354,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         
         # ----- GENERATE PART 1 -----
         print("\n🎬 GENERATING PART 1...")
-        video_path_1 = generate_single_video(
+        video_path_1, audio_path_1 = generate_single_video(
             title=title,
             script=part1_script,
             part_label=None,
@@ -371,10 +371,11 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             try:
                 captioned_path = add_subtitles_to_video(
                     video_path=video_path_1,
+                    audio_path=audio_path_1,  # <-- Pass the original audio file
                     output_path=video_path_1.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
                     whisper_model="tiny",
                     font_size=18,   # smaller for speed
-                    speed_factor=0.98 / VOICE_SPEED,  # <-- Imported from config
+                    speed_factor=VOICE_SPEED,  # <-- Imported from config
                     bold=True,
                     alignment=10,
                     margin_v=90
