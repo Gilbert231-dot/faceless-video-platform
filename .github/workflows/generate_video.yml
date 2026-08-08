@@ -16,6 +16,10 @@ on:
         default: true
         type: boolean
 
+permissions:
+  contents: write   # needed to push videos/state back to the repo
+  actions: write    # needed to dispatch the upload workflow via gh
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -55,6 +59,7 @@ jobs:
           echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> $GITHUB_ENV
           echo "ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }}" >> $GITHUB_ENV
           echo "FAL_KEY=${{ secrets.FAL_KEY }}" >> $GITHUB_ENV
+          # DEBUG_MODE is read by config.py / tasks.py. Test mode => True (stories NOT consumed).
           echo "DEBUG_MODE=${{ inputs.test_mode == 'true' && 'True' || 'False' }}" >> $GITHUB_ENV
           echo "FAST_MODE=True" >> $GITHUB_ENV
 
@@ -62,20 +67,20 @@ jobs:
         run: |
           if [ -f reddit_stories.zip ]; then
             echo "📦 Found reddit_stories.zip. Extracting..."
-            
+
             # Remove any existing reddit_stories folder to avoid conflicts
             rm -rf reddit_stories
-            
+
             # Extract the zip directly
             unzip -o reddit_stories.zip
-            
+
             # If the zip extracted a `reddit_stories` folder, move its contents up
             if [ -d reddit_stories ]; then
               echo "📂 Found nested reddit_stories folder, moving contents up..."
               mv reddit_stories/* ./
               rm -rf reddit_stories
             fi
-            
+
             # Now ensure all subdirectories are inside reddit_stories/
             mkdir -p reddit_stories
             for sub in AITAH AmItheAsshole confession offmychest ProRevenge TalesFromRetail relationship_advice pettyrevenge MaliciousCompliance unpopularopinion self TalesFromTheFrontDesk tifu TrueOffMyChest EntitledPeople; do
@@ -84,11 +89,11 @@ jobs:
                 mv "$sub" reddit_stories/
               fi
             done
-            
+
             # Verify JSON files exist
             echo "📂 Verifying JSON files in reddit_stories/"
             find reddit_stories/ -name "*.json" | head -10
-            
+
             if [ -z "$(find reddit_stories/ -name '*.json' | head -1)" ]; then
               echo "❌ No JSON files found in reddit_stories/!"
               echo "📂 Contents of reddit_stories/:"
@@ -112,6 +117,7 @@ jobs:
             echo "❌ reddit_stories.zip not found!"
             exit 1
           fi
+
       - name: Cache downloaded videos
         uses: actions/cache@v4
         id: video-cache
@@ -190,11 +196,21 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            git add videos/ready/*.mp4 videos/ready/*.json
-            git commit -m "Add $VIDEO_COUNT new videos (auto-generated)"
+            # FIXED: also persist the used-story IDs and clip state, otherwise
+            # every run re-uses the same stories (duplicate videos).
+            # -f is needed because *.json is gitignored.
+            git add -f videos/ready/ used_story_ids.json test_used_ids.json clip_state.json 2>/dev/null || true
+
+            git commit -m "Add $VIDEO_COUNT new videos (auto-generated)" 2>/dev/null || echo "ℹ️ Nothing new to commit"
             git push origin main
 
-            echo "✅ Push complete! Upload workflow will trigger."
+            echo "✅ Push complete!"
+
+            # FIXED: pushes made with GITHUB_TOKEN do NOT trigger other workflows,
+            # so the upload workflow would only run on its cron. Dispatch it now.
+            echo "🚀 Triggering YouTube upload workflow..."
+            GH_TOKEN="${{ github.token }}" gh workflow run post_to_youtube.yml --ref main || echo "⚠️ Could not dispatch upload workflow"
+            echo "✅ Upload workflow triggered (respects POSTING_ENABLED)."
           else
             echo "ℹ️ No videos to push."
           fi
