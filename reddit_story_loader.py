@@ -237,7 +237,6 @@ class RedditStoryLoader:
             if not stories_loaded:
                 print(f"   ⚠️ No stories file found in r/{sub}")
 
-            print(f"   🔍 Looking for story files in {subreddit_path}")
             files = glob.glob(os.path.join(subreddit_path, "*.json"))
             print(f"   🔍 Found JSON files: {[os.path.basename(f) for f in files]}")
         
