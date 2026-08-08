@@ -60,37 +60,38 @@ jobs:
 
       - name: Unzip reddit stories
         run: |
-          echo "📂 Current directory:"
-          ls -la
-          
           if [ -f reddit_stories.zip ]; then
             echo "📦 Found reddit_stories.zip. Extracting..."
-            unzip -o reddit_stories.zip
-            
-            echo "📂 After extraction:"
-            ls -la
+            unzip -o reddit_stories.zip -d extracted/
+            echo "📂 Extracted contents:"
+            ls -la extracted/
             
             # If the zip extracted a `reddit_stories` folder, move its contents up
-            if [ -d reddit_stories ]; then
-              echo "📂 Found reddit_stories folder"
-              # Look for JSON files inside subfolders
-              for sub in reddit_stories/*/; do
-                if [ -d "$sub" ]; then
-                  echo "📂 Checking $sub"
-                  ls -la "$sub"
-                  # If there are JSON files, they are already in place
-                fi
-              done
+            if [ -d extracted/reddit_stories ]; then
+              echo "📂 Found nested reddit_stories folder, moving contents up..."
+              mv extracted/reddit_stories/* .
+              rm -rf extracted/reddit_stories
             else
-              # If subfolders are directly in the root, move them into reddit_stories/
-              mkdir -p reddit_stories
-              for dir in AITAH AmItheAsshole confession offmychest ProRevenge TalesFromRetail relationship_advice pettyrevenge MaliciousCompliance unpopularopinion self TalesFromTheFrontDesk tifu TrueOffMyChest EntitledPeople; do
+              # Move all subdirectories from extracted/ to the root
+              echo "📂 Moving subdirectories from extracted/ to the root..."
+              for dir in extracted/*/; do
                 if [ -d "$dir" ]; then
-                  echo "📂 Moving $dir to reddit_stories/"
-                  mv "$dir" reddit_stories/
+                  mv "$dir" .
                 fi
               done
             fi
+            
+            # Clean up extracted folder
+            rm -rf extracted
+            
+            # Now create reddit_stories folder and move subdirectories into it
+            mkdir -p reddit_stories
+            for sub in AITAH AmItheAsshole confession offmychest ProRevenge TalesFromRetail relationship_advice pettyrevenge MaliciousCompliance unpopularopinion self TalesFromTheFrontDesk tifu TrueOffMyChest EntitledPeople; do
+              if [ -d "$sub" ]; then
+                echo "📂 Moving $sub to reddit_stories/"
+                mv "$sub" reddit_stories/
+              fi
+            done
             
             # Verify JSON files exist
             echo "📂 Verifying JSON files in reddit_stories/"
@@ -107,6 +108,13 @@ jobs:
               exit 1
             else
               echo "✅ JSON files found!"
+              echo "📊 Story count per subreddit:"
+              for sub in reddit_stories/*/; do
+                if [ -d "$sub" ]; then
+                  count=$(find "$sub" -name "*.json" | wc -l)
+                  echo "   $(basename "$sub"): $count JSON files"
+                fi
+              done
             fi
           else
             echo "❌ reddit_stories.zip not found!"
