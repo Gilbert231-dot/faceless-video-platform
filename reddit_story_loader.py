@@ -122,6 +122,8 @@ class RedditStoryLoader:
             
             # Try narrator_script_*.json first
             narrator_file = self._find_latest_file(subreddit_path, "narrator_script_*.json")
+            if not narrator_file:
+                narrator_file = self._find_latest_file(subreddit_path, "comment_*.json")
             if narrator_file:
                 with open(narrator_file, 'r') as f:
                     stories = json.load(f)
@@ -234,6 +236,10 @@ class RedditStoryLoader:
             
             if not stories_loaded:
                 print(f"   ⚠️ No stories file found in r/{sub}")
+
+            print(f"   🔍 Looking for story files in {subreddit_path}")
+            files = glob.glob(os.path.join(subreddit_path, "*.json"))
+            print(f"   🔍 Found JSON files: {[os.path.basename(f) for f in files]}")
         
         return all_stories
     
