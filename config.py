@@ -12,7 +12,7 @@ FAST_MODE = False  # Set to False for production quality
 
 # Set to True for testing/debugging (stories won't be consumed)
 # Set to False for production (stories will be marked as used)
-DEBUG_MODE = True  # Change to False when ready to post real videos
+DEBUG_MODE = False  # Change to False when ready to post real videos
 
 # Voice speed (used in video_compile and tasks)
 VOICE_SPEED = 1.12  # Same value as in video_compile
