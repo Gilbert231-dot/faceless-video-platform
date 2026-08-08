@@ -242,7 +242,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add -f used_story_ids.json test_used_ids.json clip_state.json 2>/dev/null || true
+          # FIXED: git add ABORTS and stages NOTHING if any pathspec is missing
+          # (test_used_ids.json / clip_state.json don't exist on a fresh runner).
+          # Add each file separately so one missing file can't block the others.
+          git add -f used_story_ids.json 2>/dev/null || true
+          git add -f test_used_ids.json 2>/dev/null || true
+          git add -f clip_state.json 2>/dev/null || true
           git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"
           git push origin main || echo "⚠️ State push failed"
 
