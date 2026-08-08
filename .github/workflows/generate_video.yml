@@ -180,50 +180,67 @@ jobs:
             rm -f output/video_combined_* 2>/dev/null
             rm -rf cached_videos/*.mp4 2>/dev/null
             rm -rf cached_videos/*.part 2>/dev/null
-            pip cache purge 2>/dev/null
-            sudo apt-get clean 2>/dev/null
+            pip cache purge 2>/dev/null || true
+            sudo apt-get clean 2>/dev/null || true
 
-            df -h | grep overlay
+            # || true: this is cosmetic cleanup — it must NEVER fail the job
+            # (set -e -o pipefail would otherwise abort after a video was made).
+            df -h | grep overlay || true
             echo "⏳ Waiting 30 seconds before next video..."
             sleep 30
           done
 
           echo "✅ All videos generated"
 
-      - name: Move videos to ready folder and push
+      # FIXED: CRF 18 videos are ~187 MB for a 100s short — GitHub rejects
+      # files over 100 MB, so videos CANNOT be pushed to the repo anymore.
+      # Upload them directly to YouTube as PRIVATE instead (same OAuth secrets
+      # as the upload workflow). You review them in YouTube Studio, then make
+      # them public yourself when you're happy.
+      - name: Upload videos to YouTube (private)
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          PRIVACY_STATUS: private
         run: |
-          echo "📦 Moving videos to videos/ready/..."
+          python - <<'PY'
+          import glob
+          import os
 
-          mkdir -p videos/ready
+          from youtube_uploader import upload_to_youtube
 
-          cp output/*_captioned_*.mp4 videos/ready/ 2>/dev/null || cp output/*.mp4 videos/ready/ 2>/dev/null
-          cp output/*_metadata.json videos/ready/ 2>/dev/null
+          privacy = os.environ.get("PRIVACY_STATUS", "private")
+          videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
 
-          VIDEO_COUNT=$(ls -1 videos/ready/*.mp4 2>/dev/null | wc -l)
-          echo "✅ $VIDEO_COUNT videos ready for upload"
+          if not videos:
+              print("ℹ️ No videos to upload.")
+              raise SystemExit(0)
 
-          if [ $VIDEO_COUNT -gt 0 ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
+          for video in videos:
+              metadata = video[:-4] + "_metadata.json"
+              if not os.path.exists(metadata):
+                  metadata = None
 
-            # FIXED: also persist the used-story IDs and clip state, otherwise
-            # every run re-uses the same stories (duplicate videos).
-            # -f is needed because *.json is gitignored.
-            git add -f videos/ready/ used_story_ids.json test_used_ids.json clip_state.json 2>/dev/null || true
+              print(f"📤 Uploading {os.path.basename(video)} as {privacy}...")
+              video_id = upload_to_youtube(
+                  video,
+                  metadata_path=metadata,
+                  privacy_status=privacy,
+              )
+              print(f"✅ Uploaded -> https://youtu.be/{video_id} (private)")
+          PY
 
-            git commit -m "Add $VIDEO_COUNT new videos (auto-generated)" 2>/dev/null || echo "ℹ️ Nothing new to commit"
-            git push origin main
+      - name: Push state files
+        run: |
+          # Persist used-story IDs and clip state so the next run doesn't reuse
+          # the same stories (state JSONs only — videos are uploaded directly).
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            echo "✅ Push complete!"
-
-            # FIXED: pushes made with GITHUB_TOKEN do NOT trigger other workflows,
-            # so the upload workflow would only run on its cron. Dispatch it now.
-            echo "🚀 Triggering YouTube upload workflow..."
-            GH_TOKEN="${{ github.token }}" gh workflow run post_to_youtube.yml --ref main || echo "⚠️ Could not dispatch upload workflow"
-            echo "✅ Upload workflow triggered (respects POSTING_ENABLED)."
-          else
-            echo "ℹ️ No videos to push."
-          fi
+          git add -f used_story_ids.json test_used_ids.json clip_state.json 2>/dev/null || true
+          git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"
+          git push origin main || echo "⚠️ State push failed"
 
       - name: Final cleanup
         run: |
