@@ -29,7 +29,6 @@ app = Celery('tasks', broker='redis://localhost:6379/0', backend='redis://localh
 
 # Initialize the story loader
 STORY_DATA_PATH = "reddit_stories"
-import os
 # Use the environment variable if set, otherwise fallback to config
 _debug_mode = os.environ.get('DEBUG_MODE', 'False').lower() == 'true'
 story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=_debug_mode)
@@ -60,7 +59,6 @@ def clean_script_for_tts(text):
     corrections = {
         "I'm ale": "I'm",          # <-- The exact fix
         "I'm aale": "I'm",         # Extra safety
-        "ale": "",            # Fallback
         "alright": "alright",
         "gonna": "gonna",
         "wanna": "wonna",
@@ -180,7 +178,7 @@ def generate_single_video(title, script, part_label=None, topic=None,
     segment_path = get_next_segment(audio_duration)
     print(f"🎬 Using segment: {segment_path}")
 
-    final_video_path = compile_video(
+    final_video_path, final_audio_path = compile_video(
         video_paths=[segment_path],
         audio_path=audio_path,
         script=full_script,
@@ -190,7 +188,10 @@ def generate_single_video(title, script, part_label=None, topic=None,
         part_label=part_label
     )
     
-    return final_video_path, audio_path
+    # Returns (video, raw_voiceover, final_audio_track). The final audio is
+    # the sped-up + music track actually inside the video — the caption step
+    # uses it so the burned-in captions stay in sync with the narrator.
+    return final_video_path, audio_path, final_audio_path
 
 
 # ============================================================
@@ -357,7 +358,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         
         # ----- GENERATE PART 1 -----
         print("\n🎬 GENERATING PART 1...")
-        video_path_1, audio_path_1 = generate_single_video(
+        video_path_1, audio_path_1, final_audio_1 = generate_single_video(
             title=title,
             script=part1_script,
             part_label=None,
@@ -374,11 +375,12 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             try:
                 captioned_path = add_subtitles_to_video(
                     video_path=video_path_1,
-                    audio_path=audio_path_1,  # <-- Pass the original audio file
+                    audio_path=audio_path_1,       # raw voiceover -> whisper transcribes this
+                    mux_audio_path=final_audio_1,  # exact audio in the video (sped + music)
                     output_path=video_path_1.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
                     whisper_model="tiny",
                     font_size=18,   # smaller for speed
-                    speed_factor=VOICE_SPEED,  # <-- Imported from config
+                    speed_factor=VOICE_SPEED,  # timestamps map exactly onto the sped-up audio
                     bold=True,
                     alignment=10,
                     margin_v=90
@@ -401,12 +403,19 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 # Clean up extracted files
                 base_name = video_path_1.replace(".mp4", "")
                 final_cleanup(base_name)
+            finally:
+                # The processed audio was already muxed into the video (or the
+                # original kept) — free the temp file either way.
+                if final_audio_1 and os.path.exists(final_audio_1) and final_audio_1 != audio_path_1:
+                    os.remove(final_audio_1)
         
         # ----- GENERATE PART 2 -----
         video_path_2 = None
         if part_count == 2 and part2_script:
             print("\n🎬 GENERATING PART 2...")
-            video_path_2 = generate_single_video(
+            # FIXED: generate_single_video returns (video, voiceover, final_audio) -
+            # unpack all three instead of assigning the tuple to video_path_2.
+            video_path_2, audio_path_2, final_audio_2 = generate_single_video(
                 title=title,
                 script=part2_script,
                 part_label="Part 2",
@@ -423,9 +432,15 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 try:
                     captioned_path_2 = add_subtitles_to_video(
                         video_path=video_path_2,
+                        audio_path=audio_path_2,       # raw voiceover -> whisper transcribes this
+                        mux_audio_path=final_audio_2,  # exact audio in the video (sped + music)
                         output_path=video_path_2.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
                         whisper_model="tiny",
                         font_size=18,
+                        # FIXED: Part 2 was missing speed_factor, so its captions
+                        # were timed to the raw voice while the video played the
+                        # sped-up track — out of sync.
+                        speed_factor=VOICE_SPEED,
                         bold=True,
                         alignment=10,
                         margin_v=90
@@ -445,7 +460,16 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                     print("   Keeping original video without captions")
                     base_name = video_path_2.replace(".mp4", "")
                     final_cleanup(base_name)
+                finally:
+                    if final_audio_2 and os.path.exists(final_audio_2) and final_audio_2 != audio_path_2:
+                        os.remove(final_audio_2)
         
+        # ----- SAVE METADATA FOR THE YOUTUBE UPLOAD STEP -----
+        print("\n📝 SAVING VIDEO METADATA...")
+        save_metadata(video_path_1, title, subreddit_name, score, author)
+        if video_path_2 and isinstance(video_path_2, str):
+            save_metadata(video_path_2, f"{title} (Part 2)", subreddit_name, score, author)
+
         # Mark the story as used (only in production mode)
         marked = False
         if mark_used and not DEBUG_MODE:
@@ -544,7 +568,8 @@ def generate_video(topic=None, subreddit=None, use_reddit=False):
             subreddit_name = topic if topic else "AITAH"
         
         print("🎬 GENERATING PART 1...")
-        video_path_1 = generate_single_video(
+        # FIXED: unpack the (video, voiceover, final_audio) tuple
+        video_path_1, audio_path_1, _final_audio_1 = generate_single_video(
             title=title,
             script=part1_script,
             part_label="Part 1" if part_count == 2 else None,
@@ -557,7 +582,7 @@ def generate_video(topic=None, subreddit=None, use_reddit=False):
         video_path_2 = None
         if part2_script:
             print("🎬 GENERATING PART 2...")
-            video_path_2 = generate_single_video(
+            video_path_2, audio_path_2, _final_audio_2 = generate_single_video(
                 title=title,
                 script=part2_script,
                 part_label="Part 2",

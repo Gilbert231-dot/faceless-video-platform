@@ -62,6 +62,12 @@ jobs:
           # DEBUG_MODE is read by config.py / tasks.py. Test mode => True (stories NOT consumed).
           echo "DEBUG_MODE=${{ inputs.test_mode == 'true' && 'True' || 'False' }}" >> $GITHUB_ENV
           echo "FAST_MODE=True" >> $GITHUB_ENV
+          # CRF 18 for BOTH the background video (video_compile.py) and the
+          # caption burn (caption_utils.py). preset=veryfast keeps encoding
+          # fast — CRF controls quality, the preset controls speed. Raise
+          # VIDEO_CRF to ~23-25 (or set count=1) if you still hit timeouts.
+          echo "VIDEO_CRF=18" >> $GITHUB_ENV
+          echo "VIDEO_PRESET=veryfast" >> $GITHUB_ENV
 
       - name: Unzip reddit stories
         run: |
@@ -136,6 +142,10 @@ jobs:
           restore-keys: |
             video-state-
 
+      # NOTE: per-video time was cut drastically (no redundant full re-encode,
+      # preset veryfast instead of medium), so 2 videos fit comfortably inside
+      # the 360-min job limit. If you raise the count, prefer running several
+      # workflow_dispatch runs in parallel over raising count in one run.
       - name: Generate videos
         id: generate
         run: |

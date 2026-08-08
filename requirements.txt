@@ -16,3 +16,6 @@ numpy
 videocaptioner
 elevenlabs>=1.0.0
 fal-client
+tqdm
+google-api-python-client
+google-auth-oauthlib

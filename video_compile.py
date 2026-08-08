@@ -35,8 +35,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     # --- OTHER SETTINGS ---
     SPEED_FACTOR = 1.6
     SEGMENT_DURATION = 45
-    CRF_VALUE = 18
-    PRESET = "medium"
+    # Uniform CRF for the WHOLE background video (was 18/20/22 per segment).
+    # CRF controls quality; the preset controls encode speed. Keeping CRF 18
+    # with preset=veryfast gives the quality you asked for while encoding fast
+    # enough to stay inside the GitHub Actions job timeout.
+    CRF_VALUE = int(os.environ.get("VIDEO_CRF", "18"))
+    PRESET = os.environ.get("VIDEO_PRESET", "veryfast")
     
     print(f"   🎙️ Voice volume: {int(VOICE_VOLUME * 100)}%")
     print(f"   🎙️ Voice speed: {VOICE_SPEED}x")
@@ -94,7 +98,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     total_segments = int(video_duration / SEGMENT_DURATION) + 1
     print(f"   📦 Splitting into {total_segments} segments")
-    print(f"   📊 Quality tiers: CRF 18 (segment 1), CRF 20 (segment 2), CRF 22+ (segments 3+)")
+    print(f"   📊 Quality: uniform CRF {CRF_VALUE}, preset {PRESET} (same quality for every segment)")
     
     segment_files = []
     pbar = tqdm(total=total_segments, desc="🎬 Rendering segments", unit="segment")
@@ -138,19 +142,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 os.unlink(segment_input)
             continue
         
-        # --- QUALITY TIERS ---
-        if i == 0:
-            segment_crf = 18
-            segment_preset = "medium"
-            quality_label = "CRF 18 (High)"
-        elif i == 1:
-            segment_crf = 20
-            segment_preset = "medium"
-            quality_label = "CRF 20 (Medium)"
-        else:
-            segment_crf = 22
-            segment_preset = "veryfast"
-            quality_label = "CRF 22 (Efficient)"
+        # Uniform CRF for every segment (removed the 18/20/22 quality tiers).
+        segment_crf = CRF_VALUE
+        segment_preset = PRESET
+        quality_label = f"CRF {CRF_VALUE} ({PRESET})"
         
         print(f"   📌 Segment {i+1}/{total_segments}: {quality_label} ({segment_duration:.1f}s)")
         
@@ -193,8 +188,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 f'format=yuv420p',
                 '-sws_flags', 'lanczos',
                 '-c:v', 'libx264',
-                '-preset', 'veryfast',
-                '-crf', '25',
+                '-preset', PRESET,
+                '-crf', str(CRF_VALUE),
                 '-profile:v', 'high',
                 '-level', '4.0',
                 '-an',
@@ -292,16 +287,14 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     # --- FINAL VIDEO COMPILATION (YouTube-Compatible) ---
     print("⚡ Adding audio to video...")
     final_output = os.path.join(output_dir, f"output_{int(time.time())}.mp4")
+    # FIXED: mux with -c:v copy instead of re-encoding. The segments were
+    # already encoded at CRF 18, so this second full encode of the whole video
+    # was pure wasted CPU and a major cause of the GitHub Actions timeouts.
     cmd_audio = [
         'ffmpeg', '-y',
         '-i', video_combined,
         '-i', final_audio,
-        '-c:v', 'libx264',
-        '-preset', 'medium',
-        '-crf', '18',
-        '-profile:v', 'high',
-        '-level', '4.0',
-        '-pix_fmt', 'yuv420p',
+        '-c:v', 'copy',
         '-c:a', 'aac',
         '-b:a', '192k',
         '-movflags', '+faststart',
@@ -312,8 +305,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     try:
         subprocess.run(cmd_audio, check=True, capture_output=True, timeout=120)
         os.unlink(video_combined)
-        if final_audio != audio_path and os.path.exists(final_audio):
-            os.unlink(final_audio)
+        # NOTE: final_audio is intentionally KEPT here — the caption step
+        # reuses it so the burned-in captions are in sync with the exact
+        # audio track that's inside the video (sped up + music).
     except Exception as e:
         os.rename(video_combined, final_output)
     
@@ -357,7 +351,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             f"shadowx=2:"
             f"shadowy=2",
             '-c:v', 'libx264',
-            '-preset', 'medium',
+            '-preset', PRESET,
             '-crf', str(CRF_VALUE),
             '-profile:v', 'high',
             '-level', '4.0',
@@ -391,4 +385,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             pass
     print(f"   ✅ Cleanup complete")
     
-    return final_output
+    # Return the video AND the exact audio track inside it, so the caption
+    # step can burn subtitles that stay in sync with the narrator's voice.
+    return final_output, final_audio

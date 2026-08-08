@@ -37,7 +37,7 @@ def normalize_slang(text):
     for slang, full in SLANG_MAP.items():
         text = re.sub(rf'\b{slang}\b', full, text, flags=re.IGNORECASE)
     
-    text = re.sub(r'(\d+)(F|M)\b', r'\1 year old \2\ale', text, flags=re.IGNORECASE)
+    text = re.sub(r'(\d+)\s*([FM])\b', lambda m: f"{m.group(1)} year old {'female' if m.group(2).upper() == 'F' else 'male'}", text, flags=re.IGNORECASE)
     return text
 
 # ===========================

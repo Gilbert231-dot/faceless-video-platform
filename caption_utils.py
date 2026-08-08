@@ -32,6 +32,9 @@ def generate_srt_from_audio(
     import whisper
     
     print(f"   🎤 Transcribing audio with Whisper (model: {model_size})...")
+    # NOTE: atempo is a linear time-stretch, so dividing whisper's timestamps
+    # by speed_factor maps them EXACTLY onto the sped-up audio timeline that
+    # gets muxed into the final video (no approximation, no drift).
     model = whisper.load_model(model_size)
     result = model.transcribe(audio_path, word_timestamps=True)
     
@@ -77,7 +80,8 @@ def _clean_srt_text(srt_path: str):
     corrections = {
         "I'm ale": "I'm",
         "I'm aale": "I'm",
-        "ale": "about",
+        # REMOVED the bare "ale" -> "about" rule: it corrupted whole words in
+        # the captions ("male" -> "mabout", "scale" -> "scabout").
         "alright": "all right",
         "gonna": "going to",
         "wanna": "want to",
@@ -137,7 +141,8 @@ def burn_subtitles_segmented(
     video_path: str,
     srt_path: str,
     output_path: str,
-    audio_path: Optional[str] = None,   # <-- NEW: pass the original audio
+    audio_path: Optional[str] = None,      # voiceover used for whisper transcription
+    mux_audio_path: Optional[str] = None,  # exact final audio (sped + music) to mux
     font_size: int = 20,
     segment_duration: int = 30,
 ) -> str:
@@ -150,13 +155,19 @@ def burn_subtitles_segmented(
     
     total_segments = int(duration / segment_duration) + 1
     print(f"      Splitting into {total_segments} segments of {segment_duration}s each")
-    print(f"      Quality tiers: CRF 20 (seg 1), CRF 22 (seg 2), CRF 25+ (seg 3+)")
+    print(f"      Quality: uniform CRF {os.environ.get('VIDEO_CRF', '18')}, "
+          f"preset {os.environ.get('VIDEO_PRESET', 'veryfast')} (every segment)")
     
     temp_dir = os.path.join(os.path.dirname(video_path), f"caption_segments_{int(time.time())}")
     os.makedirs(temp_dir, exist_ok=True)
     
-    # Use provided audio file if available, otherwise try to extract
-    if audio_path and os.path.exists(audio_path):
+    # Prefer the exact final audio track (voice sped up + music) when given —
+    # that's the audio actually inside the video, so the captions will line up
+    # with it. Falls back to the raw voiceover, then to extracting from video.
+    if mux_audio_path and os.path.exists(mux_audio_path):
+        audio_file = mux_audio_path
+        print(f"      ✅ Using final audio for muxing: {audio_file}")
+    elif audio_path and os.path.exists(audio_path):
         audio_file = audio_path
         print(f"      ✅ Using provided audio: {audio_file}")
     else:
@@ -205,19 +216,12 @@ def burn_subtitles_segmented(
         # Burn subtitles on segment
         seg_output = os.path.join(temp_dir, f"seg_captioned_{i:04d}.mp4")
         
-        # --- QUALITY TIERS ---
-        if i == 0:
-            seg_crf = 20
-            seg_preset = "veryfast"
-            quality_label = "CRF 20 (Fast)"
-        elif i == 1:
-            seg_crf = 22
-            seg_preset = "veryfast"
-            quality_label = "CRF 22 (Fast)"
-        else:
-            seg_crf = 25
-            seg_preset = "ultrafast"
-            quality_label = "CRF 25 (Ultra Fast)"
+        # Uniform CRF 18 for the captioned video (was 20/22/25 tiers).
+        # CRF controls quality, preset controls speed — CRF 18 + veryfast
+        # keeps the quality you asked for while staying fast on the runner.
+        seg_crf = int(os.environ.get("VIDEO_CRF", "18"))
+        seg_preset = os.environ.get("VIDEO_PRESET", "veryfast")
+        quality_label = f"CRF {seg_crf} ({seg_preset})"
         
         cmd_burn = [
             'ffmpeg', '-y',
@@ -295,8 +299,10 @@ def burn_subtitles_segmented(
         # No audio, just move video
         os.rename(video_combined, output_path)
     
-    # Clean up temp directory
-    if audio_file and audio_file != audio_path and os.path.exists(audio_file):
+    # Clean up temp directory (never delete the caller's mux_audio_path —
+    # tasks.py owns that file's lifecycle).
+    if (audio_file and audio_file != audio_path and audio_file != mux_audio_path
+            and os.path.exists(audio_file)):
         os.unlink(audio_file)
     os.unlink(video_combined)
     os.rmdir(temp_dir)
@@ -313,6 +319,7 @@ def add_subtitles_to_video(
     video_path: str,
     output_path: Optional[str] = None,
     audio_path: Optional[str] = None,
+    mux_audio_path: Optional[str] = None,  # exact final audio track from compile_video
     whisper_model: str = "tiny",
     font_size: int = 20,
     speed_factor: float = 1.0,
@@ -374,7 +381,8 @@ def add_subtitles_to_video(
         video_path=video_path,
         srt_path=srt_path,
         output_path=output_path,
-        audio_path=audio_path,  # Pass the audio file directly
+        audio_path=audio_path,          # used for whisper transcription
+        mux_audio_path=mux_audio_path,  # exact audio track from compile_video
         font_size=font_size
     )
     

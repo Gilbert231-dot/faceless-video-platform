@@ -3,6 +3,7 @@ import json
 import random
 import glob
 import shutil
+import hashlib
 from datetime import datetime
 
 class RedditStoryLoader:
@@ -40,13 +41,13 @@ class RedditStoryLoader:
     def _load_used_ids(self):
         """Load the list of already used story IDs."""
         if os.path.exists(self.used_ids_path):
-            with open(self.used_ids_path, 'r') as f:
+            with open(self.used_ids_path, 'r', encoding='utf-8') as f:
                 return json.load(f)
         return []
     
     def _save_used_ids(self):
         """Save the updated list of used story IDs."""
-        with open(self.used_ids_path, 'w') as f:
+        with open(self.used_ids_path, 'w', encoding='utf-8') as f:
             json.dump(self.used_ids, f, indent=2)
     
     def _create_debug_copy(self):
@@ -56,19 +57,24 @@ class RedditStoryLoader:
         """
         debug_path = "reddit_stories_debug"
         
-        # Only create the debug copy if source exists and debug doesn't exist
+        # FIXED: always refresh the debug copy. The repo contains a stale
+        # reddit_stories_debug/ (helper scripts only, no JSON data), so reusing
+        # it would leave test runs with zero stories.
         if os.path.exists(self.data_path):
-            if not os.path.exists(debug_path):
-                print(f"🔬 Creating debug copy from {self.data_path}...")
+            if os.path.exists(debug_path):
+                print(f"🔬 Refreshing debug copy (removing stale {debug_path})...")
                 try:
-                    shutil.copytree(self.data_path, debug_path)
-                    print(f"   ✅ Debug copy created at: {debug_path}")
+                    shutil.rmtree(debug_path)
                 except Exception as e:
-                    print(f"   ⚠️ Failed to copy: {e}")
-                    print(f"   Creating empty debug folder as fallback...")
-                    os.makedirs(debug_path, exist_ok=True)
-            else:
-                print(f"🔬 Using existing debug copy at: {debug_path}")
+                    print(f"   ⚠️ Could not remove old debug copy: {e}")
+            print(f"🔬 Creating debug copy from {self.data_path}...")
+            try:
+                shutil.copytree(self.data_path, debug_path)
+                print(f"   ✅ Debug copy created at: {debug_path}")
+            except Exception as e:
+                print(f"   ⚠️ Failed to copy: {e}")
+                print(f"   Creating empty debug folder as fallback...")
+                os.makedirs(debug_path, exist_ok=True)
         else:
             print(f"⚠️ Source data path does not exist: {self.data_path}")
             print(f"   Creating empty debug folder as fallback...")
@@ -104,6 +110,20 @@ class RedditStoryLoader:
         Set the story ID using 'story_id' field.
         """
         story['story_id'] = value
+
+    def _ensure_story_ids(self, stories, subreddit):
+        """
+        Make sure every story has a usable ID.
+
+        narrator_script_*.json stories have no 'id'/'story_id' field, which
+        breaks production dedup (stories without IDs are treated as used and
+        can never be marked used). Synthesize a stable ID from
+        subreddit + title so the same story always gets the same ID.
+        """
+        for story in stories:
+            if not (story.get('story_id') or story.get('id')):
+                base = f"{subreddit}|{story.get('title', '')}"
+                story['story_id'] = 'synth_' + hashlib.md5(base.encode('utf-8')).hexdigest()[:12]
     
     def get_available_stories(self, subreddit=None):
         """
@@ -123,35 +143,40 @@ class RedditStoryLoader:
             # Try narrator_script_*.json first
             narrator_file = self._find_latest_file(subreddit_path, "narrator_script_*.json")
             if not narrator_file:
-                narrator_file = self._find_latest_file(subreddit_path, "comment_*.json")
+                # FIXED: comment_*.json are RAW Reddit API dumps (kind/data),
+                # not stories. Load the processed format instead.
+                narrator_file = self._find_latest_file(subreddit_path, "stories_with_comments_*.json")
             if narrator_file:
-                with open(narrator_file, 'r') as f:
+                with open(narrator_file, 'r', encoding='utf-8') as f:
                     stories = json.load(f)
                     for story in stories:
                         if 'subreddit' not in story:
                             story['subreddit'] = subreddit
+                    self._ensure_story_ids(stories, subreddit)
                     all_stories.extend(stories)
                     return all_stories
             
             # Try stories_with_comments_*.json
             stories_with_comments = self._find_latest_file(subreddit_path, "stories_with_comments_*.json")
             if stories_with_comments:
-                with open(stories_with_comments, 'r') as f:
+                with open(stories_with_comments, 'r', encoding='utf-8') as f:
                     stories = json.load(f)
                     for story in stories:
                         if 'subreddit' not in story:
                             story['subreddit'] = subreddit
+                    self._ensure_story_ids(stories, subreddit)
                     all_stories.extend(stories)
                     return all_stories
             
             # Fallback to stories_*.json
             stories_file = self._find_latest_file(subreddit_path, "stories_*.json")
             if stories_file:
-                with open(stories_file, 'r') as f:
+                with open(stories_file, 'r', encoding='utf-8') as f:
                     stories = json.load(f)
                     for story in stories:
                         if 'subreddit' not in story:
                             story['subreddit'] = subreddit
+                    self._ensure_story_ids(stories, subreddit)
                     all_stories.extend(stories)
                     return all_stories
             
@@ -179,14 +204,17 @@ class RedditStoryLoader:
             # Try narrator_script_*.json
             narrator_file = self._find_latest_file(sub_path, "narrator_script_*.json")
             if not narrator_file:
-                narrator_file = self._find_latest_file(sub_path, "comment_*.json")
+                # FIXED: comment_*.json are RAW Reddit API dumps (kind/data),
+                # not stories. Load the processed format instead.
+                narrator_file = self._find_latest_file(sub_path, "stories_with_comments_*.json")
             if narrator_file:
                 try:
-                    with open(narrator_file, 'r') as f:
+                    with open(narrator_file, 'r', encoding='utf-8') as f:
                         stories = json.load(f)
                         for story in stories:
                             if 'subreddit' not in story:
                                 story['subreddit'] = sub
+                        self._ensure_story_ids(stories, sub)
                         all_stories.extend(stories)
                         print(f"   ✅ Loaded {len(stories)} stories from r/{sub}")
                         stories_loaded = True
@@ -197,7 +225,7 @@ class RedditStoryLoader:
                 stories_with_comments = self._find_latest_file(sub_path, "stories_with_comments_*.json")
                 if stories_with_comments:
                     try:
-                        with open(stories_with_comments, 'r') as f:
+                        with open(stories_with_comments, 'r', encoding='utf-8') as f:
                             stories = json.load(f)
                             for story in stories:
                                 if 'subreddit' not in story:
@@ -212,7 +240,7 @@ class RedditStoryLoader:
                 stories_file = self._find_latest_file(sub_path, "stories_*.json")
                 if stories_file:
                     try:
-                        with open(stories_file, 'r') as f:
+                        with open(stories_file, 'r', encoding='utf-8') as f:
                             stories = json.load(f)
                             for story in stories:
                                 if 'subreddit' not in story:

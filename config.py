@@ -10,9 +10,10 @@ FAST_MODE = False  # Set to False for production quality
 # MODE SELECTION
 # ===========================
 
-# Set to True for testing/debugging (stories won't be consumed)
-# Set to False for production (stories will be marked as used)
-DEBUG_MODE = False  # Change to False when ready to post real videos
+# DEBUG_MODE is now controlled by the DEBUG_MODE environment variable
+# (the generate_video.yml workflow sets it from the `test_mode` input).
+# Defaults to False (production) when run locally.
+DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() in ("true", "1", "yes")
 
 # Voice speed (used in video_compile and tasks)
 VOICE_SPEED = 1.12  # Same value as in video_compile

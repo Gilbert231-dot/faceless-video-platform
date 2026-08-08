@@ -1,1 +1,6 @@
-*.mp4 filter=lfs diff=lfs merge=lfs -text
+# No special attributes.
+# Previously this file had `*.mp4 filter=lfs diff=lfs merge=lfs -text`,
+# which forced git-lfs on every clone/checkout and broke clones on
+# machines without git-lfs installed. It was removed on purpose.
+# (Note: GitHub rejects files over 100 MB, so keep generated videos
+# under that size.)

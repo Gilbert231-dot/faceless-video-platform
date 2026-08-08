@@ -12,7 +12,7 @@ on:
       privacy:
         description: 'Privacy of uploaded videos'
         required: false
-        default: 'public'
+        default: 'private'
         type: choice
         options:
           - public
@@ -61,7 +61,9 @@ jobs:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          PRIVACY_STATUS: ${{ inputs.privacy || 'public' }}
+          # Default is now PRIVATE so nothing ever goes public by accident
+          # (this fallback is what runs on the push/schedule triggers).
+          PRIVACY_STATUS: ${{ inputs.privacy || 'private' }}
         run: |
           mkdir -p videos/done
           python - <<'PY'

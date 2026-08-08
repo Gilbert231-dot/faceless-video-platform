@@ -1,13 +1,14 @@
-import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from tasks import generate_video
 from celery.result import AsyncResult
+from config import OUTPUT_DIR
 
 app = FastAPI()
 
 # Mount the output folder for video downloads
-app.mount("/output", StaticFiles(directory="/workspaces/faceless-video-platform"), name="output")
+# FIXED: was hardcoded to the Codespace path /workspaces/faceless-video-platform
+app.mount("/output", StaticFiles(directory=OUTPUT_DIR), name="output")
 
 @app.get("/")
 def read_root():
