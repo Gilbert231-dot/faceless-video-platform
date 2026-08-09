@@ -7,6 +7,13 @@ import time
 import re
 from typing import Optional
 
+# Minimum inter-word gap (in sped-audio seconds) after "I'm" that indicates
+# the ElevenLabs "ale" artifact is present. Normal speech gaps are ~30-90ms;
+# the voice's inserted "ale" syllable (~100-150ms) stretches the gap to
+# ~150ms+. A gap this large is otherwise near-silence, so muting it is
+# inaudible except exactly where the artifact sits.
+ALE_GAP_MIN_SEC = 0.15
+
 # ============================================================
 # HELPER: GET DURATION
 # ============================================================
@@ -24,6 +31,34 @@ def get_duration(media_path: str) -> float:
 # ============================================================
 # PART 1: TRANSCRIBE WITH WHISPER → SRT
 # ============================================================
+
+def _is_im(word: str) -> bool:
+    """True for "I'm" / "I\u2019m" / "Im" / "i m" (apostrophe variants)."""
+    return re.sub(r"[^a-z]", "", word.lower()) == "im"
+
+
+def _im_gap_silences(words):
+    """Find "ale" artifacts whisper did NOT transcribe as a word.
+
+    The ElevenLabs voice inserts an "ale" syllable after "I'm" (e.g. "I'm ale
+    about to") even when the text sent to the TTS is clean, and whisper often
+    does not transcribe the syllable at all. When that happens the artifact
+    lands inside the gap between whisper's "I'm" and the next word \u2014 a gap
+    of ~150ms+ instead of the usual <90ms. Returns (start, end) mute ranges
+    (in sped-audio seconds) for those gaps. `words` is an iterable of
+    (text, raw_start, raw_end) tuples from whisper's word timestamps.
+    """
+    ranges = []
+    items = list(words)
+    for i in range(len(items) - 1):
+        text, s, e = items[i]
+        _, ns, _ = items[i + 1]
+        gap = ns - e
+        if _is_im(text) and gap > ALE_GAP_MIN_SEC:
+            # small pads so we never clip the "m" of "I'm" or the next word
+            ranges.append((e + 0.01, ns - 0.01))
+    return ranges
+
 
 def generate_srt_from_audio(
     audio_path: str,
@@ -48,6 +83,9 @@ def generate_srt_from_audio(
     # produces it even though the text is clean, whisper hears it, and we
     # mute those exact moments when the audio is muxed into the video.
     silence_ranges = []
+    # Raw (un-anchored) whisper word boundaries for ALL segments, in sped-audio
+    # seconds — used ONLY for artifact-gap detection (see _im_gap_silences).
+    words_flat = []
     
     # Monotonicity is enforced GLOBALLY (across segments too) so the SRT
     # never contains overlapping cues, which make ffmpeg's subtitles filter
@@ -115,16 +153,30 @@ def generate_srt_from_audio(
                 if not text:
                     continue
                 
+                # Raw whisper boundaries (NOT the anchored SRT times) — the
+                # artifact-gap detection needs the real audio gaps, and the
+                # anchored cues are contiguous by design (gap = 0).
+                w_start_raw = (w.get('start') or seg_start_raw) / speed_factor
+                w_end_raw = (w.get('end') or seg_end_raw) / speed_factor
+                
                 # "ale" artifact: silence it in the audio and never show it in
                 # the captions (the narrator should just be silent there).
                 if text.lower() in ('ale', 'aale', 'alee'):
                     silence_ranges.append((max(start - 0.02, 0.0), min(end, seg_end) + 0.03))
                     continue
                 
+                words_flat.append((text, w_start_raw, w_end_raw))
+                
                 f.write(f"{index}\n")
                 f.write(f"{_format_time(start)} --> {_format_time(end)}\n")
                 f.write(f"{text}\n\n")
                 index += 1
+    
+    # FIXED (still-audible "ale"): whisper often does NOT transcribe the
+    # artifact as a word (that's why it never showed in the captions nor
+    # triggered the old mute). Detect it from the elongated gap after "I'm"
+    # instead — this catches every instance, transcribed or not.
+    silence_ranges.extend(_im_gap_silences(words_flat))
     
     # Clean up common Whisper errors (also strips any "ale" that slipped into
     # multi-word segment text)
