@@ -349,6 +349,8 @@ jobs:
           git add -f video_history.json 2>/dev/null || true
           # Regenerated dashboard data (story stats + video history).
           git add -f dashboard/data.json 2>/dev/null || true
+          # Voiceover QA report (residual 'ale' check) — one per video.
+          git add -f output/voiceover_qa_*.json 2>/dev/null || true
           # Cleaned story bank (used stories removed by cleanup_used_stories.py).
           git add -f reddit_stories/ 2>/dev/null || true
           git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"

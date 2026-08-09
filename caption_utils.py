@@ -47,17 +47,84 @@ def _im_gap_silences(words):
     of ~150ms+ instead of the usual <90ms. Returns (start, end) mute ranges
     (in sped-audio seconds) for those gaps. `words` is an iterable of
     (text, raw_start, raw_end) tuples from whisper's word timestamps.
+
+    FIXED (I am): since the TTS fix expands "I'm" to "I am", whisper hears
+    the two words "I" then "am" \u2014 the artifact (if the voice still makes
+    one) would sit between "am" and the next word. Check both forms:
+    a gap after a bare "I"/"I'm", and a gap after "am" that follows "I".
     """
     ranges = []
     items = list(words)
-    for i in range(len(items) - 1):
+    prev_was_i = False
+    for i in range(len(items)):
         text, s, e = items[i]
-        _, ns, _ = items[i + 1]
-        gap = ns - e
-        if _is_im(text) and gap > ALE_GAP_MIN_SEC:
-            # small pads so we never clip the "m" of "I'm" or the next word
-            ranges.append((e + 0.01, ns - 0.01))
+        low = text.strip().lower().strip(" .,!?\"'")
+        is_im = low in ("i", "i'm", "im", "i\u2019m")
+        is_am_after_i = low == "am" and prev_was_i
+        if is_im:
+            prev_was_i = True
+        elif is_am_after_i:
+            prev_was_i = False
+        else:
+            prev_was_i = False
+            continue
+        if i + 1 < len(items):
+            ns = items[i + 1][1]
+            gap = ns - e
+            if gap > ALE_GAP_MIN_SEC:
+                # small pads so we never clip the "m" of "I'm" or the next word
+                ranges.append((e + 0.01, ns - 0.01))
     return ranges
+
+
+def _qa_voiceover(words):
+    """QA the voiceover for residual "ale" artifacts.
+
+    Verifies the "I'm" -> "I am" TTS fix actually worked in the audio: counts
+    every "I'm"/"I am" region whisper heard, and flags (a) any "ale" word
+    whisper transcribed, and (b) any unnaturally long gap right after an
+    "I"/"I'm"/"am" word \u2014 the signature of the un-transcribed syllable.
+
+    Returns a dict report. `words` is an iterable of
+    (text, raw_start, raw_end) tuples from whisper's word timestamps.
+    """
+    items = list(words)
+    ale_hits = []
+    gap_hits = []
+    im_regions = 0
+    prev_was_i = False
+    for i in range(len(items)):
+        text, s, e = items[i]
+        low = text.strip().lower().strip(" .,!?\"'")
+        if low in ("ale", "aale", "alee"):
+            ale_hits.append({"word": text, "start": round(s, 3), "end": round(e, 3)})
+        if low in ("i", "i'm", "im", "i\u2019m"):
+            im_regions += 1
+            prev_was_i = True
+            probe = i + 1
+        elif low == "am" and prev_was_i:
+            prev_was_i = False
+            probe = i + 1
+        else:
+            prev_was_i = False
+            continue
+        if probe < len(items):
+            nxt_text, ns, _ = items[probe]
+            gap = ns - e
+            if gap > ALE_GAP_MIN_SEC:
+                gap_hits.append({
+                    "after": text,
+                    "next_word": nxt_text,
+                    "gap_sec": round(gap, 3),
+                    "mute_from": round(e + 0.01, 3),
+                    "mute_to": round(ns - 0.01, 3),
+                })
+    return {
+        "im_regions_checked": im_regions,
+        "transcribed_ale_words": ale_hits,
+        "gap_artifacts": gap_hits,
+        "verdict": "PASS" if not ale_hits and not gap_hits else "FAIL",
+    }
 
 
 def generate_srt_from_audio(
@@ -177,6 +244,25 @@ def generate_srt_from_audio(
     # triggered the old mute). Detect it from the elongated gap after "I'm"
     # instead — this catches every instance, transcribed or not.
     silence_ranges.extend(_im_gap_silences(words_flat))
+    
+    # QA REPORT: verify the "I'm" -> "I am" fix actually worked in the
+    # audio. Counts every I'm/I am region whisper heard and flags any
+    # residual "ale" (transcribed word OR elongated-gap artifact). The
+    # report is written into OUTPUT_DIR and shipped via the artifact zip +
+    # state push, so the fix can be verified per-video before watching.
+    qa = _qa_voiceover(words_flat)
+    try:
+        qa_dir = os.environ.get("OUTPUT_DIR", "output")
+        os.makedirs(qa_dir, exist_ok=True)
+        qa_path = os.path.join(qa_dir, f"voiceover_qa_{int(time.time())}.json")
+        with open(qa_path, "w", encoding="utf-8") as f:
+            json.dump(qa, f, indent=2)
+        print(f"   QA voiceover: {qa['verdict']} "
+              f"({qa['im_regions_checked']} I'm/I am region(s) checked, "
+              f"{len(qa['transcribed_ale_words'])} transcribed 'ale', "
+              f"{len(qa['gap_artifacts'])} gap artifact(s)) -> {os.path.basename(qa_path)}")
+    except Exception as e:
+        print(f"   ⚠️ Could not write voiceover QA report: {e}")
     
     # Clean up common Whisper errors (also strips any "ale" that slipped into
     # multi-word segment text)
