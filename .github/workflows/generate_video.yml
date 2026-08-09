@@ -24,7 +24,31 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
+  # PAUSE SWITCH: if a file named AUTOMATION_PAUSED exists at the repo root,
+  # the whole pipeline is skipped (no ElevenLabs credits, no story consumed,
+  # no posting). The run still shows green with generate skipped.
+  #   To pause : add a file named AUTOMATION_PAUSED (any content) on GitHub.
+  #   To resume: delete that file.
+  pause-check:
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.check.outputs.go }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: check
+        run: |
+          if [ -f AUTOMATION_PAUSED ]; then
+            echo "⏸️  Automation is PAUSED — AUTOMATION_PAUSED file found in the repo."
+            echo "    Delete that file on GitHub to resume (repo root → AUTOMATION_PAUSED → edit → delete)."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ Automation active — no AUTOMATION_PAUSED file."
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          fi
+
   generate:
+    needs: pause-check
+    if: needs.pause-check.outputs.go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 360
 
@@ -58,6 +82,13 @@ jobs:
           echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
           echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> $GITHUB_ENV
           echo "ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }}" >> $GITHUB_ENV
+          # Fail fast if the ElevenLabs key is missing/empty — otherwise the
+          # run would burn 2-3 h rendering before dying at the TTS step.
+          if [ -z "${{ secrets.ELEVENLABS_API_KEY }}" ]; then
+            echo "❌ ELEVENLABS_API_KEY secret is missing or empty."
+            echo "   Add it, or pause the automation (create AUTOMATION_PAUSED) until you've topped up credits."
+            exit 1
+          fi
           echo "FAL_KEY=${{ secrets.FAL_KEY }}" >> $GITHUB_ENV
           # DEBUG_MODE is read by config.py / tasks.py. Test mode => True (stories NOT consumed).
           echo "DEBUG_MODE=${{ inputs.test_mode == 'true' && 'True' || 'False' }}" >> $GITHUB_ENV
@@ -242,6 +273,60 @@ jobs:
                   privacy_status=privacy,
               )
               print(f"✅ Uploaded -> https://youtu.be/{video_id} (private)")
+          PY
+
+      # TikTok posting via the official Content Posting API. Gated by the
+      # TIKTOK_ENABLED repo file (flip to 'true' after the manual setup in
+      # TIKTOK_SETUP.md). Posts are SELF_ONLY (private) by default: until the
+      # app passes TikTok's audit, ALL API posts are forced private anyway,
+      # and you review each video before ever making anything public.
+      - name: Upload videos to TikTok (private)
+        env:
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          # Optional fine-grained PAT ("Secrets" repo permission) so the run
+          # can persist TikTok's rotated refresh token automatically.
+          GH_PAT: ${{ secrets.GH_PAT }}
+          # SELF_ONLY = private. Set to PUBLIC_TO_EVERYONE (after the audit
+          # passes) when you want videos to go live automatically.
+          TIKTOK_PRIVACY_LEVEL: SELF_ONLY
+        run: |
+          ENABLED=$(tr -d ' \r\n' < TIKTOK_ENABLED 2>/dev/null || echo false)
+          if [ "$ENABLED" != "true" ]; then
+            echo "⏭️  TikTok posting disabled (TIKTOK_ENABLED is not 'true'). Skipping."
+            exit 0
+          fi
+          if [ -z "$TIKTOK_CLIENT_KEY" ] || [ -z "$TIKTOK_CLIENT_SECRET" ] || [ -z "$TIKTOK_REFRESH_TOKEN" ]; then
+            echo "⏭️  TikTok secrets not configured yet — follow TIKTOK_SETUP.md to enable."
+            exit 0
+          fi
+          python - <<'PY'
+          import glob
+          import json
+          import os
+
+          from tiktok_uploader import build_caption, publish_tiktok, save_refresh_token_via_gh
+
+          privacy = os.environ.get("TIKTOK_PRIVACY_LEVEL", "SELF_ONLY")
+          videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
+
+          if not videos:
+              print("❌ No videos found for TikTok upload.")
+              raise SystemExit(1)
+
+          for video in videos:
+              metadata = video[:-4] + "_metadata.json"
+              meta = json.load(open(metadata)) if os.path.exists(metadata) else {}
+              caption = build_caption(meta)
+              print(f"📱 Uploading {os.path.basename(video)} to TikTok ({privacy})...")
+              result = publish_tiktok(
+                  video,
+                  title=caption,
+                  privacy_level=privacy,
+                  on_new_refresh_token=save_refresh_token_via_gh,
+              )
+              print(f"✅ TikTok publish complete: {result}")
           PY
 
       - name: Push state files
