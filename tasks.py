@@ -39,7 +39,9 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
     """Save story metadata alongside the video for YouTube upload."""
     # CC BY attribution for the background music (Kevin MacLeod) — required
     # by the license and included wherever the video is distributed.
-    music_credit = "\n\nMusic: Echoes of Time v2 by Kevin MacLeod (incompetech.com), CC BY 4.0"
+    music_credit = ('\n\n"Valse Gymnopedie" Kevin MacLeod (incompetech.com)\n'
+                    "Licensed under Creative Commons: By Attribution 4.0 License\n"
+                    "http://creativecommons.org/licenses/by/4.0/")
     metadata = {
         "title": title,
         "subreddit": subreddit_name,
