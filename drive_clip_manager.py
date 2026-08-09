@@ -1,14 +1,23 @@
 import os
 import json
-import gdown
+import requests
 import subprocess
 from pathlib import Path
+
+# gdown is imported lazily inside download_file(): it is only needed when a
+# file actually has to be downloaded (the runner installs it via
+# requirements.txt), and importing the module shouldn't require it.
 
 # ================================
 # CONFIGURATION
 # ================================
 STATE_FILE = "clip_state.json"
 CACHE_DIR = "cached_videos"
+
+# Fallback footage list (used only when dynamic folder listing is not
+# configured). New files added to the Drive folder are picked up
+# automatically once GDRIVE_FOLDER_ID + GDRIVE_API_KEY are set (see
+# get_footage_files / list_folder_files).
 DRIVE_URLS = [
     "1QjdFKRf1PmmQncLGrI59hD7yKngqui_r",
     "1csHaO2EUANXLexMSxG-ltI77dvCIlH2P",
@@ -17,6 +26,15 @@ DRIVE_URLS = [
     "1183ENgEB0H55gwVYDFzqJ4bFrOwXo5OM",
     "1CcysUW40RnBFV4LEpLHv66NKsXOh_NU_",
 ]
+
+# Dynamic listing: set both in the workflow env (GitHub secrets):
+#   GDRIVE_FOLDER_ID — the cloud folder's ID (from its URL:
+#       drive.google.com/drive/folders/<THIS_PART>) — folder must be shared
+#       "Anyone with the link" (Viewer) for API-key listing to see it.
+#   GDRIVE_API_KEY   — a Google Cloud API key with the Drive API enabled
+#       (console.cloud.google.com → APIs & Services → Credentials).
+DRIVE_FOLDER_ID = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
+GDRIVE_API_KEY = os.environ.get("GDRIVE_API_KEY", "").strip()
 
 # ================================
 # HELPERS
@@ -36,10 +54,11 @@ def get_video_duration(video_path):
 
 def download_file(file_id, dest_path):
     """Download a file from Google Drive using its file ID."""
-    print(f"⬇️ Downloading file ID {file_id} to {dest_path} ...")
+    import gdown  # lazy: only needed when actually downloading
+    print(f"[drive] Downloading file ID {file_id} to {dest_path} ...")
     url = f"https://drive.google.com/uc?id={file_id}"
     gdown.download(url, dest_path, quiet=False)
-    print(f"✅ Download complete: {dest_path}")
+    print(f"[drive] Download complete: {dest_path}")
 
 def load_state():
     if os.path.exists(STATE_FILE):
@@ -52,23 +71,91 @@ def save_state(state):
         json.dump(state, f)
 
 # ================================
+# DYNAMIC FOLDER LISTING
+# ================================
+def list_folder_files(folder_id, api_key):
+    """List playable videos in a public Drive folder via the Drive API.
+
+    API-key only (no OAuth): works when the folder is shared "Anyone with
+    the link" (Viewer). Returns [{id, name}, ...] sorted by name so the
+    rotation order stays stable when files are added or removed.
+    """
+    params = {
+        "q": f"'{folder_id}' in parents and trashed = false",
+        "fields": "nextPageToken, files(id, name, mimeType)",
+        "pageSize": 200,
+        "key": api_key,
+    }
+    files = []
+    page_token = None
+    while True:
+        if page_token:
+            params["pageToken"] = page_token
+        r = requests.get(
+            "https://www.googleapis.com/drive/v3/files",
+            params=params, timeout=30,
+        )
+        if r.status_code != 200:
+            raise RuntimeError(f"Drive API error {r.status_code}: {r.text[:200]}")
+        data = r.json()
+        for f in data.get("files", []):
+            name = f.get("name", "")
+            mime = f.get("mimeType", "")
+            if mime == "video/mp4" or name.lower().endswith(".mp4"):
+                files.append({"id": f["id"], "name": name})
+        page_token = data.get("nextPageToken")
+        if not page_token:
+            break
+    files.sort(key=lambda f: f["name"].lower())
+    return files
+
+def get_footage_files():
+    """The ordered footage list: dynamic folder listing when configured,
+    otherwise the hardcoded DRIVE_URLS (kept as a zero-setup fallback)."""
+    if DRIVE_FOLDER_ID and GDRIVE_API_KEY:
+        try:
+            files = list_folder_files(DRIVE_FOLDER_ID, GDRIVE_API_KEY)
+            if files:
+                print(f"[drive] {len(files)} footage files via dynamic folder "
+                      f"listing (folder {DRIVE_FOLDER_ID[:8]}...)")
+                return files
+            print("[drive] folder listing returned no files - using hardcoded list")
+        except Exception as e:
+            print(f"[drive] folder listing failed ({e}) - using hardcoded list")
+    else:
+        if not DRIVE_FOLDER_ID:
+            print("[drive] GDRIVE_FOLDER_ID not set - using hardcoded footage list "
+                  "(set it + GDRIVE_API_KEY for automatic folder pickup)")
+    return [{"id": fid, "name": f"video_{i}.mp4"} for i, fid in enumerate(DRIVE_URLS)]
+
+# ================================
 # MAIN FUNCTION: get_next_segment
 # ================================
 def get_next_segment(duration_needed):
     """
     Returns the path to a temporary video file containing a segment
     of the required duration, taken from the next available portion of
-    the video files in DRIVE_URLS.
+    the footage files (Drive folder if configured, else DRIVE_URLS).
+
+    Rotation: advances an offset through each file, moves to the next file
+    when one is exhausted, and loops back to the start once everything is
+    consumed. clip_state.json (repo-pushed) is the single source of truth.
     """
     os.makedirs(CACHE_DIR, exist_ok=True)
+    files = get_footage_files()
     state = load_state()
     current_idx = state["video_index"]
     offset = state["offset"]
 
-    # Loop over videos
-    while current_idx < len(DRIVE_URLS):
-        file_id = DRIVE_URLS[current_idx]
-        cache_path = os.path.join(CACHE_DIR, f"video_{current_idx}.mp4")
+    # Folder may have shrunk since last run — restart from the top.
+    if current_idx >= len(files):
+        current_idx = 0
+
+    while True:
+        file_id = files[current_idx]["id"]
+        # Cache by FILE ID (not index) so renames/reorders in the folder
+        # never make the pipeline re-download or grab the wrong file.
+        cache_path = os.path.join(CACHE_DIR, f"video_{file_id}.mp4")
 
         # Download if not already cached
         if not os.path.exists(cache_path):
@@ -78,15 +165,15 @@ def get_next_segment(duration_needed):
         try:
             duration = get_video_duration(cache_path)
         except RuntimeError as e:
-            print(f"⚠️ Downloaded file is invalid: {e}")
-            print("🔄 Deleting corrupt file and retrying...")
+            print(f"[drive] Downloaded file is invalid: {e}")
+            print("[drive] Deleting corrupt file and retrying...")
             os.remove(cache_path)
             download_file(file_id, cache_path)
             duration = get_video_duration(cache_path)  # try again
 
         # If offset exceeds duration, move to next video
         if offset >= duration:
-            current_idx += 1
+            current_idx = (current_idx + 1) % len(files)
             offset = 0.0
             continue
 
@@ -109,7 +196,7 @@ def get_next_segment(duration_needed):
         # Update state
         new_offset = offset + take
         if new_offset >= duration - 0.1:
-            current_idx += 1
+            current_idx = (current_idx + 1) % len(files)
             new_offset = 0.0
 
         state["video_index"] = current_idx
@@ -118,4 +205,13 @@ def get_next_segment(duration_needed):
 
         return output_segment
 
-    raise RuntimeError("No more video footage available (all videos consumed).")
+
+if __name__ == "__main__":
+    # Manual check: python drive_clip_manager.py list
+    if len(os.sys.argv) > 1 and os.sys.argv[1] == "list":
+        files = get_footage_files()
+        print(f"{len(files)} footage file(s):")
+        for f in files:
+            print(f"   {f['name']}  ->  {f['id']}")
+    else:
+        print(get_next_segment(10))

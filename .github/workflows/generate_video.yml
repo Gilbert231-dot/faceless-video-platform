@@ -90,6 +90,13 @@ jobs:
             exit 1
           fi
           echo "FAL_KEY=${{ secrets.FAL_KEY }}" >> $GITHUB_ENV
+          # Dynamic background-footage listing (drive_clip_manager.py): when
+          # GDRIVE_FOLDER_ID (public folder, "Anyone with the link") +
+          # GDRIVE_API_KEY (Google Cloud key, Drive API enabled) are set, the
+          # pipeline lists the folder automatically and picks up ANY new video
+          # added to it. Without them it falls back to the hardcoded list.
+          echo "GDRIVE_FOLDER_ID=${{ secrets.GDRIVE_FOLDER_ID }}" >> $GITHUB_ENV
+          echo "GDRIVE_API_KEY=${{ secrets.GDRIVE_API_KEY }}" >> $GITHUB_ENV
           # DEBUG_MODE is read by config.py / tasks.py. Test mode => True (stories NOT consumed).
           echo "DEBUG_MODE=${{ inputs.test_mode == 'true' && 'True' || 'False' }}" >> $GITHUB_ENV
           echo "FAST_MODE=True" >> $GITHUB_ENV
