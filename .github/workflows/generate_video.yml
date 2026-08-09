@@ -114,58 +114,18 @@ jobs:
           # (upload step, cleanup) silently misses them.
           echo "OUTPUT_DIR=output" >> $GITHUB_ENV
 
-      - name: Unzip reddit stories
+      # The story bank now lives directly in the repo as reddit_stories/ (the
+      # old reddit_stories.zip was 146 MB unpacked, mostly raw comment dumps
+      # the pipeline never reads). The folder is authoritative: fetch_stories.py
+      # (run on the user's laptop — Reddit blocks GitHub runner IPs) refills
+      # it when the bank runs low, and cleanup_used_stories.py keeps it lean.
+      - name: Verify reddit stories present
         run: |
-          if [ -f reddit_stories.zip ]; then
-            echo "📦 Found reddit_stories.zip. Extracting..."
-
-            # Remove any existing reddit_stories folder to avoid conflicts
-            rm -rf reddit_stories
-
-            # Extract the zip directly
-            unzip -o reddit_stories.zip
-
-            # If the zip extracted a `reddit_stories` folder, move its contents up
-            if [ -d reddit_stories ]; then
-              echo "📂 Found nested reddit_stories folder, moving contents up..."
-              mv reddit_stories/* ./
-              rm -rf reddit_stories
-            fi
-
-            # Now ensure all subdirectories are inside reddit_stories/
-            mkdir -p reddit_stories
-            for sub in AITAH AmItheAsshole confession offmychest ProRevenge TalesFromRetail relationship_advice pettyrevenge MaliciousCompliance unpopularopinion self TalesFromTheFrontDesk tifu TrueOffMyChest EntitledPeople; do
-              if [ -d "$sub" ]; then
-                echo "📂 Moving $sub to reddit_stories/"
-                mv "$sub" reddit_stories/
-              fi
-            done
-
-            # Verify JSON files exist
-            echo "📂 Verifying JSON files in reddit_stories/"
-            find reddit_stories/ -name "*.json" | head -10
-
-            if [ -z "$(find reddit_stories/ -name '*.json' | head -1)" ]; then
-              echo "❌ No JSON files found in reddit_stories/!"
-              echo "📂 Contents of reddit_stories/:"
-              ls -la reddit_stories/
-              for sub in reddit_stories/*/; do
-                echo "📂 $sub contents:"
-                ls -la "$sub" || true
-              done
-              exit 1
-            else
-              echo "✅ JSON files found!"
-              echo "📊 Story count per subreddit:"
-              for sub in reddit_stories/*/; do
-                if [ -d "$sub" ]; then
-                  count=$(find "$sub" -name "*.json" | wc -l)
-                  echo "   $(basename "$sub"): $count JSON files"
-                fi
-              done
-            fi
+          if find reddit_stories \( -name 'stories_with_comments_*.json' -o -name 'stories_*.json' \) | head -1 | grep -q .; then
+            echo "✅ Story files found in reddit_stories/"
           else
-            echo "❌ reddit_stories.zip not found!"
+            echo "❌ No story files found in reddit_stories/!"
+            echo "   Run 'python fetch_stories.py' on your laptop to refill."
             exit 1
           fi
 
@@ -241,6 +201,13 @@ jobs:
           done
 
           echo "✅ All videos generated"
+
+      # Remove today's used stories from the bank (they were marked used
+      # during generation) and drop legacy comment dumps — keeps the folder
+      # from crowding. Runs before the state push so the cleaned files ship.
+      - name: Remove used stories (keep folder lean)
+        run: |
+          python cleanup_used_stories.py
 
       # FIXED: CRF 18 videos are ~187 MB for a 100s short — GitHub rejects
       # files over 100 MB, so videos CANNOT be pushed to the repo anymore.
@@ -350,6 +317,8 @@ jobs:
           git add -f clip_state.json 2>/dev/null || true
           # TikTok schedule slot counter (next free 2/day slot per video).
           git add -f tiktok_schedule_state.json 2>/dev/null || true
+          # Cleaned story bank (used stories removed by cleanup_used_stories.py).
+          git add -f reddit_stories/ 2>/dev/null || true
           git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"
           git push origin main || echo "⚠️ State push failed"
 

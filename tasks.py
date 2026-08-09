@@ -23,6 +23,10 @@ MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"  # Custom Gen Z voice
 FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Sarah
 DEFAULT_VOICE_ID = MALE_VOICE_ID
 
+# When unused stories fall to this many, the run warns loudly so the user
+# refills the bank (fetch_stories.py on the laptop, or its weekly schedule).
+STORY_REFILL_THRESHOLD = 20
+
 # Initialize gender detector
 gender_detector = GenderDetector(default_voice="male")
 
@@ -325,6 +329,12 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         
         stats = story_loader.get_stats()
         print(f"📊 Available stories: {stats['unused_stories']} unused out of {stats['total_stories']} total")
+        
+        if stats['unused_stories'] <= STORY_REFILL_THRESHOLD:
+            print("\n⚠️⚠️  STORY BANK LOW — only "
+                  f"{stats['unused_stories']} unused stories left!")
+            print("    Run 'python fetch_stories.py' on your laptop (or wait for its")
+            print("    weekly schedule) to auto-refill before the bank runs dry.\n")
         
         if stats['unused_stories'] == 0:
             return {

@@ -288,11 +288,23 @@ class RedditStoryLoader:
         for story in all_stories:
             story_id = self._get_story_id(story)
             if story_id and story_id not in self.used_ids:
-                unused.append(story)
+                # Also catch stories used under the OLD synthesized-ID scheme
+                # (md5 of "subreddit|title"). Older narrator_script_*.json
+                # files had no real Reddit ID, so those runs marked synth_*
+                # IDs; the same stories now carry real ids in the bank and
+                # would otherwise be narrated a second time.
+                base = f"{story.get('subreddit', '')}|{story.get('title', '')}"
+                synth = 'synth_' + hashlib.md5(base.encode('utf-8')).hexdigest()[:12]
+                if synth not in self.used_ids:
+                    unused.append(story)
         
         print(f"   📊 Found {len(unused)} unused stories out of {len(all_stories)} total")
         
-        random.shuffle(unused)
+        # FIXED (old-first): shuffle within same-age groups so stories added
+        # by a refill (added_at set by fetch_stories.py) are only picked after
+        # every older story is used. Stories without added_at sort first
+        # ('' < any date), so the pre-refill bank always drains first.
+        unused.sort(key=lambda s: ((s.get('added_at') or ''), random.random()))
         return unused[:limit]
     
     def get_random_story(self, subreddit=None, force_real=False):

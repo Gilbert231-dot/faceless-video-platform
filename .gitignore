@@ -2,10 +2,12 @@
 *.mp3
 *.srt
 *.png
-*.json
 *.txt
 www.youtube.com_cookies.txt
 venv/
 __pycache__/
 cached_videos/
 .env
+# Debug-mode story copies / test state — never commit these
+reddit_stories_debug/
+test_used_ids.json
