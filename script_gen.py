@@ -101,6 +101,8 @@ def get_gen_z_style(include_hook=True):
     - Don't over-exaggerate
     - Maintain first-person
     - Keep it engaging and fast-paced
+    - NEVER use the filler word "ale" (e.g. "I'm ale about to") — it sounds
+      broken in text-to-speech. If you want a filler, use "like" or "honestly".
     """
     
     if include_hook:

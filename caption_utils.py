@@ -1,4 +1,5 @@
 import os
+import json
 import subprocess
 import tempfile
 import time
@@ -41,13 +42,31 @@ def generate_srt_from_audio(
     if output_srt_path is None:
         output_srt_path = audio_path.replace(".mp3", ".srt")
     
-    with open(output_srt_path, 'w') as f:
+    # Time ranges (in SPED-audio seconds) where the TTS voice inserts an
+    # "ale" syllable after "I'm" (e.g. "I'm ale about to"). The voice model
+    # produces it even though the text is clean, whisper hears it, and we
+    # mute those exact moments when the audio is muxed into the video.
+    silence_ranges = []
+    
+    # Monotonicity is enforced GLOBALLY (across segments too) so the SRT
+    # never contains overlapping cues, which make ffmpeg's subtitles filter
+    # drop cues. Whisper segments are contiguous, so this clamp is a safety
+    # net rather than the timing mechanism (the segment anchor is).
+    prev_end = None
+    with open(output_srt_path, 'w', encoding='utf-8') as f:
         index = 1
         for segment in result['segments']:
             words = segment.get('words', [])
+            seg_start_raw = segment['start']
+            seg_end_raw = segment['end']
+            seg_raw_dur = seg_end_raw - seg_start_raw
+            if seg_raw_dur <= 0:
+                seg_raw_dur = 1e-6
+            
             if not words:
-                start = segment['start'] / speed_factor
-                end = segment['end'] / speed_factor
+                # Segment-level fallback (no word timestamps)
+                start = seg_start_raw / speed_factor
+                end = seg_end_raw / speed_factor
                 text = segment['text'].strip()
                 if text:
                     f.write(f"{index}\n")
@@ -56,30 +75,66 @@ def generate_srt_from_audio(
                     index += 1
                 continue
             
-            # FIXED: word-by-word captions (classic faceless-shorts style) —
-            # one word per subtitle cue instead of 3-word chunks.
-            # Whisper's word timestamps can slightly overlap, so each word's
-            # start is clamped to the previous word's end to keep the SRT valid
-            # (overlapping cues make the subtitles filter drop one of them).
-            chunk_size = 1
-            last_end_raw = 0.0
-            for i in range(0, len(words), chunk_size):
-                chunk = words[i:i+chunk_size]
-                if chunk:
-                    start_raw = max(chunk[0].get('start', last_end_raw), last_end_raw)
-                    end_raw = max(chunk[-1].get('end', start_raw + 0.4), start_raw + 0.15)
-                    start_time = start_raw / speed_factor
-                    end_time = end_raw / speed_factor
-                    text = ' '.join([w.get('word', '').strip() for w in chunk]).strip()
-                    if text:
-                        f.write(f"{index}\n")
-                        f.write(f"{_format_time(start_time)} --> {_format_time(end_time)}\n")
-                        f.write(f"{text}\n\n")
-                        index += 1
-                        last_end_raw = end_raw
+            # FIXED (sync): word-by-word captions, one word per cue, with
+            # timestamps ANCHORED to the whisper SEGMENT boundaries instead of
+            # raw word timestamps. Whisper's segment times are accurate; its
+            # word times jitter and overlap, and the old forward-only clamp
+            # (start = max(word_start, prev_end)) turned every overlap into a
+            # small delay that ACCUMULATED — captions fell seconds behind by
+            # the end of a 3-minute video (noticeable from ~30s in).
+            #
+            # Design: each word keeps its RELATIVE position inside the segment
+            # (preserving whisper's within-phrase pacing), and its cue spans
+            # [this word's anchor, next word's anchor) — so the whole segment
+            # covers exactly [seg_start, seg_end] and no drift can accumulate,
+            # ever. Cues are monotonic by construction (no overlaps for the
+            # ffmpeg subtitles filter).
+            seg_start = seg_start_raw / speed_factor
+            seg_end = seg_end_raw / speed_factor
+            n = len(words)
+            
+            def _anchor_of(w, fallback_rel):
+                rel = (w.get('start', seg_start_raw + fallback_rel * seg_raw_dur) - seg_start_raw) / seg_raw_dur
+                return seg_start + min(max(rel, 0.0), 1.0) * (seg_end - seg_start)
+            
+            for j, w in enumerate(words):
+                start = _anchor_of(w, j / max(n, 1))
+                # safety net for degenerate timestamps (global monotonicity)
+                if prev_end is not None and start < prev_end:
+                    start = prev_end + 0.01
+                if j < n - 1:
+                    end = _anchor_of(words[j + 1], (j + 1) / max(n, 1))
+                    if end <= start:
+                        end = start + 0.15  # whisper duplicated a timestamp
+                else:
+                    end = seg_end
+                prev_end = end
+                
+                text = w.get('word', '').strip()
+                if not text:
+                    continue
+                
+                # "ale" artifact: silence it in the audio and never show it in
+                # the captions (the narrator should just be silent there).
+                if text.lower() in ('ale', 'aale', 'alee'):
+                    silence_ranges.append((max(start - 0.02, 0.0), min(end, seg_end) + 0.03))
+                    continue
+                
+                f.write(f"{index}\n")
+                f.write(f"{_format_time(start)} --> {_format_time(end)}\n")
+                f.write(f"{text}\n\n")
+                index += 1
     
-    # Clean up common Whisper errors
+    # Clean up common Whisper errors (also strips any "ale" that slipped into
+    # multi-word segment text)
     _clean_srt_text(output_srt_path)
+    
+    # Persist the silence ranges next to the SRT so the mux step can mute them.
+    silences_path = output_srt_path + ".silences.json"
+    with open(silences_path, 'w', encoding='utf-8') as f:
+        json.dump(silence_ranges, f)
+    if silence_ranges:
+        print(f"   🔇 Muting {len(silence_ranges)} 'ale' artifact(s) in the voiceover audio")
     
     print(f"   ✅ SRT file created (scaled by {speed_factor}x): {output_srt_path}")
     return output_srt_path
@@ -87,8 +142,6 @@ def generate_srt_from_audio(
 
 def _clean_srt_text(srt_path: str):
     corrections = {
-        "I'm ale": "I'm",
-        "I'm aale": "I'm",
         # REMOVED the bare "ale" -> "about" rule: it corrupted whole words in
         # the captions ("male" -> "mabout", "scale" -> "scabout").
         "alright": "all right",
@@ -97,11 +150,15 @@ def _clean_srt_text(srt_path: str):
         "kinda": "kind of",
         "sorta": "sort of",
     }
-    with open(srt_path, 'r') as f:
+    with open(srt_path, 'r', encoding='utf-8') as f:
         content = f.read()
     for wrong, correct in corrections.items():
         content = content.replace(wrong, correct)
-    with open(srt_path, 'w') as f:
+    # Standalone "ale"/"aale"/"alee" filler words (word boundaries keep
+    # real words like "male", "female", "scale", "tale" intact).
+    content = re.sub(r'\b(?:ale|aale|alee)\b', '', content, flags=re.IGNORECASE)
+    content = re.sub(r' +', ' ', content)  # collapse double spaces
+    with open(srt_path, 'w', encoding='utf-8') as f:
         f.write(content)
 
 
@@ -205,24 +262,16 @@ def burn_subtitles_segmented(
         if seg_duration <= 0:
             break
         
-        # Extract video segment
-        seg_input = os.path.join(temp_dir, f"seg_input_{i:04d}.mp4")
-        cmd_extract = [
-            'ffmpeg', '-y',
-            '-i', video_path,
-            '-ss', str(start_time),
-            '-t', str(seg_duration),
-            '-c:v', 'copy',
-            '-an',
-            seg_input
-        ]
-        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=60)
-        
         # Create shifted SRT for this segment
         shifted_srt = os.path.join(temp_dir, f"shifted_{i:04d}.srt")
         _shift_srt_timestamps(abs_srt, start_time, shifted_srt)
         
-        # Burn subtitles on segment
+        # Burn subtitles on segment.
+        # FIXED (sync): seek straight from the source video with -ss BEFORE -i
+        # and re-encode — the old "extract with -c:v copy" step snapped to the
+        # nearest keyframe (up to ~8s off), so every 30s segment's captions
+        # were offset from the voice. Input seeking + re-encode starts the
+        # segment at EXACTLY start_time.
         seg_output = os.path.join(temp_dir, f"seg_captioned_{i:04d}.mp4")
         
         # Uniform CRF 18 for the captioned video (was 20/22/25 tiers).
@@ -235,7 +284,9 @@ def burn_subtitles_segmented(
         
         cmd_burn = [
             'ffmpeg', '-y',
-            '-i', seg_input,
+            '-ss', str(start_time),
+            '-t', str(seg_duration),
+            '-i', video_path,
             '-vf',
             f"subtitles='{shifted_srt}':force_style='FontName=Arial,FontSize={font_size},Bold=1,Alignment=10,MarginV=90,Outline=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000'",
             '-c:v', 'libx264',
@@ -251,19 +302,21 @@ def burn_subtitles_segmented(
             segment_files.append(seg_output)
         except Exception as e:
             print(f"      ⚠️ Segment {i+1} failed: {e}")
-            # Fallback: copy without captions
+            # Fallback: copy without captions (keyframe-snapped is fine here —
+            # better a caption-less sliver than a dead video)
             fallback_output = os.path.join(temp_dir, f"seg_fallback_{i:04d}.mp4")
             subprocess.run([
                 'ffmpeg', '-y',
-                '-i', seg_input,
+                '-ss', str(start_time),
+                '-t', str(seg_duration),
+                '-i', video_path,
                 '-c:v', 'copy',
                 '-an',
                 fallback_output
             ], check=True, capture_output=True, timeout=60)
             segment_files.append(fallback_output)
         
-        # Clean input and shifted SRT
-        os.unlink(seg_input)
+        # Clean shifted SRT
         os.unlink(shifted_srt)
     
     # Concatenate segments
@@ -302,8 +355,27 @@ def burn_subtitles_segmented(
             '-b:a', '192k',
             '-shortest',
             '-movflags', '+faststart',
-            output_path
         ]
+        # Mute the "ale" artifacts (detected by whisper during transcription)
+        # so the narrator is SILENT there instead of saying "I'm ale about to".
+        # The ranges are already in sped-audio seconds, matching this track.
+        silence_ranges = []
+        silences_path = srt_path + ".silences.json"
+        if os.path.exists(silences_path):
+            try:
+                with open(silences_path, 'r', encoding='utf-8') as f:
+                    silence_ranges = json.load(f)
+            except Exception as e:
+                print(f"      ⚠️ Could not read silence ranges: {e}")
+        if silence_ranges:
+            gates = ",".join(
+                f"volume=enable='between(t,{s:.3f},{e:.3f})':volume=0"
+                for s, e in silence_ranges
+            )
+            cmd_mux += ['-af', gates, output_path]
+            print(f"      🔇 Applied {len(silence_ranges)} silence gate(s) to audio")
+        else:
+            cmd_mux.append(output_path)
         subprocess.run(cmd_mux, check=True, capture_output=True, timeout=120)
     else:
         # No audio, just move video

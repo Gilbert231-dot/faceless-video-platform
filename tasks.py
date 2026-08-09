@@ -1,4 +1,5 @@
 import os
+import re
 import glob
 import json
 import time
@@ -54,11 +55,13 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
 def clean_script_for_tts(text):
     """
     Clean the script before sending to ElevenLabs.
-    Fixes common TTS mispronunciations.
+    Fixes common TTS mispronunciations and filler glitches.
     """
+    # Normalize curly apostrophes so the replacements below always match
+    # ("I’m ale" vs "I'm ale" — small LLMs love curly quotes).
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
+    
     corrections = {
-        "I'm ale": "I'm",          # <-- The exact fix
-        "I'm aale": "I'm",         # Extra safety
         "alright": "alright",
         "gonna": "gonna",
         "wanna": "wonna",
@@ -69,7 +72,15 @@ def clean_script_for_tts(text):
     for wrong, correct in corrections.items():
         text = text.replace(wrong, correct)
     
-    return text
+    # Remove the filler word "ale" (and its "aale"/"alee" renderings)
+    # whenever it appears as a standalone word, in any case. Word boundaries
+    # keep real words intact — "male", "female", "scale", "tale" are never
+    # touched. (The ElevenLabs voice ALSO inserts this syllable on its own;
+    # that's handled by muting it in the audio during captioning.)
+    text = re.sub(r'\b(?:ale|aale|alee)\b', '', text, flags=re.IGNORECASE)
+    text = re.sub(r' +', ' ', text)  # collapse double spaces left behind
+    
+    return text.strip()
 
 # ============================================================
 # HELPER: CLEANUP INTERMEDIATE FILES
