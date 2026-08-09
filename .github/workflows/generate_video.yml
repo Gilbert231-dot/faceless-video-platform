@@ -320,6 +320,9 @@ jobs:
           # Cleaned story bank (used stories removed by cleanup_used_stories.py).
           git add -f reddit_stories/ 2>/dev/null || true
           git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"
+          # Rebase onto whatever landed on main since the run started, so the
+          # state push can't be rejected when the run took a long time.
+          git pull --rebase origin main 2>/dev/null || true
           git push origin main || echo "⚠️ State push failed"
 
       # Download the ORIGINAL generated videos (no re-encode). GitHub's 100 MB
