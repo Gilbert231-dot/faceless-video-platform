@@ -188,6 +188,8 @@ def generate_srt_from_audio(
         json.dump(silence_ranges, f)
     if silence_ranges:
         print(f"   🔇 Muting {len(silence_ranges)} 'ale' artifact(s) in the voiceover audio")
+    else:
+        print(f"   ℹ️ No 'ale' artifact detected (analyzed {len(words_flat)} words)")
     
     print(f"   ✅ SRT file created (scaled by {speed_factor}x): {output_srt_path}")
     return output_srt_path
