@@ -55,6 +55,36 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
     with open(metadata_path, "w") as f:
         json.dump(metadata, f, indent=2)
     print(f"   📝 Metadata saved: {metadata_path}")
+
+    # TikTok manual-upload companion file (ships in the artifact zip): when
+    # the user uploads the video by hand on tiktok.com, this JSON gives the
+    # exact caption + settings to use — same caption the API would post
+    # (kept in sync with tiktok_uploader.build_caption).
+    hashtags = ["#redditstories", "#storytime", "#fyp"]
+    if subreddit_name:
+        hashtags.append("#" + subreddit_name.replace(" ", "").replace("#", ""))
+    tiktok_meta = {
+        "video_file": os.path.basename(video_path),
+        "title": title,
+        "subreddit": subreddit_name,
+        "score": score,
+        "author": author,
+        # Copy this whole caption into TikTok's "Caption" box.
+        "caption": f"{title}\n\n{' '.join(hashtags)}",
+        "hashtags": hashtags,
+        "upload_settings": {
+            "visibility": "Only me (private) — switch to Public after you review",
+            "ai_generated_content_label": "ON — required (AI voiceover)",
+            "allow_comments": True,
+            "allow_duet": False,
+            "allow_stitch": False,
+            "schedule": "Optional — TikTok lets you schedule up to 10 days ahead",
+        },
+    }
+    tiktok_path = video_path.replace(".mp4", "_tiktok.json")
+    with open(tiktok_path, "w", encoding="utf-8") as f:
+        json.dump(tiktok_meta, f, indent=2, ensure_ascii=False)
+    print(f"   📝 TikTok metadata saved: {tiktok_path}")
     return metadata_path
 
 def clean_script_for_tts(text):
