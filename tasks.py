@@ -3,6 +3,7 @@ import re
 import glob
 import json
 import time
+import datetime
 import tempfile
 import subprocess
 from celery import Celery
@@ -63,6 +64,7 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
     hashtags = ["#redditstories", "#storytime", "#fyp"]
     if subreddit_name:
         hashtags.append("#" + subreddit_name.replace(" ", "").replace("#", ""))
+    suggested_slot = _next_tiktok_slot()
     tiktok_meta = {
         "video_file": os.path.basename(video_path),
         "title": title,
@@ -78,14 +80,74 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
             "allow_comments": True,
             "allow_duet": False,
             "allow_stitch": False,
-            "schedule": "Optional — TikTok lets you schedule up to 10 days ahead",
+        },
+        "schedule": {
+            "cadence": "2 posts per day",
+            "suggested_post_time_utc": suggested_slot.strftime("%Y-%m-%d %H:%M UTC"),
+            "slots_utc": _tiktok_slot_times(),
+            "max_ahead_days": 10,
+            "note": ("Times are UTC — TikTok Studio shows your LOCAL time, so convert "
+                     "before scheduling. Max 10 days ahead. If two files suggest "
+                     "the same slot, push the second to the next slot."),
         },
     }
     tiktok_path = video_path.replace(".mp4", "_tiktok.json")
     with open(tiktok_path, "w", encoding="utf-8") as f:
         json.dump(tiktok_meta, f, indent=2, ensure_ascii=False)
-    print(f"   📝 TikTok metadata saved: {tiktok_path}")
+    print(f"   📝 TikTok metadata saved: {tiktok_path} (suggested slot: {tiktok_meta['schedule']['suggested_post_time_utc']})")
     return metadata_path
+
+
+# ============================================================
+# TIKTOK SCHEDULE SUGGESTIONS (2 posts/day, tracked across runs)
+# ============================================================
+
+# State file (committed like used_story_ids.json) so every new video gets the
+# NEXT free slot of a twice-a-day cadence instead of colliding with earlier
+# videos. The runner is on UTC, so slots are UTC — TikTok Studio shows local
+# time, and the JSON says to convert.
+TIKTOK_SCHEDULE_STATE = "tiktok_schedule_state.json"
+
+
+def _tiktok_slot_times():
+    """The two post slots per day (UTC). Override with TIKTOK_SCHEDULE_TIMES,
+    e.g. "10:00,20:00" in the workflow env."""
+    raw = os.environ.get("TIKTOK_SCHEDULE_TIMES", "12:00,18:00")
+    slots = [t.strip() for t in raw.split(",") if t.strip()]
+    return slots or ["12:00", "18:00"]
+
+
+def _next_tiktok_slot():
+    """Return the next suggested publish datetime (UTC) for a new video."""
+    slots = _tiktok_slot_times()
+    idx = 0
+    try:
+        if os.path.exists(TIKTOK_SCHEDULE_STATE):
+            with open(TIKTOK_SCHEDULE_STATE, encoding="utf-8") as f:
+                idx = int(json.load(f).get("next_index", 0))
+    except Exception:
+        pass
+    now = datetime.datetime.now(datetime.timezone.utc)
+    idx0 = idx
+    candidate = None
+    while idx < idx0 + 60:
+        slot = slots[idx % len(slots)]
+        try:
+            hh, mm = slot.split(":")
+            day = now.date() + datetime.timedelta(days=idx // len(slots))
+            candidate = datetime.datetime(day.year, day.month, day.day,
+                                          int(hh), int(mm), tzinfo=datetime.timezone.utc)
+        except ValueError:
+            candidate = now + datetime.timedelta(days=1)
+        if candidate > now + datetime.timedelta(hours=1):
+            break
+        idx += 1
+    try:
+        with open(TIKTOK_SCHEDULE_STATE, "w", encoding="utf-8") as f:
+            json.dump({"next_index": idx + 1}, f)
+    except Exception:
+        pass
+    return candidate or (now + datetime.timedelta(days=1))
 
 def clean_script_for_tts(text):
     """

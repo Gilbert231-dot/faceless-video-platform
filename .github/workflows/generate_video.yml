@@ -348,6 +348,8 @@ jobs:
           git add -f used_story_ids.json 2>/dev/null || true
           git add -f test_used_ids.json 2>/dev/null || true
           git add -f clip_state.json 2>/dev/null || true
+          # TikTok schedule slot counter (next free 2/day slot per video).
+          git add -f tiktok_schedule_state.json 2>/dev/null || true
           git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"
           git push origin main || echo "⚠️ State push failed"
 
