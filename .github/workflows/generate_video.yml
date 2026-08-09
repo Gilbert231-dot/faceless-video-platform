@@ -98,7 +98,14 @@ jobs:
           echo "GDRIVE_FOLDER_ID=${{ secrets.GDRIVE_FOLDER_ID }}" >> $GITHUB_ENV
           echo "GDRIVE_API_KEY=${{ secrets.GDRIVE_API_KEY }}" >> $GITHUB_ENV
           # DEBUG_MODE is read by config.py / tasks.py. Test mode => True (stories NOT consumed).
-          echo "DEBUG_MODE=${{ inputs.test_mode == 'true' && 'True' || 'False' }}" >> $GITHUB_ENV
+          # FIXED: the old `inputs.test_mode == 'true'` comparison silently fell
+          # through to False (production!) whenever the boolean arrived as
+          # 'True'/'TRUE'/true instead of exactly 'true' — a "test" run
+          # consumed a story and posted a real video. Normalize in the shell:
+          # any case-insensitive true => test mode. (Schedule runs have no
+          # input => empty => production, as intended.)
+          TM=$(echo '${{ inputs.test_mode }}' | xargs)   # trim whitespace
+          echo "DEBUG_MODE=$(echo "$TM" | tr '[:upper:]' '[:lower:]' | grep -q '^true$' && echo True || echo False)" >> $GITHUB_ENV
           echo "FAST_MODE=True" >> $GITHUB_ENV
           # BACKGROUND render quality (video_compile.py): maximum quality.
           # CRF 15 is near-visually-lossless; preset=veryslow squeezes the

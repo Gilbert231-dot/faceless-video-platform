@@ -378,6 +378,13 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         else:
             title = normalized_title or title
         
+        # FIXED: the [TEST] prefix was only ever PRINTED, never applied — a
+        # test-mode run could post a video with a real (non-test) title, and
+        # the dashboard/YouTube gave no hint it was a test. Apply it for real
+        # so test uploads are unmistakable (they're still private).
+        if DEBUG_MODE:
+            title = f"[TEST] {title}"
+        
         print(f"   📝 Normalized title: {title}")
         
         # --- GENDER DETECTION ---
