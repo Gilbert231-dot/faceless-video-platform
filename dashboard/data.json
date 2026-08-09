@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-09T22:05:07Z",
-  "total_stories": 366,
-  "unused_stories": 361,
+  "generated_at": "2026-08-09T23:14:38Z",
+  "total_stories": 365,
+  "unused_stories": 360,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
@@ -9,22 +9,7 @@
   "newest_added_at": null,
   "subreddits": [
     {
-      "name": "AITAH",
-      "total": 25,
-      "unused": 25
-    },
-    {
-      "name": "AmItheAsshole",
-      "total": 25,
-      "unused": 25
-    },
-    {
       "name": "offmychest",
-      "total": 25,
-      "unused": 25
-    },
-    {
-      "name": "relationship_advice",
       "total": 25,
       "unused": 25
     },
@@ -34,18 +19,33 @@
       "unused": 25
     },
     {
+      "name": "relationship_advice",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "AmItheAsshole",
+      "total": 25,
+      "unused": 25
+    },
+    {
       "name": "TalesFromTheFrontDesk",
       "total": 25,
       "unused": 25
     },
     {
-      "name": "tifu",
+      "name": "AITAH",
       "total": 25,
       "unused": 25
     },
     {
       "name": "pettyrevenge",
       "total": 25,
+      "unused": 24
+    },
+    {
+      "name": "tifu",
+      "total": 24,
       "unused": 24
     },
     {
@@ -69,13 +69,13 @@
       "unused": 23
     },
     {
-      "name": "self",
-      "total": 23,
+      "name": "unpopularopinion",
+      "total": 25,
       "unused": 23
     },
     {
-      "name": "unpopularopinion",
-      "total": 25,
+      "name": "self",
+      "total": 23,
       "unused": 23
     },
     {
@@ -84,8 +84,20 @@
       "unused": 22
     }
   ],
-  "schedule": null,
+  "schedule": {
+    "next_index": 3
+  },
   "videos": [
+    {
+      "video_file": "output_1786316557_captioned_1786316563.mp4",
+      "title": "\"Just lit the rawest weed I've ever seen, and I'm walking into the unknown...\"",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "RBaVpdo1qv8",
+      "url": "https://youtu.be/RBaVpdo1qv8",
+      "posted_at": "2026-08-09T23:14:38Z"
+    },
     {
       "video_file": "",
       "title": "My 10-year nightmare with an ice-cold landlord just got a whole lot more 'freezing'...",
