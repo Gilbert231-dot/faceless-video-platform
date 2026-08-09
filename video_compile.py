@@ -140,6 +140,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         # --- SHORT SEGMENT HANDLING ---
         # FIXED: a failed -c:v copy used to kill the whole video. Now it falls
         # back to a re-encode, and only skips the sliver as a last resort.
+        # Timeouts are generous because veryslow + CRF 15 can take ~5-7 min
+        # per 45s segment on a 2-core runner (the 300s cap was hit in prod).
         if segment_duration < 5.0:
             segment_output = os.path.join(output_dir, f"segment_processed_{i}_{int(time.time())}.mp4")
             try:
@@ -162,7 +164,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                         '-pix_fmt', 'yuv420p',
                         '-an',
                         segment_output
-                    ], check=True, capture_output=True, timeout=120)
+                    ], check=True, capture_output=True, timeout=300)
                 except Exception as e2:
                     print(f"   ⚠️ Short segment {i+1} still failed ({e2}); skipping it")
                     if os.path.exists(segment_input):
@@ -206,7 +208,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         ]
         
         try:
-            subprocess.run(cmd_process, check=True, capture_output=True, timeout=300)
+            subprocess.run(cmd_process, check=True, capture_output=True, timeout=900)
             segment_files.append(segment_output)
             pbar.update(1)
             print(f"   ✅ Segment {i+1}/{total_segments} complete ({quality_label})")
@@ -230,7 +232,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 '-movflags', '+faststart',
                 segment_output
             ]
-            subprocess.run(cmd_fallback, check=True, capture_output=True, timeout=300)
+            subprocess.run(cmd_fallback, check=True, capture_output=True, timeout=900)
             segment_files.append(segment_output)
             print(f"   ✅ Segment {i+1} complete (fallback)")
         

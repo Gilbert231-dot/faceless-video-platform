@@ -298,7 +298,9 @@ def burn_subtitles_segmented(
         ]
         print(f"      Burning segment {i+1}/{total_segments} ({seg_duration:.1f}s) with {quality_label}...")
         try:
-            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=180)
+            # Generous timeout: veryslow + CRF 15 needs ~4-6 min per 30s
+            # segment on a 2-core runner.
+            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=600)
             segment_files.append(seg_output)
         except Exception as e:
             print(f"      ⚠️ Segment {i+1} failed: {e}")
