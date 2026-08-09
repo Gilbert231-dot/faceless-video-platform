@@ -221,8 +221,8 @@ def burn_subtitles_segmented(
     
     total_segments = int(duration / segment_duration) + 1
     print(f"      Splitting into {total_segments} segments of {segment_duration}s each")
-    print(f"      Quality: uniform CRF {os.environ.get('VIDEO_CRF', '18')}, "
-          f"preset {os.environ.get('VIDEO_PRESET', 'slow')} (every segment)")
+    print(f"      Quality: uniform CRF {os.environ.get('VIDEO_CRF', '15')}, "
+          f"preset {os.environ.get('VIDEO_PRESET', 'veryslow')} (every segment)")
     
     temp_dir = os.path.join(os.path.dirname(video_path), f"caption_segments_{int(time.time())}")
     os.makedirs(temp_dir, exist_ok=True)
@@ -274,12 +274,12 @@ def burn_subtitles_segmented(
         # segment at EXACTLY start_time.
         seg_output = os.path.join(temp_dir, f"seg_captioned_{i:04d}.mp4")
         
-        # Uniform CRF 18 for the captioned video (was 20/22/25 tiers).
-        # CRF controls quality, preset controls speed — CRF 18 + slow keeps
-        # the captions as sharp as the background (no softness from a fast
-        # preset's crude motion estimation).
-        seg_crf = int(os.environ.get("VIDEO_CRF", "18"))
-        seg_preset = os.environ.get("VIDEO_PRESET", "slow")
+        # Uniform CRF 15 for the captioned video (was 20/22/25 tiers).
+        # CRF controls quality, preset controls speed — CRF 15 + veryslow
+        # keeps the captions as sharp as the background (no softness from a
+        # fast preset's crude motion estimation).
+        seg_crf = int(os.environ.get("VIDEO_CRF", "15"))
+        seg_preset = os.environ.get("VIDEO_PRESET", "veryslow")
         quality_label = f"CRF {seg_crf} ({seg_preset})"
         
         cmd_burn = [

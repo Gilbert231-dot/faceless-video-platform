@@ -47,12 +47,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     # --- OTHER SETTINGS ---
     # Uniform CRF for the WHOLE background video (was 18/20/22 per segment).
-    # CRF controls quality; the preset controls encode speed. preset=slow
-    # gives much sharper motion than veryfast (better motion estimation),
-    # which is what the user asked for — videos upload straight to YouTube,
-    # so the slower encode is fine.
-    CRF_VALUE = int(os.environ.get("VIDEO_CRF", "18"))
-    PRESET = os.environ.get("VIDEO_PRESET", "slow")
+    # CRF controls quality; the preset controls encode speed. CRF 15 is
+    # near-visually-lossless and preset=veryslow gives the best motion
+    # estimation — videos upload straight to YouTube, so the slower encode
+    # and bigger files are fine.
+    CRF_VALUE = int(os.environ.get("VIDEO_CRF", "15"))
+    PRESET = os.environ.get("VIDEO_PRESET", "veryslow")
     
     print(f"   🎙️ Voice volume: {int(VOICE_VOLUME * 100)}%")
     print(f"   🎙️ Voice speed: {VOICE_SPEED}x")
