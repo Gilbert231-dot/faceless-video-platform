@@ -223,9 +223,11 @@ jobs:
         run: |
           python - <<'PY'
           import glob
+          import json
           import os
 
           from youtube_uploader import upload_to_youtube
+          from video_history import record_video
 
           privacy = os.environ.get("PRIVACY_STATUS", "private")
           videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
@@ -235,16 +237,24 @@ jobs:
               raise SystemExit(1)
 
           for video in videos:
-              metadata = video[:-4] + "_metadata.json"
-              if not os.path.exists(metadata):
-                  metadata = None
+              metadata_path = video[:-4] + "_metadata.json"
+              meta = {}
+              if os.path.exists(metadata_path):
+                  with open(metadata_path, encoding="utf-8") as f:
+                      meta = json.load(f)
 
               print(f"📤 Uploading {os.path.basename(video)} as {privacy}...")
-              video_id = upload_to_youtube(
-                  video,
-                  metadata_path=metadata,
-                  privacy_status=privacy,
-              )
+              try:
+                  video_id = upload_to_youtube(
+                      video,
+                      metadata_path=metadata_path if meta else None,
+                      privacy_status=privacy,
+                  )
+              except Exception as e:
+                  # Record the failure so the dashboard shows it, then fail the run.
+                  record_video(video, metadata=meta, status="failed", error=e)
+                  raise
+              record_video(video, metadata=meta, video_id=video_id, status="posted")
               print(f"✅ Uploaded -> https://youtu.be/{video_id} (private)")
           PY
 
@@ -302,6 +312,12 @@ jobs:
               print(f"✅ TikTok publish complete: {result}")
           PY
 
+      # Refresh the dashboard's data.json (story stats + video history) so the
+      # deployed GitHub Pages dashboard stays current after every run.
+      - name: Refresh dashboard data
+        run: |
+          python dashboard/build_data.py
+
       - name: Push state files
         run: |
           # Persist used-story IDs and clip state so the next run doesn't reuse
@@ -317,6 +333,10 @@ jobs:
           git add -f clip_state.json 2>/dev/null || true
           # TikTok schedule slot counter (next free 2/day slot per video).
           git add -f tiktok_schedule_state.json 2>/dev/null || true
+          # Dashboard video history (titles, subreddits, YouTube URLs, status).
+          git add -f video_history.json 2>/dev/null || true
+          # Regenerated dashboard data (story stats + video history).
+          git add -f dashboard/data.json 2>/dev/null || true
           # Cleaned story bank (used stories removed by cleanup_used_stories.py).
           git add -f reddit_stories/ 2>/dev/null || true
           git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"

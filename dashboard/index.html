@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faceless Video Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header>
+        <div class="title-row">
+            <h1>🎬 Faceless Video Dashboard</h1>
+            <span id="live-pill" class="pill pill-live">live</span>
+        </div>
+        <p class="subtitle">Your Reddit-story → YouTube/TikTok automation at a glance.
+            <span id="generated-at"></span>
+        </p>
+    </header>
+
+    <div id="low-bank-alert" class="alert" hidden>
+        ⚠️ <strong>Story bank running low</strong> — <span id="low-bank-count"></span> unused
+        stories left. Run <code>fetch_stories.py</code> on your laptop (or wait for its weekly
+        schedule) to refill before the bank runs dry.
+    </div>
+
+    <main>
+        <section class="cards" id="stat-cards">
+            <!-- populated by app.js -->
+        </section>
+
+        <section class="panel">
+            <h2>Latest videos <span class="hint">(most recent first)</span></h2>
+            <ul id="video-list" class="videos"></ul>
+        </section>
+
+        <section class="panel">
+            <h2>Stories per subreddit <span class="hint">(unused of total)</span></h2>
+            <div id="subreddit-bars" class="bars"></div>
+        </section>
+
+        <div class="two-col">
+            <section class="panel">
+                <h2>Latest pipeline runs</h2>
+                <p class="subtitle">Live from GitHub Actions.</p>
+                <ul id="run-list" class="runs"></ul>
+            </section>
+
+            <section class="panel">
+                <h2>TikTok schedule</h2>
+                <div id="schedule-box"></div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        Data regenerated on every pipeline run (<code>dashboard/build_data.py</code>).
+        Story stats from <code>reddit_stories/</code> + <code>used_story_ids.json</code>.
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

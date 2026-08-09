@@ -1,0 +1,112 @@
+{
+  "generated_at": "2026-08-09T22:05:07Z",
+  "total_stories": 366,
+  "unused_stories": 361,
+  "used_stories": 5,
+  "low_bank": false,
+  "threshold": 20,
+  "oldest_added_at": null,
+  "newest_added_at": null,
+  "subreddits": [
+    {
+      "name": "AITAH",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "AmItheAsshole",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "offmychest",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "relationship_advice",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "TalesFromTheFrontDesk",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "tifu",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "pettyrevenge",
+      "total": 25,
+      "unused": 24
+    },
+    {
+      "name": "ProRevenge",
+      "total": 25,
+      "unused": 24
+    },
+    {
+      "name": "TrueOffMyChest",
+      "total": 25,
+      "unused": 24
+    },
+    {
+      "name": "EntitledPeople",
+      "total": 23,
+      "unused": 23
+    },
+    {
+      "name": "MaliciousCompliance",
+      "total": 23,
+      "unused": 23
+    },
+    {
+      "name": "self",
+      "total": 23,
+      "unused": 23
+    },
+    {
+      "name": "unpopularopinion",
+      "total": 25,
+      "unused": 23
+    },
+    {
+      "name": "confession",
+      "total": 22,
+      "unused": 22
+    }
+  ],
+  "schedule": null,
+  "videos": [
+    {
+      "video_file": "",
+      "title": "My 10-year nightmare with an ice-cold landlord just got a whole lot more 'freezing'...",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "BLY66CJq02U",
+      "url": "https://youtu.be/BLY66CJq02U",
+      "posted_at": "2026-08-09T19:03:19Z",
+      "error": ""
+    },
+    {
+      "video_file": "",
+      "title": "I love games, but the truth is, the most iconic ones are hidden gems, not bestsellers.",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "-2zyu1TxQAE",
+      "url": "https://youtu.be/-2zyu1TxQAE",
+      "posted_at": "2026-08-09T17:25:25Z",
+      "error": ""
+    }
+  ]
+}
