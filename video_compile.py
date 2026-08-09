@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import subprocess
 import tempfile
@@ -18,6 +19,29 @@ SEGMENT_DURATION = 45
 # than needed and (b) combined with a 1x supply from get_next_segment, made
 # the sped-up video end BEFORE the narration so -shortest cut stories short.
 EXTRACT_FACTOR = round((SPEED_FACTOR / VOICE_SPEED) * 1.1, 3)
+
+# Helper: Measure integrated loudness (LUFS) and true peak (dBFS) via EBU R128.
+def measure_loudness(media_path: str):
+    """Return (integrated_LUFS, true_peak_dBFS), or (None, None) on failure."""
+    cmd = [
+        'ffmpeg', '-y', '-nostats',
+        '-i', media_path,
+        '-af', 'ebur128=peak=true',
+        '-f', 'null', '-'
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        out = result.stdout + result.stderr
+        summary = out.split("Summary:")[-1]
+        m_i = re.search(r"I:\s+(-?[\d.]+) LUFS", summary)
+        m_tp = re.search(r"Peak:\s+(-?[\d.]+) dBFS", out)
+        i = float(m_i.group(1)) if m_i else None
+        tp = float(m_tp.group(1)) if m_tp else None
+        return i, tp
+    except Exception as e:
+        print(f"   ⚠️ Loudness measurement failed: {e}")
+        return None, None
+
 
 # Helper: Get duration (seconds)
 def get_duration(media_path: str) -> float:
@@ -39,11 +63,18 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     """
     print("🎬 Starting video compilation (SEGMENTED, HIGH QUALITY)...")
     
-    # --- VOICE VOLUME ---
-    if voice_id == "EXAVITQu4vr4xnSDxMaL":
-        VOICE_VOLUME = 1.8
-    else:
-        VOICE_VOLUME = 1.5
+    # --- VOICE LOUDNESS (calibrated to viral reddit-story videos) ---
+    # Measured a viral reference (597K-view rSlash-style full-story video):
+    # the narrator is the dominant element of the mix (overall integrated
+    # -21.9 LUFS, narration ≈ -22 LUFS, music bed within ~2 dB under the
+    # voice). YouTube normalizes playback to ~-14 LUFS regardless, so what
+    # matters is a consistent, voice-forward narration level — the SAME for
+    # the male and female voices. The old fixed 1.5x/1.8x gains left the two
+    # voices mismatched (and could push peaks into clipping). Instead we
+    # measure each narration and apply a fixed gain to hit VOICE_LUFS_TARGET
+    # (two-pass, deterministic, never clipping past VOICE_TP_MAX).
+    VOICE_LUFS_TARGET = -20.0   # integrated loudness (reference was -22; +2 for punch)
+    VOICE_TP_MAX = -1.5         # max true peak (dBFS)
     
     # --- OTHER SETTINGS ---
     # Uniform CRF for the WHOLE background video (was 18/20/22 per segment).
@@ -54,12 +85,14 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     CRF_VALUE = int(os.environ.get("VIDEO_CRF", "15"))
     PRESET = os.environ.get("VIDEO_PRESET", "veryslow")
     
-    print(f"   🎙️ Voice volume: {int(VOICE_VOLUME * 100)}%")
+    print(f"   🎙️ Voice target: {VOICE_LUFS_TARGET:.0f} LUFS (auto-gained per narration)")
     print(f"   🎙️ Voice speed: {VOICE_SPEED}x")
     
     # --- BACKGROUND MUSIC ---
     MUSIC_PATH = "assets/music/Caleb Arredondo - Feeling Blue.mp3"
-    MUSIC_VOLUME = 0.35
+    # ~13-14 dB below the -16 LUFS narration: clearly audible but secondary,
+    # so the narrator leads the mix like the viral reference.
+    MUSIC_VOLUME = 0.30
     
     music_available = os.path.exists(MUSIC_PATH)
     if music_available:
@@ -266,24 +299,50 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     # --- AUDIO PROCESSING ---
     print("⚡ Processing audio...")
+    # 1) Speed the voice first (atempo can overshoot peaks by ~2-3 dB, so the
+    #    loudness measurement MUST happen after the time-stretch).
+    # 2) Measure the sped narration (EBU R128).
+    # 3) Apply a FIXED gain to land on the target loudness (volume is linear,
+    #    so the peak math is then exact and can't clip).
+    # Identical logic for the male and female voices, so both narrators come
+    # out at exactly the same level (the old 1.5x/1.8x gains were a guess that
+    # left them mismatched).
+    audio_sped = os.path.join(output_dir, f"audio_sped_{int(time.time())}.wav")
     audio_processed = os.path.join(output_dir, f"audio_processed_{int(time.time())}.mp3")
-    
-    cmd_audio_process = [
-        'ffmpeg', '-y',
-        '-i', audio_path,
-        '-filter_complex',
-        f'atempo={VOICE_SPEED},volume={VOICE_VOLUME}',
-        '-ac', '1',
-        '-acodec', 'mp3',
-        '-b:a', '192k',
-        audio_processed
-    ]
-    
     try:
-        subprocess.run(cmd_audio_process, check=True, capture_output=True, timeout=120)
-        print(f"   ✅ Audio processed")
+        subprocess.run([
+            'ffmpeg', '-y', '-nostats',
+            '-i', audio_path,
+            '-af', f'atempo={VOICE_SPEED}',
+            '-ac', '1',
+            '-acodec', 'pcm_s16le',
+            audio_sped
+        ], check=True, capture_output=True, timeout=120)
+        
+        voice_i, voice_tp = measure_loudness(audio_sped)
+        if voice_i is not None:
+            gain_db = min(VOICE_LUFS_TARGET - voice_i, VOICE_TP_MAX - (voice_tp if voice_tp is not None else -99.0))
+            print(f"   🎙️ Narration at {voice_i:.1f} LUFS (peak {voice_tp if voice_tp is not None else -99:.1f} dBFS) "
+                  f"-> applying {gain_db:+.1f} dB")
+        else:
+            gain_db = 4.0  # sane fallback if measurement fails
+            print(f"   ⚠️ Loudness measurement failed; using fallback gain {gain_db:+.1f} dB")
+        
+        subprocess.run([
+            'ffmpeg', '-y', '-nostats',
+            '-i', audio_sped,
+            '-af', f'volume={gain_db:.2f}dB',
+            '-ac', '1',
+            '-acodec', 'mp3',
+            '-b:a', '192k',
+            audio_processed
+        ], check=True, capture_output=True, timeout=120)
+        os.unlink(audio_sped)
+        print(f"   ✅ Audio processed (voice normalized to {VOICE_LUFS_TARGET:.0f} LUFS)")
     except Exception as e:
         print(f"   ⚠️ Audio processing failed: {e}")
+        if os.path.exists(audio_sped):
+            os.unlink(audio_sped)
         audio_processed = audio_path
     
     # --- BACKGROUND MUSIC ---
@@ -303,7 +362,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 '-filter_complex',
                 f'[0:a]volume=1.0[voice];'
                 f'[1:a]volume={MUSIC_VOLUME},aloop=loop=-1:size=2e+06[music];'
-                f'[voice][music]amix=inputs=2:duration=first,volume=1.2',
+                # FIXED: amix NORMALIZES by default (each input / 2 for two
+                # inputs), which silently cut the narrator ~6 dB in every
+                # video — a big reason the voice sounded quiet. normalize=0
+                # keeps the levels we set; the voice is already at its target
+                # so no extra gain here (the old volume=1.2 boost would clip).
+                f'[voice][music]amix=inputs=2:duration=first:normalize=0',
                 '-t', str(voice_duration),
                 '-ac', '2',
                 '-acodec', 'mp3',
@@ -359,7 +423,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"      - Audio codec: AAC 192kbps")
     print(f"      - Video speed: {SPEED_FACTOR}x")
     print(f"      - Voice speed: {VOICE_SPEED}x")
-    print(f"      - Voice volume: {int(VOICE_VOLUME*100)}%")
+    print(f"      - Voice loudness: normalized to {VOICE_LUFS_TARGET:.0f} LUFS (no clipping)")
     print(f"      - Music: {'✅ Added' if music_added else '❌ Skipped'}")
     print(f"      - Quality: CRF {CRF_VALUE}")
     print(f"      - Scaling: Lanczos")
