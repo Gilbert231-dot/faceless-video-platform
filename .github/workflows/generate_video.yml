@@ -138,14 +138,12 @@ jobs:
           restore-keys: |
             video-cache-
 
-      - name: Cache video state (clip_state.json)
-        uses: actions/cache@v4
-        id: state-cache
-        with:
-          path: clip_state.json
-          key: video-state
-          restore-keys: |
-            video-state-
+      # NOTE: clip_state.json (background-footage position) is intentionally
+      # NOT cached. GitHub cache keys are immutable, so a fixed key would
+      # restore the SAME frozen position on every run — every video would be
+      # cut from the same spot of the same footage file (the "all backgrounds
+      # look the same" bug). The repo file (pushed after each run) is the
+      # single source of truth.
 
       # NOTE: per-video time was cut drastically (no redundant full re-encode,
       # preset veryfast instead of medium), so 2 videos fit comfortably inside
