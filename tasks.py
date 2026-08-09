@@ -37,12 +37,15 @@ story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=_debug_mode)
 
 def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
     """Save story metadata alongside the video for YouTube upload."""
+    # CC BY attribution for the background music (Kevin MacLeod) — required
+    # by the license and included wherever the video is distributed.
+    music_credit = "\n\nMusic: Echoes of Time v2 by Kevin MacLeod (incompetech.com), CC BY 4.0"
     metadata = {
         "title": title,
         "subreddit": subreddit_name,
         "score": score,
         "author": author,
-        "description": f"Story from r/{subreddit_name}\n\n{title}\n\nSubscribe for more Reddit stories! 🔔",
+        "description": f"Story from r/{subreddit_name}\n\n{title}\n\nSubscribe for more Reddit stories! 🔔{music_credit}",
         "tags": ["RedditStories", "Storytime", subreddit_name, "TrueStory", "FacelessContent"],
         "video_path": video_path
     }

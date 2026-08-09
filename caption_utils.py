@@ -1,6 +1,7 @@
 import os
 import json
 import subprocess
+import shutil
 import tempfile
 import time
 import re
@@ -221,8 +222,8 @@ def burn_subtitles_segmented(
     
     total_segments = int(duration / segment_duration) + 1
     print(f"      Splitting into {total_segments} segments of {segment_duration}s each")
-    print(f"      Quality: uniform CRF {os.environ.get('VIDEO_CRF', '15')}, "
-          f"preset {os.environ.get('VIDEO_PRESET', 'veryslow')} (every segment)")
+    print(f"      Quality: uniform CRF {os.environ.get('CAPTION_CRF', '18')}, "
+          f"preset {os.environ.get('CAPTION_PRESET', 'slow')} (every segment)")
     
     temp_dir = os.path.join(os.path.dirname(video_path), f"caption_segments_{int(time.time())}")
     os.makedirs(temp_dir, exist_ok=True)
@@ -274,12 +275,14 @@ def burn_subtitles_segmented(
         # segment at EXACTLY start_time.
         seg_output = os.path.join(temp_dir, f"seg_captioned_{i:04d}.mp4")
         
-        # Uniform CRF 15 for the captioned video (was 20/22/25 tiers).
-        # CRF controls quality, preset controls speed — CRF 15 + veryslow
-        # keeps the captions as sharp as the background (no softness from a
-        # fast preset's crude motion estimation).
-        seg_crf = int(os.environ.get("VIDEO_CRF", "15"))
-        seg_preset = os.environ.get("VIDEO_PRESET", "veryslow")
+        # CAPTION burn quality is SEPARATE from the background render
+        # (video_compile.py keeps CRF 15 + veryslow). FIXED: burning at
+        # veryslow + CRF 15 timed out on every 30s segment of a 2-core
+        # GitHub runner (>600s each), which fell back to caption-less copies
+        # and ultimately failed the whole caption pass. CRF 18 + slow keeps
+        # the burned text crisp while finishing each segment in ~2 min.
+        seg_crf = int(os.environ.get("CAPTION_CRF", "18"))
+        seg_preset = os.environ.get("CAPTION_PRESET", "slow")
         quality_label = f"CRF {seg_crf} ({seg_preset})"
         
         cmd_burn = [
@@ -304,6 +307,16 @@ def burn_subtitles_segmented(
             segment_files.append(seg_output)
         except Exception as e:
             print(f"      ⚠️ Segment {i+1} failed: {e}")
+            # FIXED (Errno 39 bug): a timed-out/killed ffmpeg leaves a PARTIAL
+            # seg_captioned file behind. It used to stay in temp_dir, so the
+            # final os.rmdir() raised "Directory not empty" and the ENTIRE
+            # caption pass was reported as failed — every veryslow run lost
+            # its captions this way. Remove the partial before falling back.
+            if os.path.exists(seg_output):
+                try:
+                    os.unlink(seg_output)
+                except OSError:
+                    pass
             # Fallback: copy without captions (keyframe-snapped is fine here —
             # better a caption-less sliver than a dead video)
             fallback_output = os.path.join(temp_dir, f"seg_fallback_{i:04d}.mp4")
@@ -384,12 +397,14 @@ def burn_subtitles_segmented(
         os.rename(video_combined, output_path)
     
     # Clean up temp directory (never delete the caller's mux_audio_path —
-    # tasks.py owns that file's lifecycle).
+    # tasks.py owns that file's lifecycle). FIXED: rmtree instead of rmdir so
+    # a stray partial file can never fail the whole caption pass again.
     if (audio_file and audio_file != audio_path and audio_file != mux_audio_path
             and os.path.exists(audio_file)):
         os.unlink(audio_file)
-    os.unlink(video_combined)
-    os.rmdir(temp_dir)
+    if os.path.exists(video_combined):
+        os.unlink(video_combined)
+    shutil.rmtree(temp_dir, ignore_errors=True)
     
     print(f"   ✅ Captions burned successfully (segmented, shifted)")
     return output_path

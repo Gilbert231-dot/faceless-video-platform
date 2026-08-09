@@ -89,7 +89,14 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"   🎙️ Voice speed: {VOICE_SPEED}x")
     
     # --- BACKGROUND MUSIC ---
-    MUSIC_PATH = "assets/music/Caleb Arredondo - Feeling Blue.mp3"
+    # FIXED (copyright): the old track ("Caleb Arredondo - Feeling Blue") is
+    # a real, commercially released song (College Music Records, on
+    # Spotify/Apple) — the ONLY copyrighted element in the final audio, and
+    # the prime suspect for the YouTube Content ID block. Replaced with
+    # "Echoes of Time v2" by Kevin MacLeod (incompetech.com), CC BY 4.0 —
+    # free to use with attribution (added to the video description).
+    MUSIC_PATH = "assets/music/Kevin MacLeod - Echoes of Time v2.mp3"
+    MUSIC_ATTRIBUTION = "Music: Echoes of Time v2 by Kevin MacLeod (incompetech.com), CC BY 4.0"
     # ~13-14 dB below the -16 LUFS narration: clearly audible but secondary,
     # so the narrator leads the mix like the viral reference.
     MUSIC_VOLUME = 0.30

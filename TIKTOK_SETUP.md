@@ -21,6 +21,30 @@ from the automation:
 4. Fill in the app name and a privacy policy URL (any simple page — e.g. a
    GitHub Pages page or even the repo URL — is accepted).
 
+### 1b. The submission form — exact values to use
+
+These are the fields that decide whether the app gets approved. Most are
+filled from files already in this repo:
+
+| Form field | What to enter |
+|---|---|
+| App name | Any name you like, e.g. **Faceless Video Creator** (the ToS/privacy pages already use this name) |
+| App icon | Download **`app_icon.png`** from the repo (repo root) and upload it — already 1024×1024, ready to go |
+| App description | Paste: *"Automates creation and posting of short-form faceless story videos. Users provide story text; the app rewrites it, generates an AI voiceover, compiles a captioned video and posts it to the user's own TikTok account via the official API."* |
+| Category | **Developer tools** or **Entertainment** (either is fine) |
+| Privacy Policy URL | `https://gilbert231-dot.github.io/faceless-video-platform/privacy.html` |
+| Terms of Service URL | `https://gilbert231-dot.github.io/faceless-video-platform/terms.html` |
+| Redirect URI | `http://localhost:8080/callback` |
+| Platform | **Desktop App** |
+| Scopes | `user.info.basic` + `video.publish` |
+| Direct Post | **Enabled** (the toggle in the Content Posting API config) |
+
+> The repo already contains the **site-verification token** TikTok asked for
+> (`tiktokTocajJRvTUwOWbzIqwkunUDn1zJj8Aa6.txt`) — it's live at
+> `https://gilbert231-dot.github.io/faceless-video-platform/tiktokTocajJRvTUwOWbzIqwkunUDn1zJj8Aa6.txt`
+> (GitHub Pages serves the file after each push; give it a minute or two to
+> deploy before TikTok checks it).
+
 ### 2. Add the Content Posting API product + scopes
 1. Open your app → **Add products** → add **Content Posting API**.
 2. In the app's **Scopes** section, request:
