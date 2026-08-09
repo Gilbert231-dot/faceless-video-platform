@@ -195,6 +195,51 @@ def generate_srt_from_audio(
     return output_srt_path
 
 
+def _merge_im_cues(content: str) -> str:
+    """Merge consecutive "I" + "am" SRT cues into a single "I'm" cue.
+
+    The TTS fix expands "I'm" to "I am" before synthesis (so the voice
+    never inserts the "ale" syllable), and whisper transcribes the audio as
+    two separate word cues: "I" then "am". Merging them back to one "I'm"
+    cue keeps the burned-in captions looking exactly like they always did.
+    The merged cue spans [start of "I", end of "am"] — correct timing, and
+    the following cue still starts at or after that end, so monotonicity
+    (which ffmpeg's subtitles filter requires) is preserved.
+    """
+    blocks = []
+    cur = []
+    for ln in content.splitlines():
+        if ln.strip():
+            cur.append(ln)
+        else:
+            if cur:
+                blocks.append(cur)
+                cur = []
+    if cur:
+        blocks.append(cur)
+
+    out = []
+    i = 0
+    while i < len(blocks):
+        b = blocks[i]
+        text = " ".join(b[2:]).strip() if len(b) > 2 else ""
+        nxt = blocks[i + 1] if i + 1 < len(blocks) else None
+        nxt_text = " ".join(nxt[2:]).strip() if nxt and len(nxt) > 2 else ""
+        # Case-sensitive on purpose: the pronoun is "I", the verb is lowercase
+        # "am" — a capitalized "Am" (sentence start, e.g. "Am I wrong?") must
+        # NOT merge.
+        if text == "I" and nxt_text == "am" and len(nxt or []) >= 3:
+            start = b[1].split("-->", 1)[0].strip()
+            end = nxt[1].split("-->", 1)[1].strip()
+            out.append([b[0], f"{start} --> {end}", "I'm"])
+            i += 1  # skip the "am" cue
+        else:
+            out.append(b)
+        i += 1
+
+    return "\n\n".join("\n".join(block) for block in out) + "\n"
+
+
 def _clean_srt_text(srt_path: str):
     corrections = {
         # REMOVED the bare "ale" -> "about" rule: it corrupted whole words in
@@ -207,6 +252,8 @@ def _clean_srt_text(srt_path: str):
     }
     with open(srt_path, 'r', encoding='utf-8') as f:
         content = f.read()
+    # Merge whisper's "I" + "am" cues back into "I'm" (the TTS fix says "I am").
+    content = _merge_im_cues(content)
     for wrong, correct in corrections.items():
         content = content.replace(wrong, correct)
     # Standalone "ale"/"aale"/"alee" filler words (word boundaries keep

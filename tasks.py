@@ -42,17 +42,15 @@ story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=_debug_mode)
 
 def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
     """Save story metadata alongside the video for YouTube upload."""
-    # CC BY attribution for the background music (Kevin MacLeod) — required
-    # by the license and included wherever the video is distributed.
-    music_credit = ('\n\n"Valse Gymnopedie" Kevin MacLeod (incompetech.com)\n'
-                    "Licensed under Creative Commons: By Attribution 4.0 License\n"
-                    "http://creativecommons.org/licenses/by/4.0/")
+    # NOTE: the Kevin MacLeod CC BY attribution is intentionally NOT added
+    # to the description anymore (user request). CC BY technically asks for
+    # credit, so keep this in mind if you ever re-enable it.
     metadata = {
         "title": title,
         "subreddit": subreddit_name,
         "score": score,
         "author": author,
-        "description": f"Story from r/{subreddit_name}\n\n{title}\n\nSubscribe for more Reddit stories! 🔔{music_credit}",
+        "description": f"Story from r/{subreddit_name}\n\n{title}\n\nSubscribe for more Reddit stories! 🔔",
         "tags": ["RedditStories", "Storytime", subreddit_name, "TrueStory", "FacelessContent"],
         "video_path": video_path
     }
@@ -176,10 +174,19 @@ def clean_script_for_tts(text):
     # Remove the filler word "ale" (and its "aale"/"alee" renderings)
     # whenever it appears as a standalone word, in any case. Word boundaries
     # keep real words intact — "male", "female", "scale", "tale" are never
-    # touched. (The ElevenLabs voice ALSO inserts this syllable on its own;
-    # that's handled by muting it in the audio during captioning.)
+    # touched.
     text = re.sub(r'\b(?:ale|aale|alee)\b', '', text, flags=re.IGNORECASE)
     text = re.sub(r' +', ' ', text)  # collapse double spaces left behind
+    
+    # ROOT-CAUSE FIX for the still-audible "ale" ("I'm ale about to"): the
+    # ElevenLabs voice inserts that syllable after the "I'm" contraction's
+    # glottal stop EVEN when the text is clean — which is why stripping
+    # "ale" from the text never fully fixed it (there was nothing to strip).
+    # Expand every standalone "I'm" to "I am" so the voice never hits the
+    # trigger — deterministic, no whisper detection involved. The caption
+    # step merges the whispered "I am" cues back to "I'm", so the on-screen
+    # captions look exactly as before.
+    text = re.sub(r"\bI'm\b", "I am", text, flags=re.IGNORECASE)
     
     return text.strip()
 
@@ -278,10 +285,10 @@ def generate_single_video(title, script, part_label=None, topic=None,
         full_script = script
     
     # --- CLEAN THE SCRIPT FOR TTS (fix "I'm ale" and other glitches) ---
+    # clean_script_for_tts expands "I'm" -> "I am" (deterministic "ale" fix)
+    # and strips stray "ale" fillers; the caption step merges the whispered
+    # "I am" cues back to "I'm" so on-screen captions look unchanged.
     full_script = clean_script_for_tts(full_script)
-
-    # --- IMPORTANT: Do NOT modify contractions. Keep original script. ---
-    # The TTS glitch (I'm l) is a voice model issue; we keep "I'm" as is.
 
     audio_path, _ = generate_voiceover(full_script, voice_id=voice_id)
     print(f"🎙️ Voiceover saved to: {audio_path}")
