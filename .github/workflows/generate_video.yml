@@ -351,6 +351,24 @@ jobs:
           git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"
           git push origin main || echo "⚠️ State push failed"
 
+      # Download the ORIGINAL generated videos (no re-encode). GitHub's 100 MB
+      # repo-file limit doesn't apply to artifacts, and the zip download
+      # appears on the run page (Artifacts section) — so the user can grab the
+      # pristine mp4s for TikTok uploads (downloading from YouTube would
+      # double-compress them). The files are the exact ones uploaded to
+      # YouTube, so TikTok's own re-encode is the only compression loss.
+      # Retention is 7 days (default would be 90) — download before it expires.
+      # NOTE: this repo is PUBLIC, so the artifacts are downloadable by anyone
+      # with the run link during retention — fine for faceless story videos,
+      # but worth knowing while content is still in the review stage.
+      - name: Download original videos (artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: videos-${{ github.run_id }}
+          path: output/*.mp4
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Final cleanup
         run: |
           rm -rf output/*.mp4
