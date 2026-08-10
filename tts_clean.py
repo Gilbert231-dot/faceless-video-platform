@@ -26,6 +26,14 @@ What it fixes (the "things the narrator should never say"):
 import re
 
 # ---------------------------------------------------------------- 1. "ale"
+# ROOT-CAUSE FIX (proven by the tts_script artifact): the story adapter
+# sometimes writes the filler GLUED onto "I'm" as "I'male" — e.g.
+# "I'male literally about to tell you" — so word-boundary regexes (\bale\b,
+# \bI'm\b) can't see it, whisper hears one clean word (QA passes), and the
+# voice pronounces it "I'm ale" (exactly the artifact the user hears). Match
+# the whole glued family and replace it with "I am".
+GLUED_IM_RE = re.compile(r"\bI'?ma?le+\b", re.IGNORECASE)
+
 # Standalone filler word -> silence. Any case. "aale"/"alee" are common
 # renderings of the same artifact.
 ALE_RE = re.compile(r"\b(?:ale|aale|alee)\b", re.IGNORECASE)
@@ -137,6 +145,10 @@ def clean_for_tts(text: str) -> str:
     # Any asterisk/backtick/tilde that survived the paired patterns is almost
     # certainly leftover markdown ("asterisk asterisk" must never be spoken).
     text = re.sub(r"[*`~]", "", text)
+
+    # Glued "I'male" family -> "I am" (runs FIRST: it's the proven root cause,
+    # and "I'male" contains an "ale" substring no \b rule could see).
+    text = GLUED_IM_RE.sub("I am", text)
 
     for wrong, correct in CORRECTIONS.items():
         text = re.sub(rf"\b{re.escape(wrong)}\b", correct, text, flags=re.IGNORECASE)

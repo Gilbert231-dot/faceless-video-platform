@@ -101,8 +101,11 @@ def get_gen_z_style(include_hook=True):
     - Don't over-exaggerate
     - Maintain first-person
     - Keep it engaging and fast-paced
-    - NEVER use the filler word "ale" (e.g. "I'm ale about to") — it sounds
-      broken in text-to-speech. If you want a filler, use "like" or "honestly".
+    - NEVER use the filler word "ale" (e.g. "I'm ale about to") and NEVER
+      write it glued to "I'm" as "I'male" or "I'ma" — the voice pronounces
+      "I'male" as a broken syllable ("I'm ale"). Always write "I'm" with a
+      space after it ("I'm about to", "I'm going to"). If you want a filler,
+      use "like" or "honestly".
     """
     
     if include_hook:

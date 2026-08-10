@@ -342,6 +342,10 @@ def _clean_srt_text(srt_path: str):
     content = _merge_im_cues(content)
     for wrong, correct in corrections.items():
         content = content.replace(wrong, correct)
+    # Glued "I'male" family (the proven root cause — the TTS text contained
+    # "I'male" and the voice said "I'm ale"): if whisper ever writes it in a
+    # caption, collapse it back to "I'm" for display.
+    content = re.sub(r"\bI'?ma?le+\b", "I'm", content, flags=re.IGNORECASE)
     # Standalone "ale"/"aale"/"alee" filler words (word boundaries keep
     # real words like "male", "female", "scale", "tale" intact).
     content = re.sub(r'\b(?:ale|aale|alee)\b', '', content, flags=re.IGNORECASE)
