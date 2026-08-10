@@ -226,12 +226,18 @@ jobs:
       # Upload them directly to YouTube as PRIVATE instead (same OAuth secrets
       # as the upload workflow). You review them in YouTube Studio, then make
       # them public yourself when you're happy.
-      - name: Upload videos to YouTube (private)
+      # Privacy comes from the YOUTUBE_PRIVACY repo file (same pattern as
+      # AUTOMATION_PAUSED / TIKTOK_ENABLED): set it ONCE to 'public' and every
+      # run — manual OR the daily scheduled run — posts public from then on.
+      # Valid values: private / unlisted / public. Anything else (or a missing
+      # file) safely defaults to private. GitHub dispatch inputs were rejected
+      # for this on purpose: they reset to defaults every run, so 'public'
+      # would silently not stick — the file is the single source of truth.
+      - name: Upload videos to YouTube
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          PRIVACY_STATUS: private
         run: |
           python - <<'PY'
           import glob
@@ -241,7 +247,15 @@ jobs:
           from youtube_uploader import upload_to_youtube
           from video_history import record_video
 
-          privacy = os.environ.get("PRIVACY_STATUS", "private")
+          privacy = "private"
+          try:
+              with open("YOUTUBE_PRIVACY", encoding="utf-8") as f:
+                  privacy = f.read().strip().lower()
+          except FileNotFoundError:
+              pass
+          if privacy not in ("private", "unlisted", "public"):
+              privacy = "private"
+          print(f"🔒 YouTube privacy: {privacy} (from YOUTUBE_PRIVACY file)")
           videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
 
           if not videos:
