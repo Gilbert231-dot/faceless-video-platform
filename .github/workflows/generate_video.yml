@@ -244,6 +244,7 @@ jobs:
           import json
           import os
 
+          from youtube_schedule import next_publish_times
           from youtube_uploader import upload_to_youtube
           from video_history import record_video
 
@@ -255,6 +256,13 @@ jobs:
               pass
           if privacy not in ("private", "unlisted", "public"):
               privacy = "private"
+
+          # TEST runs always stay private, no matter what the file says — a
+          # [TEST] video must never go live.
+          if os.environ.get("DEBUG_MODE", "").lower() == "true":
+              privacy = "private"
+              print("🔒 Test run: forcing PRIVATE (never schedule a [TEST] video)")
+
           print(f"🔒 YouTube privacy: {privacy} (from YOUTUBE_PRIVACY file)")
           videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
 
@@ -262,26 +270,40 @@ jobs:
               print("❌ No videos were generated — the run produced nothing.")
               raise SystemExit(1)
 
-          for video in videos:
+          # PUBLIC mode: give each video its own far-apart future slot so two
+          # videos on the same day never shadow each other (default slots
+          # 10:00/22:00 UTC = 12h apart; YOUTUBE_SCHEDULE_TIMES overrides).
+          # YouTube auto-flips them public at their publishAt time.
+          publish_times = next_publish_times(len(videos)) if privacy == "public" else [None] * len(videos)
+
+          for video, publish_at in zip(videos, publish_times):
               metadata_path = video[:-4] + "_metadata.json"
               meta = {}
               if os.path.exists(metadata_path):
                   with open(metadata_path, encoding="utf-8") as f:
                       meta = json.load(f)
 
-              print(f"📤 Uploading {os.path.basename(video)} as {privacy}...")
+              if publish_at:
+                  print(f"📤 Uploading {os.path.basename(video)} — scheduled public at {publish_at}")
+              else:
+                  print(f"📤 Uploading {os.path.basename(video)} as {privacy}...")
               try:
                   video_id = upload_to_youtube(
                       video,
                       metadata_path=metadata_path if meta else None,
                       privacy_status=privacy,
+                      publish_at=publish_at,
                   )
               except Exception as e:
                   # Record the failure so the dashboard shows it, then fail the run.
                   record_video(video, metadata=meta, status="failed", error=e)
                   raise
-              record_video(video, metadata=meta, video_id=video_id, status="posted")
-              print(f"✅ Uploaded -> https://youtu.be/{video_id} (private)")
+              record_video(video, metadata=meta, video_id=video_id, status="posted",
+                           publish_at=publish_at)
+              if publish_at:
+                  print(f"✅ Uploaded -> https://youtu.be/{video_id} (goes public {publish_at})")
+              else:
+                  print(f"✅ Uploaded -> https://youtu.be/{video_id} ({privacy})")
           PY
 
       # TikTok posting via the official Content Posting API. Gated by the
@@ -359,6 +381,8 @@ jobs:
           git add -f clip_state.json 2>/dev/null || true
           # TikTok schedule slot counter (next free 2/day slot per video).
           git add -f tiktok_schedule_state.json 2>/dev/null || true
+          # YouTube publish-slot counter (keeps same-day videos far apart).
+          git add -f youtube_schedule_state.json 2>/dev/null || true
           # Dashboard video history (titles, subreddits, YouTube URLs, status).
           git add -f video_history.json 2>/dev/null || true
           # Regenerated dashboard data (story stats + video history).

@@ -52,7 +52,7 @@ def get_authenticated_service():
     return build("youtube", "v3", credentials=creds)
 
 
-def build_upload_body(title, description, tags, privacy_status):
+def build_upload_body(title, description, tags, privacy_status, publish_at=None):
     """
     Build the videos.insert body.
 
@@ -64,7 +64,22 @@ def build_upload_body(title, description, tags, privacy_status):
       HTTP 400.
     - The real AI/altered-content disclosure field is
       status.containsSyntheticMedia (boolean).
+    - Scheduled publishing: when publish_at (ISO 8601 UTC) is given, the
+      video is uploaded as PRIVATE and YouTube automatically flips it to
+      PUBLIC at that time. The API only accepts publishAt on private/
+      unlisted uploads, so privacyStatus is forced to "private" here and
+      the public flip happens by itself later.
     """
+    status = {
+        "privacyStatus": privacy_status,          # public | unlisted | private
+        "selfDeclaredMadeForKids": False,         # not made for kids
+        "containsSyntheticMedia": True,           # AI-generated/voice content
+        "embeddable": True,
+        "publicStatsViewable": True,
+    }
+    if publish_at:
+        status["privacyStatus"] = "private"
+        status["publishAt"] = publish_at
     return {
         "snippet": {
             "title": title[:100],          # YouTube caps titles at 100 chars
@@ -72,13 +87,7 @@ def build_upload_body(title, description, tags, privacy_status):
             "tags": tags[:15],             # keep the tag list sane
             "categoryId": "22",            # People & Blogs
         },
-        "status": {
-            "privacyStatus": privacy_status,          # public | unlisted | private
-            "selfDeclaredMadeForKids": False,         # not made for kids
-            "containsSyntheticMedia": True,           # AI-generated/voice content
-            "embeddable": True,
-            "publicStatsViewable": True,
-        },
+        "status": status,
     }
 
 
@@ -86,9 +95,13 @@ def upload_to_youtube(
     video_path,
     metadata_path=None,
     privacy_status="public",
+    publish_at=None,
     max_attempts=4,
 ):
     """Upload a video to YouTube with retries on transient errors.
+
+    If publish_at (ISO 8601 UTC) is set, the video uploads as private and
+    YouTube makes it public automatically at that time.
 
     Returns the YouTube video ID.
     """
@@ -107,8 +120,14 @@ def upload_to_youtube(
         description = metadata.get("description", description)
         tags = metadata.get("tags", tags)
 
-    body = build_upload_body(title, description, tags, privacy_status)
-    logger.info("Uploading %s as '%s' (privacy=%s)", video_path, title, privacy_status)
+    body = build_upload_body(title, description, tags, privacy_status, publish_at)
+    if publish_at:
+        logger.info(
+            "Uploading %s as '%s' (scheduled public at %s)",
+            video_path, title, publish_at,
+        )
+    else:
+        logger.info("Uploading %s as '%s' (privacy=%s)", video_path, title, privacy_status)
 
     media = MediaFileUpload(video_path, chunksize=1024 * 1024 * 8, resumable=True)
 

@@ -22,9 +22,10 @@ def _safe(text):
 
 
 def record_video(video_file, metadata=None, video_id=None, status="posted",
-                 platform="youtube", url=None, error=None):
+                 platform="youtube", url=None, error=None, publish_at=None):
     """Append one video record. Never raises — a history hiccup must not
-    fail the pipeline. Dedupes on video_id so re-runs don't duplicate."""
+    fail the pipeline. Dedupes on video_id so re-runs don't duplicate.
+    publish_at (ISO 8601 UTC) records a scheduled public time, if any."""
     try:
         entries = []
         if os.path.exists(HISTORY_FILE):
@@ -46,6 +47,8 @@ def record_video(video_file, metadata=None, video_id=None, status="posted",
         }
         if error:
             entry["error"] = str(error)[:200]
+        if publish_at:
+            entry["publish_at"] = publish_at
 
         if video_id:
             entries = [e for e in entries if e.get("video_id") != video_id]
