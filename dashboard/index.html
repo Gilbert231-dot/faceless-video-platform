@@ -40,16 +40,22 @@
 
         <div class="two-col">
             <section class="panel">
+                <h2>Next YouTube publish <span class="hint" id="yt-privacy-hint"></span></h2>
+                <p class="subtitle">Scheduled go-live times (UTC slots: <span id="yt-slots"></span>).</p>
+                <div id="yt-publish-box"></div>
+            </section>
+
+            <section class="panel">
                 <h2>Latest pipeline runs</h2>
                 <p class="subtitle">Live from GitHub Actions.</p>
                 <ul id="run-list" class="runs"></ul>
             </section>
-
-            <section class="panel">
-                <h2>TikTok schedule</h2>
-                <div id="schedule-box"></div>
-            </section>
         </div>
+
+        <section class="panel">
+            <h2>TikTok schedule</h2>
+            <div id="schedule-box"></div>
+        </section>
     </main>
 
     <footer>

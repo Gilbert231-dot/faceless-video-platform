@@ -38,6 +38,10 @@ function renderCards(d) {
         { label: "Unused", value: d.unused_stories, cls: "green", sub: "ready to narrate" },
         { label: "Used", value: d.used_stories, cls: "blue", sub: "already narrated" },
         { label: "Remaining", value: `${pct}%`, cls: pct <= 20 ? "red" : "green", sub: "of the bank" },
+        { label: "Story runway", value: d.days_of_stories != null ? `~${d.days_of_stories}d` : "—",
+          cls: d.days_of_stories != null && d.days_of_stories <= 30 ? "red" : "green",
+          sub: d.runway_date ? `at ${d.videos_per_day || 2}/day, dry ${new Date(d.runway_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`
+                             : `at ${d.videos_per_day || 2} videos/day` },
     ];
 
     for (const def of defs) {
@@ -69,6 +73,41 @@ function renderBars(d) {
         track.appendChild(fill);
         row.append(label, track);
         box.appendChild(row);
+    }
+}
+
+function renderYouTubePublish(d) {
+    const box = document.getElementById("yt-publish-box");
+    box.innerHTML = "";
+    const yt = d.youtube;
+
+    document.getElementById("yt-privacy-hint").textContent =
+        yt && yt.privacy ? `(privacy: ${yt.privacy})` : "";
+    document.getElementById("yt-slots").textContent =
+        yt && yt.slots && yt.slots.length ? yt.slots.join(", ") : "—";
+
+    if (!yt || !yt.next_publish_utc || !yt.next_publish_utc.length) {
+        box.appendChild(el("p", "empty",
+            yt && yt.privacy !== "public"
+                ? "No schedule — videos post as " + (yt ? yt.privacy : "private") +
+                  ". Set YOUTUBE_PRIVACY to 'public' to schedule go-live times."
+                : "No upcoming publishes yet — the pipeline writes them after each run."));
+        return;
+    }
+
+    for (const iso of yt.next_publish_utc) {
+        const row = el("div", "schedule-item");
+        const label = el("span", "", "Next publish");
+        const slot = el("span", "slot",
+            new Date(iso).toLocaleString(undefined, {
+                month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+            }));
+        row.append(label, slot);
+        box.appendChild(row);
+    }
+    if (yt.privacy !== "public") {
+        box.appendChild(el("p", "subtitle",
+            "(privacy is " + yt.privacy + " — these slots will apply once set to public)"));
     }
 }
 
@@ -193,6 +232,7 @@ async function main() {
         renderCards(data);
         renderVideos(data.videos);
         renderBars(data);
+        renderYouTubePublish(data);
         renderSchedule(data);
     } else {
         document.getElementById("generated-at").textContent =

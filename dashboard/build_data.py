@@ -5,6 +5,7 @@ Reads:
   reddit_stories/*/stories_with_comments_*.json + stories_*.json  (the bank)
   used_story_ids.json                                            (narrated IDs)
   tiktok_schedule_state.json                                     (assigned slots)
+  youtube_schedule_state.json + YOUTUBE_PRIVACY                 (next publishes)
 
 Writes:
   dashboard/data.json  (what the dashboard renders)
@@ -13,6 +14,7 @@ Run manually after fetching stories, or let the GitHub workflow regenerate
 it on every video run so the deployed dashboard stays fresh.
 """
 
+import datetime
 import glob
 import hashlib
 import json
@@ -23,9 +25,15 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # repo root
 STORIES_DIR = os.path.join(REPO, "reddit_stories")
 USED_IDS_FILE = os.path.join(REPO, "used_story_ids.json")
 SCHEDULE_FILE = os.path.join(REPO, "tiktok_schedule_state.json")
+YT_SCHEDULE_FILE = os.path.join(REPO, "youtube_schedule_state.json")
+YT_PRIVACY_FILE = os.path.join(REPO, "YOUTUBE_PRIVACY")
 VIDEO_HISTORY_FILE = os.path.join(REPO, "video_history.json")
 OUT = os.path.join(REPO, "dashboard", "data.json")
 THRESHOLD = 20  # must match STORY_REFILL_THRESHOLD in tasks.py
+VIDEOS_PER_DAY = 2  # daily cadence (2 AM UTC run makes 2 videos)
+
+# Default YouTube publish slots (must match youtube_schedule.py)
+DEFAULT_YT_SLOTS = ["12:00", "20:00"]
 
 
 def load_used_ids():
@@ -94,6 +102,52 @@ def load_schedule():
     return None
 
 
+def load_youtube_schedule():
+    """Next YouTube publish slots (UTC) + current privacy setting."""
+    next_index = 0
+    try:
+        with open(YT_SCHEDULE_FILE, encoding="utf-8") as f:
+            next_index = int(json.load(f).get("next_index", 0))
+    except Exception:
+        pass
+
+    # Mirror youtube_schedule.slot_times() env override + default
+    raw = os.environ.get("YOUTUBE_SCHEDULE_TIMES", ",".join(DEFAULT_YT_SLOTS))
+    slots = [t.strip() for t in raw.split(",") if t.strip()] or DEFAULT_YT_SLOTS
+
+    now = datetime.datetime.now(datetime.timezone.utc)
+    upcoming = []
+    idx = next_index
+    # Slots cycle through the day list; show the next 2 future publish times
+    while len(upcoming) < 2 and idx < next_index + 60:
+        slot = slots[idx % len(slots)]
+        try:
+            hh, mm = slot.split(":")
+            day = now.date() + datetime.timedelta(days=idx // len(slots))
+            t = datetime.datetime(day.year, day.month, day.day,
+                                  int(hh), int(mm), tzinfo=datetime.timezone.utc)
+        except ValueError:
+            t = now + datetime.timedelta(days=1)
+        if t > now + datetime.timedelta(hours=1):
+            upcoming.append(t)
+        idx += 1
+
+    privacy = "private"
+    try:
+        with open(YT_PRIVACY_FILE, encoding="utf-8") as f:
+            privacy = f.read().strip().lower()
+    except Exception:
+        pass
+    if privacy not in ("private", "unlisted", "public"):
+        privacy = "private"
+
+    return {
+        "privacy": privacy,
+        "slots": slots,
+        "next_publish_utc": [t.strftime("%Y-%m-%dT%H:%M:%SZ") for t in upcoming],
+    }
+
+
 def main():
     stories = load_bank()
     total = len(stories)
@@ -110,6 +164,12 @@ def main():
 
     added = [s["added_at"] for s in stories if s.get("added_at")]
     schedule = load_schedule()
+    yt = load_youtube_schedule()
+
+    # Story runway: at 2 videos/day, how long until the bank runs dry?
+    days_left = unused // VIDEOS_PER_DAY
+    runway_date = (datetime.date.today()
+                   + datetime.timedelta(days=days_left)).isoformat()
 
     data = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -118,19 +178,25 @@ def main():
         "used_stories": used,
         "low_bank": unused <= THRESHOLD,
         "threshold": THRESHOLD,
+        "days_of_stories": days_left,
+        "runway_date": runway_date,
+        "videos_per_day": VIDEOS_PER_DAY,
         "oldest_added_at": min(added) if added else None,
         "newest_added_at": max(added) if added else None,
         "subreddits": subreddits,
         "schedule": schedule,
+        "youtube": yt,
         "videos": load_video_history(),
     }
 
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-    print(f"✅ Wrote {OUT}")
+    print(f"[build_data] Wrote {OUT}")
     print(f"   {total} stories, {unused} unused / {used} used "
           f"across {len(subreddits)} subreddits"
-          + ("  ⚠️ LOW BANK" if data["low_bank"] else ""))
+          + ("  [LOW BANK]" if data["low_bank"] else ""))
+    print(f"   Story runway: ~{days_left} days at {VIDEOS_PER_DAY}/day (dry ~{runway_date})")
+    print(f"   YouTube: privacy={yt['privacy']}, next publishes={yt['next_publish_utc']}")
 
 
 if __name__ == "__main__":

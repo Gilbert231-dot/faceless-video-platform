@@ -1,25 +1,18 @@
 {
-  "generated_at": "2026-08-09T23:14:38Z",
+  "generated_at": "2026-08-10T00:44:04Z",
   "total_stories": 365,
   "unused_stories": 360,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
+  "days_of_stories": 180,
+  "runway_date": "2027-02-06",
+  "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
   "subreddits": [
     {
-      "name": "offmychest",
-      "total": 25,
-      "unused": 25
-    },
-    {
-      "name": "TalesFromRetail",
-      "total": 25,
-      "unused": 25
-    },
-    {
-      "name": "relationship_advice",
+      "name": "AITAH",
       "total": 25,
       "unused": 25
     },
@@ -29,12 +22,22 @@
       "unused": 25
     },
     {
-      "name": "TalesFromTheFrontDesk",
+      "name": "offmychest",
       "total": 25,
       "unused": 25
     },
     {
-      "name": "AITAH",
+      "name": "relationship_advice",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "TalesFromTheFrontDesk",
       "total": 25,
       "unused": 25
     },
@@ -44,13 +47,13 @@
       "unused": 24
     },
     {
-      "name": "tifu",
-      "total": 24,
+      "name": "ProRevenge",
+      "total": 25,
       "unused": 24
     },
     {
-      "name": "ProRevenge",
-      "total": 25,
+      "name": "tifu",
+      "total": 24,
       "unused": 24
     },
     {
@@ -69,13 +72,13 @@
       "unused": 23
     },
     {
-      "name": "unpopularopinion",
-      "total": 25,
+      "name": "self",
+      "total": 23,
       "unused": 23
     },
     {
-      "name": "self",
-      "total": 23,
+      "name": "unpopularopinion",
+      "total": 25,
       "unused": 23
     },
     {
@@ -86,6 +89,17 @@
   ],
   "schedule": {
     "next_index": 3
+  },
+  "youtube": {
+    "privacy": "private",
+    "slots": [
+      "12:00",
+      "20:00"
+    ],
+    "next_publish_utc": [
+      "2026-08-10T12:00:00Z",
+      "2026-08-10T20:00:00Z"
+    ]
   },
   "videos": [
     {
