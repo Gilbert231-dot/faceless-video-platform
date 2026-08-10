@@ -1,33 +1,18 @@
 {
-  "generated_at": "2026-08-10T00:44:04Z",
-  "total_stories": 365,
-  "unused_stories": 360,
+  "generated_at": "2026-08-10T04:51:31Z",
+  "total_stories": 363,
+  "unused_stories": 358,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
-  "days_of_stories": 180,
-  "runway_date": "2027-02-06",
+  "days_of_stories": 179,
+  "runway_date": "2027-02-05",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
   "subreddits": [
     {
-      "name": "AITAH",
-      "total": 25,
-      "unused": 25
-    },
-    {
-      "name": "AmItheAsshole",
-      "total": 25,
-      "unused": 25
-    },
-    {
       "name": "offmychest",
-      "total": 25,
-      "unused": 25
-    },
-    {
-      "name": "relationship_advice",
       "total": 25,
       "unused": 25
     },
@@ -37,17 +22,27 @@
       "unused": 25
     },
     {
+      "name": "AmItheAsshole",
+      "total": 25,
+      "unused": 25
+    },
+    {
       "name": "TalesFromTheFrontDesk",
       "total": 25,
       "unused": 25
     },
     {
-      "name": "pettyrevenge",
+      "name": "AITAH",
       "total": 25,
+      "unused": 25
+    },
+    {
+      "name": "relationship_advice",
+      "total": 24,
       "unused": 24
     },
     {
-      "name": "ProRevenge",
+      "name": "pettyrevenge",
       "total": 25,
       "unused": 24
     },
@@ -57,22 +52,17 @@
       "unused": 24
     },
     {
+      "name": "ProRevenge",
+      "total": 25,
+      "unused": 24
+    },
+    {
       "name": "TrueOffMyChest",
       "total": 25,
       "unused": 24
     },
     {
-      "name": "EntitledPeople",
-      "total": 23,
-      "unused": 23
-    },
-    {
       "name": "MaliciousCompliance",
-      "total": 23,
-      "unused": 23
-    },
-    {
-      "name": "self",
       "total": 23,
       "unused": 23
     },
@@ -82,13 +72,23 @@
       "unused": 23
     },
     {
+      "name": "self",
+      "total": 23,
+      "unused": 23
+    },
+    {
+      "name": "EntitledPeople",
+      "total": 22,
+      "unused": 22
+    },
+    {
       "name": "confession",
       "total": 22,
       "unused": 22
     }
   ],
   "schedule": {
-    "next_index": 3
+    "next_index": 5
   },
   "youtube": {
     "privacy": "private",
@@ -102,6 +102,26 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786336932_captioned_1786336937.mp4",
+      "title": "\"I set one clear boundary, but this entitled client turned it into a full-blown meltdown.\"",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "3YJLbBgRzpo",
+      "url": "https://youtu.be/3YJLbBgRzpo",
+      "posted_at": "2026-08-10T04:51:31Z"
+    },
+    {
+      "video_file": "output_1786335317_captioned_1786335321.mp4",
+      "title": "\"He 'forgot' to send me a nude... for a whole year... on accident?\"",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "domuel_CbDo",
+      "url": "https://youtu.be/domuel_CbDo",
+      "posted_at": "2026-08-10T04:51:09Z"
+    },
     {
       "video_file": "output_1786316557_captioned_1786316563.mp4",
       "title": "\"Just lit the rawest weed I've ever seen, and I'm walking into the unknown...\"",
