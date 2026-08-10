@@ -1,4 +1,5 @@
 import os
+import re
 import tempfile
 from typing import Tuple, Optional
 
@@ -38,6 +39,14 @@ def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str
     """
     if voice_id is None:
         voice_id = DEFAULT_VOICE_ID
+    
+    # LAST-LINE DEFENSE for the "ale" artifact (belt and suspenders): even if
+    # a script somehow slips past clean_script_for_tts, never send a standalone
+    # "ale"/"aale"/"alee" to the TTS. Word boundaries keep real words
+    # ("male", "female", "scale", "tale") intact. The post-generation audio
+    # mute (caption step) remains as the second layer.
+    script = re.sub(r'\b(?:ale|aale|alee)\b', '', script, flags=re.IGNORECASE)
+    script = re.sub(r' +', ' ', script).strip()
     
     try:
         if ELEVENLABS_V1:

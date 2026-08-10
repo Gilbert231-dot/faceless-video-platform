@@ -15,9 +15,11 @@ FAST_MODE = False  # Set to False for production quality
 # Defaults to False (production) when run locally.
 DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() in ("true", "1", "yes")
 
-# Voice speed (used in video_compile and tasks) — slightly slower for a
-# calmer narration; captions are timed to this exact value so they stay in sync.
-VOICE_SPEED = 1.06
+# Voice speed (used in video_compile and tasks). 1.06 was the calm baseline;
+# bumped to 1.08 at the user's request for a tiny bit more pace. Captions are
+# timed to this exact value (whisper timestamps are divided by it) so they
+# stay in sync no matter the value.
+VOICE_SPEED = 1.08
 # ===========================
 # CAPTIONS SETTINGS
 # ===========================
