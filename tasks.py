@@ -12,6 +12,7 @@ from gender_detector import GenderDetector
 from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
 from caption_utils import add_subtitles_to_video
+from tts_clean import clean_for_tts
 from reddit_story_loader import RedditStoryLoader
 from video_compile import compile_video, get_duration, EXTRACT_FACTOR
 from reddit_fetcher import get_reddit_story_with_fallback
@@ -152,43 +153,17 @@ def _next_tiktok_slot():
     return candidate or (now + datetime.timedelta(days=1))
 
 def clean_script_for_tts(text):
+    """Clean the script before sending to ElevenLabs.
+
+    Delegates to tts_clean.clean_for_tts (the single source of truth):
+      * "ale" -> "" (narrator says nothing wherever it appears)
+      * casual speech normalized to natural phrases ("gonna" -> "going to")
+      * Reddit acronyms spoken out ("AITAH" -> "Am I the jerk")
+      * markdown/"[TEST]"-style artifacts stripped (no "asterisk asterisk")
+      * "I'm" -> "I am" (deterministic glottal-stop "ale" fix)
+    Also applied inside generate_voiceover as the last line before synthesis.
     """
-    Clean the script before sending to ElevenLabs.
-    Fixes common TTS mispronunciations and filler glitches.
-    """
-    # Normalize curly apostrophes so the replacements below always match
-    # ("I’m ale" vs "I'm ale" — small LLMs love curly quotes).
-    text = text.replace("\u2019", "'").replace("\u2018", "'")
-    
-    corrections = {
-        "alright": "alright",
-        "gonna": "gonna",
-        "wanna": "wonna",
-        "kinda": "kinda",
-        "sorta": "sorta",
-    }
-    
-    for wrong, correct in corrections.items():
-        text = text.replace(wrong, correct)
-    
-    # Remove the filler word "ale" (and its "aale"/"alee" renderings)
-    # whenever it appears as a standalone word, in any case. Word boundaries
-    # keep real words intact — "male", "female", "scale", "tale" are never
-    # touched.
-    text = re.sub(r'\b(?:ale|aale|alee)\b', '', text, flags=re.IGNORECASE)
-    text = re.sub(r' +', ' ', text)  # collapse double spaces left behind
-    
-    # ROOT-CAUSE FIX for the still-audible "ale" ("I'm ale about to"): the
-    # ElevenLabs voice inserts that syllable after the "I'm" contraction's
-    # glottal stop EVEN when the text is clean — which is why stripping
-    # "ale" from the text never fully fixed it (there was nothing to strip).
-    # Expand every standalone "I'm" to "I am" so the voice never hits the
-    # trigger — deterministic, no whisper detection involved. The caption
-    # step merges the whispered "I am" cues back to "I'm", so the on-screen
-    # captions look exactly as before.
-    text = re.sub(r"\bI'm\b", "I am", text, flags=re.IGNORECASE)
-    
-    return text.strip()
+    return clean_for_tts(text)
 
 # ============================================================
 # HELPER: CLEANUP INTERMEDIATE FILES
