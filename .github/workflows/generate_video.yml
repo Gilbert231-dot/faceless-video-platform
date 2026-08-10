@@ -272,7 +272,7 @@ jobs:
 
           # PUBLIC mode: give each video its own far-apart future slot so two
           # videos on the same day never shadow each other (default slots
-          # 10:00/22:00 UTC = 12h apart; YOUTUBE_SCHEDULE_TIMES overrides).
+          # 12:00/20:00 UTC = 8h apart; YOUTUBE_SCHEDULE_TIMES overrides).
           # YouTube auto-flips them public at their publishAt time.
           publish_times = next_publish_times(len(videos)) if privacy == "public" else [None] * len(videos)
 

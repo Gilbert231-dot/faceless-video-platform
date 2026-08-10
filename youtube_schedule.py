@@ -3,9 +3,10 @@ youtube_schedule.py — pick the next free publish slots for YouTube uploads.
 
 When YOUTUBE_PRIVACY is 'public', each run uploads its videos as PRIVATE
 with a future publishAt; YouTube flips them to public automatically at
-that time. Slots are spaced far apart (default 10:00 / 22:00 UTC = 12
-hours) so two videos posted the same day each get room to go public
-alone instead of shadowing each other.
+that time. Slots are spaced apart (default 12:00 / 20:00 UTC = 8 hours)
+so two videos posted the same day each get room to go public alone
+instead of shadowing each other. (Was 12h apart; user chose 8h — can be
+retuned from analytics later via YOUTUBE_SCHEDULE_TIMES.)
 
 A tiny state file (youtube_schedule_state.json, shipped by the state
 push like tiktok_schedule_state.json) tracks the next free slot, so
@@ -26,9 +27,9 @@ MIN_AHEAD = datetime.timedelta(hours=1)
 def slot_times():
     """The daily publish slots (UTC), e.g. '10:00,22:00'. Override with
     YOUTUBE_SCHEDULE_TIMES in the workflow env (e.g. '12:00,18:00')."""
-    raw = os.environ.get("YOUTUBE_SCHEDULE_TIMES", "10:00,22:00")
+    raw = os.environ.get("YOUTUBE_SCHEDULE_TIMES", "12:00,20:00")
     slots = [t.strip() for t in raw.split(",") if t.strip()]
-    return slots or ["10:00", "22:00"]
+    return slots or ["12:00", "20:00"]
 
 
 def _read_index():
