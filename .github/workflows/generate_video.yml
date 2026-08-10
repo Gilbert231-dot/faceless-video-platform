@@ -233,6 +233,14 @@ jobs:
       # file) safely defaults to private. GitHub dispatch inputs were rejected
       # for this on purpose: they reset to defaults every run, so 'public'
       # would silently not stick — the file is the single source of truth.
+      # Pre-upload safety check: verify every finished video matches
+      # YouTube's processing requirements (H.264 High, yuv420p, AAC,
+      # faststart) BEFORE uploading — catches a bad encode here instead of
+      # as "Processing abandoned" on YouTube. Fails the run on any violation.
+      - name: Verify videos are YouTube-compatible
+        run: |
+          python verify_youtube_compat.py
+
       - name: Upload videos to YouTube
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
