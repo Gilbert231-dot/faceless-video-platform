@@ -11,6 +11,11 @@ from config import VOICE_SPEED
 # Background footage playback speed. Lower = calmer/slower movement.
 SPEED_FACTOR = 1.35
 SEGMENT_DURATION = 45
+# Locked output framerate: every video renders at exactly 30fps regardless of
+# the background source (a 60fps source gets downsampled here, halving encode
+# time and file size; a 24fps source is pulled up to 30). YouTube processes
+# constant-fps 30fps files most reliably.
+OUTPUT_FPS = 30
 # How much footage to grab relative to the narration: the background plays at
 # SPEED_FACTOR x and the voice is sped to VOICE_SPEED x, so to cover the whole
 # narration (with 10% slack) we need:
@@ -235,6 +240,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-vf', 
             f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
             f'scale=1080:1920:flags=lanczos,'
+            f'fps={OUTPUT_FPS},'
             f'setpts={1/SPEED_FACTOR}*PTS,'
             f'format=yuv420p',
             '-sws_flags', 'lanczos',
@@ -260,12 +266,13 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 'ffmpeg', '-y',
                 '-i', segment_input,
                 '-vf', 
-                f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
-                f'scale=1080:1920:flags=lanczos,'
-                f'format=yuv420p',
-                '-sws_flags', 'lanczos',
-                '-c:v', 'libx264',
-                '-preset', PRESET,
+            f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
+            f'scale=1080:1920:flags=lanczos,'
+            f'fps={OUTPUT_FPS},'
+            f'format=yuv420p',
+            '-sws_flags', 'lanczos',
+            '-c:v', 'libx264',
+            '-preset', PRESET,
                 '-crf', str(CRF_VALUE),
                 '-profile:v', 'high',
                 '-level', '4.0',
