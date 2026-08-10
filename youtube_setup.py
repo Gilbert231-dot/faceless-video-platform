@@ -38,7 +38,22 @@ Usage:
 import os
 import sys
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    def load_dotenv():  # python-dotenv optional: parse .env ourselves
+        try:
+            with open(".env", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#") or "=" not in line:
+                        continue
+                    k, _, v = line.partition("=")
+                    os.environ.setdefault(k.strip(), v.strip())
+        except OSError:
+            pass
+    load_dotenv()
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 # Make emoji-safe output even when stdout is redirected (Windows cp1252).
