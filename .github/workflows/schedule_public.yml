@@ -1,0 +1,85 @@
+name: Make Videos Public
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_id:
+        description: 'YouTube video ID (empty = latest [TEST] video still private)'
+        required: false
+        default: ''
+        type: string
+      title:
+        description: 'Optional exact new title (default: strip [TEST] prefix)'
+        required: false
+        default: ''
+        type: string
+      publish_at:
+        description: 'Optional publish time ISO8601 UTC (default: next free slot 12:00/20:00 UTC)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  make-public:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Testing is done — strip the [TEST] prefix (it must never ship to the
+      # public channel) and schedule the video PUBLIC at the next free
+      # pipeline slot so it doesn't shadow another video. OAuth comes from
+      # the repo secrets; the refresh token never leaves GitHub Actions.
+      - name: Strip [TEST] and schedule public
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          ID="${{ inputs.video_id }}"
+          if [ -z "$ID" ]; then
+            echo "🔍 No video_id given — searching for the latest still-private [TEST] video..."
+            ID=$(python - <<'PY'
+            from youtube_uploader import get_authenticated_service
+            yt = get_authenticated_service()
+            # Reliable way to list OUR OWN private videos: the uploads playlist.
+            ch = yt.channels().list(part="contentDetails", mine=True).execute()["items"][0]
+            up_id = ch["contentDetails"]["relatedPlaylists"]["uploads"]
+            items = yt.playlistItems().list(part="contentDetails", playlistId=up_id,
+                                            maxResults=10).execute().get("items", [])
+            for it in items:
+                vid = yt.videos().list(part="snippet,status",
+                                       id=it["contentDetails"]["videoId"]).execute()["items"][0]
+                if vid["snippet"]["title"].startswith("[TEST] ") and vid["status"]["privacyStatus"] != "public":
+                    print(vid["id"])
+                    break
+            PY
+            )
+          fi
+          if [ -z "$ID" ]; then
+            echo "❌ Could not auto-detect a video. Pass video_id explicitly."
+            exit 1
+          fi
+          echo "🎬 Updating video $ID"
+          ARGS=""
+          if [ -n "${{ inputs.title }}" ]; then ARGS="$ARGS --title \"${{ inputs.title }}\""; fi
+          if [ -n "${{ inputs.publish_at }}" ]; then ARGS="$ARGS --publish-at \"${{ inputs.publish_at }}\""; fi
+          python schedule_public.py "$ID" $ARGS
