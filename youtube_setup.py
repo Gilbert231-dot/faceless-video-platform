@@ -64,12 +64,18 @@ except Exception:
 
 load_dotenv()
 
-# youtube.upload = what the pipeline uploads with; youtube.readonly = lets us
-# verify the token by reading the channel name back (harmless, and the
-# uploader keeps working with its narrower scope).
+# Scopes the refresh token is minted with. These MUST be a superset of
+# everything the pipeline needs later — a token can only be refreshed with
+# scopes that were granted at consent time.
+#   - youtube.upload:  upload videos (the pipeline's core action)
+#   - youtube.readonly: read metadata back (channel verify, videos().list)
+#   - youtube.force-ssl: REQUIRED for videos().update — editing an existing
+#     video's title/privacy (schedule_public.py). Without it, update calls
+#     fail with "insufficient authentication scopes".
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
+    "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
 
 
