@@ -193,7 +193,10 @@ jobs:
             # — a failed render printed "✅ Video i done" and the run limped
             # on to upload nothing. Check the actual status now and fail the
             # job loudly.
-            RESULT=$(python -c "from tasks import generate_video_from_reddit; import json; r = generate_video_from_reddit(); print(json.dumps(r))")
+            # `| tail -1` is required: the function PRINTS debug lines to
+            # stdout before the JSON result, so the whole blob would fail
+            # json.load (that bit us: a GOOD video was marked failed).
+            RESULT=$(python -c "from tasks import generate_video_from_reddit; import json; print(json.dumps(generate_video_from_reddit()))" | tail -1)
             STATUS=$(echo "$RESULT" | python -c "import json,sys; print(json.load(sys.stdin).get('status','error'))" 2>/dev/null || echo error)
 
             if [ "$STATUS" != "success" ]; then
