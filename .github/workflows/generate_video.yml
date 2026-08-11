@@ -148,9 +148,12 @@ jobs:
         id: video-cache
         with:
           path: cached_videos
-          key: video-cache-${{ hashFiles('drive_clip_manager.py') }}
+          # '-4k' bumps the key so the old 1080p cache (stale file IDs from
+          # the replaced folder) is orphaned instead of restored: the new 4K
+          # sources are 0.5-5 GB each and are downloaded by file ID anyway.
+          key: video-cache-4k-${{ hashFiles('drive_clip_manager.py') }}
           restore-keys: |
-            video-cache-
+            video-cache-4k-
 
       # NOTE: clip_state.json (background-footage position) is intentionally
       # NOT cached. GitHub cache keys are immutable, so a fixed key would
