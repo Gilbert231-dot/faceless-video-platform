@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-10T14:18:34Z",
+  "generated_at": "2026-08-11T17:23:20Z",
   "total_stories": 363,
   "unused_stories": 358,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
   "days_of_stories": 179,
-  "runway_date": "2027-02-05",
+  "runway_date": "2027-02-06",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 7
+    "next_index": 8
   },
   "youtube": {
     "privacy": "private",
@@ -97,11 +97,21 @@
       "20:00"
     ],
     "next_publish_utc": [
-      "2026-08-10T20:00:00Z",
-      "2026-08-11T12:00:00Z"
+      "2026-08-11T20:00:00Z",
+      "2026-08-12T12:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786468414_captioned_1786468418.mp4",
+      "title": "[TEST] \"I'm 3 hours away from grandma, but her new husband's kids think I'm the problem.\"",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "eC51VhkPo2k",
+      "url": "https://youtu.be/eC51VhkPo2k",
+      "posted_at": "2026-08-11T17:23:20Z"
+    },
     {
       "video_file": "output_1786371004_captioned_1786371009.mp4",
       "title": "[TEST] \"I joined a lit project with two 'geniuses', but they had NO IDEA what we were supposed to do\"",
