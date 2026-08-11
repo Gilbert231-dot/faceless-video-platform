@@ -1,5 +1,6 @@
 import os
 import re
+import math
 import time
 import subprocess
 import tempfile
@@ -69,6 +70,48 @@ def get_duration(media_path: str) -> float:
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return float(result.stdout.strip())
+
+
+def _segment_plan(duration, max_seg):
+    """Return [(start_sec, dur_sec), ...] — evenly-sized segments.
+
+    The old int(duration/max_seg)+1 split left a sub-second "tail" segment
+    (e.g. 0.13s) at the end of the footage; on GitHub Actions' ffmpeg that
+    degenerate sliver crashes the encoder (exit 234) and kills the whole
+    video. Equal segments keep every segment healthy and per-segment encode
+    time uniform. The tail is pure waste anyway: the mux step trims to the
+    narration length (-shortest).
+    """
+    if duration <= 0:
+        return []
+    n = max(1, math.ceil(duration / max_seg))
+    seg = duration / n
+    plan = []
+    for i in range(n):
+        start = i * seg
+        dur = min(seg, duration - start)
+        if dur <= 0:
+            break
+        plan.append((start, dur))
+    return plan
+
+
+def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
+    """Run ffmpeg with stderr surfaced on failure.
+
+    Every ffmpeg call in the render path used capture_output=True and the
+    real error (the reason ffmpeg exited non-zero) was silently swallowed,
+    forcing blind guesses (e.g. the exit-234 crash). On failure, print the
+    last lines of ffmpeg's stderr so the cause is in the Actions log.
+    """
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, timeout=timeout)
+        return None
+    except subprocess.CalledProcessError as e:
+        err = (e.stderr or b"").decode("utf-8", errors="replace")
+        tail = "\n".join(err.splitlines()[-25:]) if err.strip() else "(no stderr captured)"
+        print(f"   ❌ {label} failed (exit {e.returncode}). ffmpeg said:\n{tail}")
+        raise
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None,
@@ -165,42 +208,27 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     video_duration = get_duration(gameplay_segment)
     print(f"   📊 Video duration: {video_duration:.2f}s")
     
-    total_segments = int(video_duration / SEGMENT_DURATION) + 1
-    print(f"   📦 Splitting into {total_segments} segments")
+    seg_plan = _segment_plan(video_duration, SEGMENT_DURATION)
+    if not seg_plan:
+        raise Exception(f"Video has no playable duration ({video_duration:.2f}s) — nothing to render")
+    total_segments = len(seg_plan)
+    print(f"   📦 Splitting into {total_segments} segments of ~{seg_plan[0][1]:.1f}s each (even split — no degenerate tail)")
     print(f"   📊 Quality: uniform CRF {CRF_VALUE}, preset {PRESET} (same quality for every segment)")
     
     segment_files = []
     pbar = tqdm(total=total_segments, desc="🎬 Rendering segments", unit="segment")
     
-    for i in range(total_segments):
-        start_time = i * SEGMENT_DURATION
-        segment_duration = min(SEGMENT_DURATION, video_duration - start_time)
+    for i, (start_time, segment_duration) in enumerate(seg_plan):
         if segment_duration <= 0:
             break
         
-        segment_input = os.path.join(output_dir, f"segment_input_{i}_{int(time.time())}.mp4")
-        cmd_extract_seg = [
-            'ffmpeg', '-y',
-            '-i', gameplay_segment,
-            '-ss', str(start_time),
-            '-t', str(segment_duration),
-            '-c:v', 'copy',
-            '-an',
-            segment_input
-        ]
-        try:
-            subprocess.run(cmd_extract_seg, check=True, capture_output=True, timeout=60)
-        except Exception as e:
-            print(f"   ⚠️ Failed to extract segment {i+1}: {e}")
-            continue
-        
-        # The portrait filter chain applied to EVERY segment (short slivers
-        # included). FIXED (mixed-resolution concat bug): the old <5s path
-        # stream-copied the raw LANDSCAPE source segment — a different
-        # resolution than the other segments — which corrupted the final
-        # concat (and at 4K sources it would be 3840x2160 against 1440x2560).
-        # setsar=1 keeps square pixels (the odd 1215px crop width can make
-        # ffmpeg emit a 1214:1215 SAR that YouTube dislikes).
+        # The portrait filter chain applied to EVERY segment. FIXED
+        # (mixed-resolution concat bug): the old <5s path stream-copied the
+        # raw LANDSCAPE source segment — a different resolution than the
+        # other segments — which corrupted the final concat (and at 4K
+        # sources it would be 3840x2160 against 1440x2560). setsar=1 keeps
+        # square pixels (the odd 1215px crop width can make ffmpeg emit a
+        # 1214:1215 SAR that YouTube dislikes).
         vf_chain = (
             f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
             f'scale={OUTPUT_W}:{OUTPUT_H}:flags=lanczos,'
@@ -217,10 +245,25 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         
         segment_output = os.path.join(output_dir, f"segment_processed_{i}_{int(time.time())}.mp4")
         
-        # YouTube-compatible format
+        # FIXED (exit-234 crash): segments used to be pre-cut from
+        # gameplay_segment with `-ss … -t … -c:v copy`, which starts output
+        # at a KEYFRAME — when the cut window contained no keyframe (the
+        # old sub-second "tail", or any sparse-keyframe source), the cut
+        # came back EMPTY and the encode died with "Invalid argument" (exit
+        # 234 on GitHub Actions' ffmpeg). Now `-ss` and `-t` go BEFORE `-i`
+        # (output seeking): ffmpeg decodes and starts exactly at start_time,
+        # frame-accurate and keyframe-independent — a segment can never be
+        # empty. This also removes the intermediate file (less disk) and
+        # makes segment boundaries exact (the copy-cut could overlap/gap by
+        # keyframe offsets).
+        # IMPORTANT: `-t` must stay BEFORE `-i`. As an output option it
+        # defeats the setpts speed-up — the segment renders at 1x (verified
+        # empirically: same chain, 33 frames/1.10s vs 25 frames/0.83s).
         cmd_process = [
             'ffmpeg', '-y',
-            '-i', segment_input,
+            '-ss', str(start_time),
+            '-t', str(segment_duration),
+            '-i', gameplay_segment,
             '-vf', vf_chain,
             '-sws_flags', 'lanczos',
             '-c:v', 'libx264',
@@ -234,26 +277,29 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         ]
         
         try:
-            subprocess.run(cmd_process, check=True, capture_output=True, timeout=1500)
+            run_ffmpeg(cmd_process, timeout=1500, label=f"segment {i+1} render")
             segment_files.append(segment_output)
             pbar.update(1)
             print(f"   ✅ Segment {i+1}/{total_segments} complete ({quality_label})")
         except Exception as e:
             print(f"   ⚠️ Segment {i+1} failed: {e}")
             print(f"   🔄 Using fallback for segment {i+1}...")
-            # Same chain as the primary (FIXED: the old fallback dropped the
-            # setpts speed filter, so a recovered segment played at 1x while
-            # the rest played at 1.35x and captions drifted on it). Timeouts
-            # are generous: veryslow + CRF 15 at 1440x2560 can take ~10 min
-            # per 45s segment on a 2-core runner (the 300s cap was hit in
-            # prod at 1080p).
+            # FALLBACK is a REAL recovery path: same filter chain and the
+            # SAME CRF 15 (quality is set by CRF, not the preset), but a
+            # faster preset (slow ≈ 2x faster than veryslow) so a segment
+            # that failed on veryslow can still finish in time. The old
+            # fallback duplicated the primary exactly (same preset, same
+            # copy-cut input), so it could never recover anything — it just
+            # re-failed identically (as it did with the exit-234 crash).
             cmd_fallback = [
                 'ffmpeg', '-y',
-                '-i', segment_input,
+                '-ss', str(start_time),
+                '-t', str(segment_duration),
+                '-i', gameplay_segment,
                 '-vf', vf_chain,
                 '-sws_flags', 'lanczos',
                 '-c:v', 'libx264',
-                '-preset', PRESET,
+                '-preset', 'slow',
                 '-crf', str(CRF_VALUE),
                 '-profile:v', 'high',
                 '-level', '5.0',
@@ -261,12 +307,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 '-movflags', '+faststart',
                 segment_output
             ]
-            subprocess.run(cmd_fallback, check=True, capture_output=True, timeout=1500)
+            run_ffmpeg(cmd_fallback, timeout=1500, label=f"segment {i+1} fallback")
             segment_files.append(segment_output)
             print(f"   ✅ Segment {i+1} complete (fallback)")
-        
-        if os.path.exists(segment_input):
-            os.unlink(segment_input)
     
     pbar.close()
     

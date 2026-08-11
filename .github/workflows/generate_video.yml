@@ -188,11 +188,18 @@ jobs:
             echo "🎬 Video $i of $COUNT"
             echo "======================================"
 
-            python -c "from tasks import generate_video_from_reddit; result = generate_video_from_reddit(); print(result)"
+            # FIXED: generate_video_from_reddit CATCHES all exceptions and
+            # returns a status dict, so the old `$? -ne 0` check never fired
+            # — a failed render printed "✅ Video i done" and the run limped
+            # on to upload nothing. Check the actual status now and fail the
+            # job loudly.
+            RESULT=$(python -c "from tasks import generate_video_from_reddit; import json; r = generate_video_from_reddit(); print(json.dumps(r))")
+            STATUS=$(echo "$RESULT" | python -c "import json,sys; print(json.load(sys.stdin).get('status','error'))" 2>/dev/null || echo error)
 
-            if [ $? -ne 0 ]; then
-              echo "❌ Video $i failed. Stopping..."
-              break
+            if [ "$STATUS" != "success" ]; then
+              echo "❌ Video $i FAILED (status=$STATUS). Details:"
+              echo "$RESULT"
+              exit 1
             fi
 
             echo "✅ Video $i done"
@@ -210,7 +217,9 @@ jobs:
 
             # || true: this is cosmetic cleanup — it must NEVER fail the job
             # (set -e -o pipefail would otherwise abort after a video was made).
-            df -h | grep overlay || true
+            # df -h . always prints the runner's disk state into the log so
+            # ffmpeg I/O failures (exit 234) can be checked against free space.
+            df -h . || true
             echo "⏳ Waiting 30 seconds before next video..."
             sleep 30
           done

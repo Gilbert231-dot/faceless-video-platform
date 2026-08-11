@@ -1,7 +1,12 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # dotenv is optional — lets scripts run on machines where it isn't
+    # installed (values then come from real environment variables, e.g.
+    # GitHub Actions secrets). Same pattern as youtube_setup.py.
+    pass
 
 # --- CONFIG ---
 FAST_MODE = False  # Set to False for production quality
