@@ -12,8 +12,17 @@ logger = logging.getLogger("youtube_uploader")
 logger.addHandler(logging.StreamHandler())
 logger.setLevel(logging.INFO)
 
-# Scope for uploading videos
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+# Scopes for uploading videos AND reading/updating video metadata.
+# youtube.readonly is required by videos().list / playlistItems() — used by
+# schedule_public.py to fetch a video's current snippet/status before
+# updating it. The refresh tokens were minted with BOTH scopes (see
+# youtube_setup.py's consent URL), so refreshing with this superset works;
+# without readonly the access token gets youtube.upload only and every
+# videos().list call fails with "insufficient authentication scopes".
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    "https://www.googleapis.com/auth/youtube.readonly",
+]
 
 # Fields that the uploader will wait-and-retry on (transient failures)
 RETRYABLE_STATUS_CODES = {403, 429, 500, 502, 503, 504}
