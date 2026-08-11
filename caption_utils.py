@@ -28,6 +28,21 @@ def get_duration(media_path: str) -> float:
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return float(result.stdout.strip())
 
+def get_video_height(media_path: str) -> int:
+    """Return the video stream height in pixels (0 if unknown)."""
+    cmd = [
+        'ffprobe', '-v', 'error',
+        '-select_streams', 'v:0',
+        '-show_entries', 'stream=height',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        media_path
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        return int(result.stdout.strip())
+    except Exception:
+        return 0
+
 # ============================================================
 # PART 1: TRANSCRIBE WITH WHISPER → SRT
 # ============================================================
@@ -410,6 +425,15 @@ def burn_subtitles_segmented(
     
     duration = get_duration(video_path)
     print(f"      Duration: {duration:.1f}s")
+
+    # FIXED (1440p render): the burn font size was tuned for a 1920-tall
+    # frame. Since the background now renders at 1440x2560, scale the font
+    # proportionally to the actual frame height so the caption text keeps
+    # the same on-screen size as it had at 1080x1920.
+    height = get_video_height(video_path)
+    eff_font = round(font_size * height / 1920) if height else font_size
+    if eff_font != font_size:
+        print(f"      Font size scaled for {height}p frame: {font_size} -> {eff_font}")
     
     total_segments = int(duration / segment_duration) + 1
     print(f"      Splitting into {total_segments} segments of {segment_duration}s each")
@@ -482,7 +506,7 @@ def burn_subtitles_segmented(
             '-t', str(seg_duration),
             '-i', video_path,
             '-vf',
-            f"subtitles='{shifted_srt}':force_style='FontName=Arial,FontSize={font_size},Bold=1,Alignment=10,MarginV=90,Outline=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000'",
+            f"subtitles='{shifted_srt}':force_style='FontName=Arial,FontSize={eff_font},Bold=1,Alignment=10,MarginV=90,Outline=2,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000'",
             '-c:v', 'libx264',
             '-preset', seg_preset,
             '-crf', str(seg_crf),
@@ -492,9 +516,9 @@ def burn_subtitles_segmented(
         ]
         print(f"      Burning segment {i+1}/{total_segments} ({seg_duration:.1f}s) with {quality_label}...")
         try:
-            # Generous timeout: veryslow + CRF 15 needs ~4-6 min per 30s
-            # segment on a 2-core runner.
-            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=600)
+            # Generous timeout: CRF 18 + slow at 1440x2560 needs ~4-5 min per
+            # 30s segment on a 2-core runner (was ~2 min at 1080p).
+            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=900)
             segment_files.append(seg_output)
         except Exception as e:
             print(f"      ⚠️ Segment {i+1} failed: {e}")

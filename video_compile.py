@@ -16,6 +16,17 @@ SEGMENT_DURATION = 45
 # time and file size; a 24fps source is pulled up to 30). YouTube processes
 # constant-fps 30fps files most reliably.
 OUTPUT_FPS = 30
+# Output resolution (9:16 vertical). Was 1080x1920; now 1440x2560 so the
+# 4K (3840x2160) background sources pay off: a 9:16 center-crop of a 4K
+# landscape frame is 1215x2160 native pixels, so 1440x2560 is only a mild
+# 1.19x upscale — the closest standard YouTube tier to the source's real
+# detail. Going 2160x3840 would be a 1.78x upscale (SOFTER than 1440p, not
+# sharper) and ~4x the veryslow encode time, risking the Actions timeout,
+# so 1440p is the quality/risk sweet spot. YouTube offers a 1440p stream on
+# phones, fixing the "lower quality on my phone" complaint. H.264 level 5.0
+# is required for 1440x2560@30 (level 4.0 caps at ~1080p frame sizes).
+OUTPUT_W = 1440
+OUTPUT_H = 2560
 # How much footage to grab relative to the narration: the background plays at
 # SPEED_FACTOR x and the voice is sped to VOICE_SPEED x, so to cover the whole
 # narration (with 10% slack) we need:
@@ -183,47 +194,20 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             print(f"   ⚠️ Failed to extract segment {i+1}: {e}")
             continue
         
-        # --- SHORT SEGMENT HANDLING ---
-        # FIXED: a failed -c:v copy used to kill the whole video. Now it falls
-        # back to a re-encode, and only skips the sliver as a last resort.
-        # Timeouts are generous because veryslow + CRF 15 can take ~5-7 min
-        # per 45s segment on a 2-core runner (the 300s cap was hit in prod).
-        if segment_duration < 5.0:
-            segment_output = os.path.join(output_dir, f"segment_processed_{i}_{int(time.time())}.mp4")
-            try:
-                subprocess.run([
-                    'ffmpeg', '-y',
-                    '-i', segment_input,
-                    '-c:v', 'copy',
-                    '-an',
-                    segment_output
-                ], check=True, capture_output=True, timeout=60)
-            except Exception as e:
-                print(f"   ⚠️ Short segment {i+1} copy failed ({e}); re-encoding...")
-                try:
-                    subprocess.run([
-                        'ffmpeg', '-y',
-                        '-i', segment_input,
-                        '-c:v', 'libx264',
-                        '-preset', PRESET,
-                        '-crf', str(CRF_VALUE),
-                        '-pix_fmt', 'yuv420p',
-                        '-an',
-                        segment_output
-                    ], check=True, capture_output=True, timeout=300)
-                except Exception as e2:
-                    print(f"   ⚠️ Short segment {i+1} still failed ({e2}); skipping it")
-                    if os.path.exists(segment_input):
-                        os.unlink(segment_input)
-                    pbar.update(1)
-                    continue
-            segment_files.append(segment_output)
-            pbar.update(1)
-            print(f"   ✅ Segment {i+1}/{total_segments} complete (copied, no processing)")
-            if os.path.exists(segment_input):
-                os.unlink(segment_input)
-            continue
-        
+        # The portrait filter chain applied to EVERY segment (short slivers
+        # included). FIXED (mixed-resolution concat bug): the old <5s path
+        # stream-copied the raw LANDSCAPE source segment — a different
+        # resolution than the other segments — which corrupted the final
+        # concat (and at 4K sources it would be 3840x2160 against 1440x2560).
+        # setsar=1 keeps square pixels (the odd 1215px crop width can make
+        # ffmpeg emit a 1214:1215 SAR that YouTube dislikes).
+        vf_chain = (
+            f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
+            f'scale={OUTPUT_W}:{OUTPUT_H}:flags=lanczos,'
+            f'fps={OUTPUT_FPS},'
+            f'setpts={1/SPEED_FACTOR}*PTS,'
+            f'format=yuv420p,setsar=1'
+        )
         # Uniform CRF for every segment (removed the 18/20/22 quality tiers).
         segment_crf = CRF_VALUE
         segment_preset = PRESET
@@ -237,50 +221,47 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         cmd_process = [
             'ffmpeg', '-y',
             '-i', segment_input,
-            '-vf', 
-            f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
-            f'scale=1080:1920:flags=lanczos,'
-            f'fps={OUTPUT_FPS},'
-            f'setpts={1/SPEED_FACTOR}*PTS,'
-            f'format=yuv420p',
+            '-vf', vf_chain,
             '-sws_flags', 'lanczos',
             '-c:v', 'libx264',
             '-preset', segment_preset,
             '-crf', str(segment_crf),
             '-profile:v', 'high',
-            '-level', '4.0',
+            '-level', '5.0',
             '-an',
             '-movflags', '+faststart',
             segment_output
         ]
         
         try:
-            subprocess.run(cmd_process, check=True, capture_output=True, timeout=900)
+            subprocess.run(cmd_process, check=True, capture_output=True, timeout=1500)
             segment_files.append(segment_output)
             pbar.update(1)
             print(f"   ✅ Segment {i+1}/{total_segments} complete ({quality_label})")
         except Exception as e:
             print(f"   ⚠️ Segment {i+1} failed: {e}")
             print(f"   🔄 Using fallback for segment {i+1}...")
+            # Same chain as the primary (FIXED: the old fallback dropped the
+            # setpts speed filter, so a recovered segment played at 1x while
+            # the rest played at 1.35x and captions drifted on it). Timeouts
+            # are generous: veryslow + CRF 15 at 1440x2560 can take ~10 min
+            # per 45s segment on a 2-core runner (the 300s cap was hit in
+            # prod at 1080p).
             cmd_fallback = [
                 'ffmpeg', '-y',
                 '-i', segment_input,
-                '-vf', 
-            f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
-            f'scale=1080:1920:flags=lanczos,'
-            f'fps={OUTPUT_FPS},'
-            f'format=yuv420p',
-            '-sws_flags', 'lanczos',
-            '-c:v', 'libx264',
-            '-preset', PRESET,
+                '-vf', vf_chain,
+                '-sws_flags', 'lanczos',
+                '-c:v', 'libx264',
+                '-preset', PRESET,
                 '-crf', str(CRF_VALUE),
                 '-profile:v', 'high',
-                '-level', '4.0',
+                '-level', '5.0',
                 '-an',
                 '-movflags', '+faststart',
                 segment_output
             ]
-            subprocess.run(cmd_fallback, check=True, capture_output=True, timeout=900)
+            subprocess.run(cmd_fallback, check=True, capture_output=True, timeout=1500)
             segment_files.append(segment_output)
             print(f"   ✅ Segment {i+1} complete (fallback)")
         
@@ -433,7 +414,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     print(f"✅ Video compiled successfully: {final_output}")
     print(f"   📊 Video info:")
-    print(f"      - Resolution: 1080x1920 (9:16)")
+    print(f"      - Resolution: {OUTPUT_W}x{OUTPUT_H} (9:16, from 4K background)")
     print(f"      - Video codec: H.264 (High Profile)")
     print(f"      - Audio codec: AAC 192kbps")
     print(f"      - Video speed: {SPEED_FACTOR}x")
@@ -456,12 +437,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-vf',
             f"drawtext=text='{part_label}':"
             f"fontcolor=white:"
-            f"fontsize=24:"
+            f"fontsize={24 * OUTPUT_H // 1920}:"  # scaled for 1440p frame height
             f"fontfile=/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf:"
             f"bordercolor=black:"
             f"borderw=2:"
             f"x=(w-text_w)/2:"
-            f"y=50:"
+            f"y={round(50 * OUTPUT_H / 1920)}:"
             f"shadowcolor=black:"
             f"shadowx=2:"
             f"shadowy=2",
