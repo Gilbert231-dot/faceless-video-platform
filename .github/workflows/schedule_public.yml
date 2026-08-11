@@ -48,6 +48,10 @@ jobs:
       # public channel) and schedule the video PUBLIC at the next free
       # pipeline slot so it doesn't shadow another video. OAuth comes from
       # the repo secrets; the refresh token never leaves GitHub Actions.
+      # NOTE: heredoc body AND terminator must be at the run block's exact
+      # indentation (10 spaces) — YAML strips that common indent, so the
+      # terminator lands at column 0 in the generated script. Any deeper
+      # indent leaves the terminator indented and bash hits "unexpected EOF".
       - name: Strip [TEST] and schedule public
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
@@ -57,21 +61,21 @@ jobs:
           ID="${{ inputs.video_id }}"
           if [ -z "$ID" ]; then
             echo "🔍 No video_id given — searching for the latest still-private [TEST] video..."
-            ID=$(python - <<'PY'
-            from youtube_uploader import get_authenticated_service
-            yt = get_authenticated_service()
             # Reliable way to list OUR OWN private videos: the uploads playlist.
-            ch = yt.channels().list(part="contentDetails", mine=True).execute()["items"][0]
-            up_id = ch["contentDetails"]["relatedPlaylists"]["uploads"]
-            items = yt.playlistItems().list(part="contentDetails", playlistId=up_id,
-                                            maxResults=10).execute().get("items", [])
-            for it in items:
-                vid = yt.videos().list(part="snippet,status",
-                                       id=it["contentDetails"]["videoId"]).execute()["items"][0]
-                if vid["snippet"]["title"].startswith("[TEST] ") and vid["status"]["privacyStatus"] != "public":
-                    print(vid["id"])
-                    break
-            PY
+            ID=$(python - <<'PY'
+          from youtube_uploader import get_authenticated_service
+          yt = get_authenticated_service()
+          ch = yt.channels().list(part="contentDetails", mine=True).execute()["items"][0]
+          up_id = ch["contentDetails"]["relatedPlaylists"]["uploads"]
+          items = yt.playlistItems().list(part="contentDetails", playlistId=up_id,
+                                          maxResults=10).execute().get("items", [])
+          for it in items:
+              vid = yt.videos().list(part="snippet,status",
+                                     id=it["contentDetails"]["videoId"]).execute()["items"][0]
+              if vid["snippet"]["title"].startswith("[TEST] ") and vid["status"]["privacyStatus"] != "public":
+                  print(vid["id"])
+                  break
+          PY
             )
           fi
           if [ -z "$ID" ]; then
