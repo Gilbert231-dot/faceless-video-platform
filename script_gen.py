@@ -101,6 +101,14 @@ def get_gen_z_style(include_hook=True):
     - Don't over-exaggerate
     - Maintain first-person
     - Keep it engaging and fast-paced
+    - START DIRECTLY WITH THE STORY: the first sentence must be the story
+      itself (the first event or context) — never hype. The title is spoken
+      separately BEFORE the narration, so NEVER open with a hook, greeting,
+      or meta-commentary about telling the story. BANNED openers: "Oh my
+      god bestie", "you won't believe", "let me tell you", "I'm about to
+      spill", "you guys", "so listen up", "here's the tea", "grab your
+      popcorn", "brace yourself" — or any other attention-grabber. Just
+      start the story.
     - NEVER use the filler word "ale" (e.g. "I'm ale about to") and NEVER
       write it glued to "I'm" as "I'male" or "I'ma" — the voice pronounces
       "I'male" as a broken syllable ("I'm ale"). Always write "I'm" with a
@@ -110,10 +118,66 @@ def get_gen_z_style(include_hook=True):
     
     if include_hook:
         return base_style + """
-    IMPORTANT: The first sentence MUST be the hook. Then continue with the story.
+    IMPORTANT: The first sentence must be the story's hook MOMENT — the
+    first dramatic event or shocking detail — NOT a meta intro like "Oh my
+    god bestie, you won't believe..." (those openers are banned). Then
+    continue with the story.
     """
     
     return base_style
+
+# ===========================
+# HYPE INTRO STRIPPING (safety net)
+# ===========================
+# The story adapter sometimes opens the narration with an exaggerated
+# attention-grabber ("Oh my god bestie, you won't believe the tea I'm about
+# to spill..."). Viewers swipe away in the first seconds — the hook title
+# already grabs them, so the narration must go straight into the story.
+# These patterns only match meta-commentary about TELLING the story
+# (spill/tea/bestie/believe/about to tell), never story content.
+
+_HYPE_INTRO_RES = [
+    re.compile(r"\bspill(?:ing|ed|s)?\b.*\btea\b", re.IGNORECASE),
+    re.compile(r"\btea\b.*\bbestie(?:s)?\b", re.IGNORECASE),
+    re.compile(r"\bbestie(?:s)?\b.*\btea\b", re.IGNORECASE),
+    re.compile(r"\b(?:won'?t|not going to|gonna) believe\b", re.IGNORECASE),
+    re.compile(r"\byou'?ll never guess\b", re.IGNORECASE),
+    re.compile(r"\bhere'?s the (?:tea|story|deal)\b", re.IGNORECASE),
+    re.compile(r"\babout to lose my mind\b.*\bthinking about\b", re.IGNORECASE),
+    re.compile(r"\b(?:listen up|get ready|brace (?:yourself|yourselves))\b", re.IGNORECASE),
+    re.compile(r"\b(?:grab|get) your (?:popcorn|seat|drink|snack)\b", re.IGNORECASE),
+    re.compile(r"\b(?:i'?ma?le+|i am|i'?m)\s+(?:(?:literally|just|really|honestly)\s+)*?(?:about to|going to)\s+(?:spill|tell|share|give|deliver)\b", re.IGNORECASE),
+    re.compile(r"\byou (?:guys|all|lot),? i (?:got|have|need|want) to (?:spill|tell|share|give)\b", re.IGNORECASE),
+]
+
+_HYPE_INTRO_RE = re.compile(
+    "|".join("(?:{})".format(p.pattern) for p in _HYPE_INTRO_RES),
+    re.IGNORECASE,
+)
+
+
+def _is_hype_intro_sentence(sentence):
+    return bool(_HYPE_INTRO_RE.search(sentence))
+
+
+def strip_hype_intro(script, max_sentences=3):
+    """Remove leading hype/intro sentences so the narration starts directly
+    with the story. Conservative: only strips sentences that are clearly
+    meta-commentary about telling the story, never story content. Stops at
+    the first non-hype sentence (or after max_sentences)."""
+    if not script:
+        return script
+    sentences = re.split(r'(?<=[.!?])\s+', script.strip())
+    keep_from = 0
+    for i, sent in enumerate(sentences[:max_sentences]):
+        if _is_hype_intro_sentence(sent):
+            keep_from = i + 1
+        else:
+            break
+    if keep_from == 0:
+        return script
+    return re.sub(r"\s+", " ", " ".join(sentences[keep_from:]).strip())
+
 
 # ===========================
 # REDDIT STORY ADAPTATION (FIXED)
@@ -164,7 +228,7 @@ IMPORTANT RULES:
 - **END WITH A FINAL SENTENCE THAT CLOSES THE STORY.**
 - **If the story doesn't have a natural ending, create a satisfying conclusion.**
 - **DO NOT include "Part 1", "Part 2", or any part labels in the spoken script.**
-- **The hook should be the first sentence of Part 1 if it exists.**
+- **Part 1 must START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.**
 - **In Part 2, start with a smooth transition like "So here's what happened next..." or "Continuing the story..."**
 
 OUTPUT FORMAT:
@@ -182,7 +246,7 @@ IMPORTANT RULES:
 - Keep the core story the same, but rewrite it in your own words.
 - **If the story is unfinished, COMPLETE IT with a satisfying ending.**
 - Write in first-person ("I", "my", "me").
-- The hook should be the first sentence of the narration if available.
+- START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.
 - Keep it under {max_words} words.
 - **COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.**
 - **END WITH A FINAL SENTENCE THAT CLOSES THE STORY.**
@@ -229,6 +293,8 @@ The goal is to make the story feel fresh, personal, and engaging."""
             
             part1_script = normalize_slang(part1_script)
             part2_script = normalize_slang(part2_script)
+            part1_script = strip_hype_intro(part1_script)
+            part2_script = strip_hype_intro(part2_script)
             
             return {
                 'script': part1_script,
@@ -239,6 +305,8 @@ The goal is to make the story feel fresh, personal, and engaging."""
                 'normalized_title': narration_title
             }
     
+    script_text = strip_hype_intro(script_text)
+
     # --- FORCE COMPLETE ENDING FOR SINGLE PART ---
     if script_text and not script_text.strip().endswith(('.', '!', '?')):
         script_text = script_text.strip() + " And that's the end of the story."
@@ -289,6 +357,7 @@ Keep the script 500-700 words."""
     
     script = response.choices[0].message.content
     script = normalize_slang(script)
+    script = strip_hype_intro(script)
     
     # --- CHECK FOR INCOMPLETE SENTENCES ---
     if script and not script.endswith(('.', '!', '?')):
