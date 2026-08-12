@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-12T00:37:03Z",
-  "total_stories": 363,
-  "unused_stories": 358,
+  "generated_at": "2026-08-12T05:41:22Z",
+  "total_stories": 361,
+  "unused_stories": 356,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
-  "days_of_stories": 179,
-  "runway_date": "2027-02-07",
+  "days_of_stories": 178,
+  "runway_date": "2027-02-06",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -72,23 +72,23 @@
       "unused": 23
     },
     {
-      "name": "self",
-      "total": 23,
-      "unused": 23
-    },
-    {
-      "name": "EntitledPeople",
-      "total": 22,
-      "unused": 22
-    },
-    {
       "name": "confession",
       "total": 22,
       "unused": 22
+    },
+    {
+      "name": "self",
+      "total": 22,
+      "unused": 22
+    },
+    {
+      "name": "EntitledPeople",
+      "total": 21,
+      "unused": 21
     }
   ],
   "schedule": {
-    "next_index": 9
+    "next_index": 11
   },
   "youtube": {
     "privacy": "public",
@@ -97,11 +97,33 @@
       "20:00"
     ],
     "next_publish_utc": [
-      "2026-08-12T12:00:00Z",
-      "2026-08-12T20:00:00Z"
+      "2026-08-13T12:00:00Z",
+      "2026-08-13T20:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786512448_captioned_1786512454.mp4",
+      "title": "\"Grandma's epic excuse for NOT bringing drama: you won't believe why she bailed...\"",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "hqIAatxzSoI",
+      "url": "https://youtu.be/hqIAatxzSoI",
+      "posted_at": "2026-08-12T05:41:22Z",
+      "publish_at": "2026-08-12T20:00:00Z"
+    },
+    {
+      "video_file": "output_1786509308_captioned_1786509312.mp4",
+      "title": "\"I've been staring into the void, trying to imagine a world without my own spark of life\"",
+      "subreddit": "self",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "byaltxv7OXA",
+      "url": "https://youtu.be/byaltxv7OXA",
+      "posted_at": "2026-08-12T05:41:06Z",
+      "publish_at": "2026-08-12T12:00:00Z"
+    },
     {
       "video_file": "output_1786494404_captioned_1786494409.mp4",
       "title": "[TEST] \"My suburban utopia was actually a dictatorship, and I was about to uncover the president's biggest secret\"",
@@ -181,17 +203,6 @@
       "video_id": "BLY66CJq02U",
       "url": "https://youtu.be/BLY66CJq02U",
       "posted_at": "2026-08-09T19:03:19Z",
-      "error": ""
-    },
-    {
-      "video_file": "",
-      "title": "I love games, but the truth is, the most iconic ones are hidden gems, not bestsellers.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "-2zyu1TxQAE",
-      "url": "https://youtu.be/-2zyu1TxQAE",
-      "posted_at": "2026-08-09T17:25:25Z",
       "error": ""
     }
   ]
