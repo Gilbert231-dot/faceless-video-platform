@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-08-12T05:41:22Z",
-  "total_stories": 361,
-  "unused_stories": 356,
+  "generated_at": "2026-08-13T05:24:26Z",
+  "total_stories": 359,
+  "unused_stories": 354,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
-  "days_of_stories": 178,
+  "days_of_stories": 177,
   "runway_date": "2027-02-06",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -27,11 +27,6 @@
       "unused": 25
     },
     {
-      "name": "TalesFromTheFrontDesk",
-      "total": 25,
-      "unused": 25
-    },
-    {
       "name": "AITAH",
       "total": 25,
       "unused": 25
@@ -44,6 +39,11 @@
     {
       "name": "pettyrevenge",
       "total": 25,
+      "unused": 24
+    },
+    {
+      "name": "TalesFromTheFrontDesk",
+      "total": 24,
       "unused": 24
     },
     {
@@ -83,12 +83,12 @@
     },
     {
       "name": "EntitledPeople",
-      "total": 21,
-      "unused": 21
+      "total": 20,
+      "unused": 20
     }
   ],
   "schedule": {
-    "next_index": 11
+    "next_index": 13
   },
   "youtube": {
     "privacy": "public",
@@ -97,11 +97,33 @@
       "20:00"
     ],
     "next_publish_utc": [
-      "2026-08-13T12:00:00Z",
-      "2026-08-13T20:00:00Z"
+      "2026-08-15T12:00:00Z",
+      "2026-08-15T20:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786598254_captioned_1786598257.mp4",
+      "title": "\"Swim test disaster: 1 in 5 kids fails, but that's not the worst part...\"",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Scsq7OwRpSk",
+      "url": "https://youtu.be/Scsq7OwRpSk",
+      "posted_at": "2026-08-13T05:24:26Z",
+      "publish_at": "2026-08-14T20:00:00Z"
+    },
+    {
+      "video_file": "output_1786596353_captioned_1786596357.mp4",
+      "title": "\"I'm trading my ID tag in for a month, but this 1 shift could be my last.\"",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "1tBnkWIPUWw",
+      "url": "https://youtu.be/1tBnkWIPUWw",
+      "posted_at": "2026-08-13T05:24:15Z",
+      "publish_at": "2026-08-14T12:00:00Z"
+    },
     {
       "video_file": "output_1786512448_captioned_1786512454.mp4",
       "title": "\"Grandma's epic excuse for NOT bringing drama: you won't believe why she bailed...\"",
@@ -183,27 +205,6 @@
       "video_id": "domuel_CbDo",
       "url": "https://youtu.be/domuel_CbDo",
       "posted_at": "2026-08-10T04:51:09Z"
-    },
-    {
-      "video_file": "output_1786316557_captioned_1786316563.mp4",
-      "title": "\"Just lit the rawest weed I've ever seen, and I'm walking into the unknown...\"",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "RBaVpdo1qv8",
-      "url": "https://youtu.be/RBaVpdo1qv8",
-      "posted_at": "2026-08-09T23:14:38Z"
-    },
-    {
-      "video_file": "",
-      "title": "My 10-year nightmare with an ice-cold landlord just got a whole lot more 'freezing'...",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "BLY66CJq02U",
-      "url": "https://youtu.be/BLY66CJq02U",
-      "posted_at": "2026-08-09T19:03:19Z",
-      "error": ""
     }
   ]
 }
