@@ -299,6 +299,14 @@ jobs:
           # YouTube auto-flips them public at their publishAt time.
           publish_times = next_publish_times(len(videos)) if privacy == "public" else [None] * len(videos)
 
+          # Hand the chosen slots to the Facebook step so the SAME videos go
+          # live on both platforms at the same times — one scheduling decision
+          # per run. Empty in private/test mode (Facebook then drafts/posts
+          # per its own rules, see the Facebook step below).
+          if any(publish_times):
+              with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
+                  f.write("PUBLISH_TIMES=" + ",".join(t for t in publish_times if t) + "\n")
+
           for video, publish_at in zip(videos, publish_times):
               metadata_path = video[:-4] + "_metadata.json"
               meta = {}
@@ -381,6 +389,83 @@ jobs:
                   on_new_refresh_token=save_refresh_token_via_gh,
               )
               print(f"✅ TikTok publish complete: {result}")
+          PY
+
+      # Facebook posting via the official Graph API Video API. Gated by the
+      # FACEBOOK_ENABLED repo file (flip to 'true' after the manual setup in
+      # FACEBOOK_SETUP.md). Test runs post DRAFTS (admin-only — the FB
+      # equivalent of private); production runs post PUBLISHED, scheduled at
+      # the SAME slots YouTube used (PUBLISH_TIMES exported by the YouTube
+      # step above), so the same video goes live on both platforms together.
+      - name: Upload videos to Facebook
+        env:
+          FB_APP_ID: ${{ secrets.FB_APP_ID }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+        run: |
+          ENABLED=$(tr -d ' \r\n' < FACEBOOK_ENABLED 2>/dev/null || echo false)
+          if [ "$ENABLED" != "true" ]; then
+            echo "⏭️  Facebook posting disabled (FACEBOOK_ENABLED is not 'true'). Skipping."
+            exit 0
+          fi
+          if [ -z "$FB_APP_ID" ] || [ -z "$FB_PAGE_ID" ] || [ -z "$FB_PAGE_ACCESS_TOKEN" ]; then
+            echo "⏭️  Facebook secrets not configured yet — follow FACEBOOK_SETUP.md to enable."
+            exit 0
+          fi
+          python - <<'PY'
+          import glob
+          import json
+          import os
+
+          from facebook_poster import build_description, publish_to_facebook
+          from video_history import record_video
+
+          test_mode = os.environ.get("DEBUG_MODE", "").lower() == "true"
+          # ISO 8601 publish slots exported by the YouTube step (same times,
+          # one scheduling decision per run). Empty in private/test mode.
+          raw_times = os.environ.get("PUBLISH_TIMES", "")
+          publish_times = [t for t in raw_times.split(",") if t]
+
+          videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
+
+          if not videos:
+              print("❌ No videos found for Facebook upload.")
+              raise SystemExit(1)
+
+          for i, video in enumerate(videos):
+              metadata = video[:-4] + "_metadata.json"
+              meta = json.load(open(metadata)) if os.path.exists(metadata) else {}
+
+              # TEST runs always post DRAFTS (page-admin only) — a [TEST]
+              # video must never go live on Facebook either.
+              if test_mode:
+                  published = False
+                  scheduled = None
+                  print(f"🔒 Test run: posting {os.path.basename(video)} as a DRAFT (admin-only)")
+              else:
+                  published = True
+                  scheduled = publish_times[i] if i < len(publish_times) else None
+
+              try:
+                  result = publish_to_facebook(
+                      video,
+                      title=meta.get("title") or os.path.basename(video)[:-4],
+                      description=build_description(meta),
+                      published=published,
+                      scheduled_publish_time=scheduled,
+                  )
+              except Exception as e:
+                  # Record the failure so the dashboard shows it, then fail the run.
+                  record_video(video, metadata=meta, status="failed",
+                               platform="facebook", error=e)
+                  raise
+              record_video(video, metadata=meta, video_id=result.get("id"),
+                           status="posted", platform="facebook", url=result.get("url"),
+                           publish_at=scheduled)
+              if scheduled:
+                  print(f"✅ Facebook post -> {result.get('url')} (goes public {scheduled})")
+              else:
+                  print(f"✅ Facebook post -> {result.get('url')}")
           PY
 
       # Refresh the dashboard's data.json (story stats + video history) so the
