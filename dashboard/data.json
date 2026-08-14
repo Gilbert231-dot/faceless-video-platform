@@ -1,21 +1,16 @@
 {
-  "generated_at": "2026-08-13T05:24:26Z",
-  "total_stories": 359,
-  "unused_stories": 354,
+  "generated_at": "2026-08-14T05:44:14Z",
+  "total_stories": 357,
+  "unused_stories": 352,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
-  "days_of_stories": 177,
+  "days_of_stories": 176,
   "runway_date": "2027-02-06",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
   "subreddits": [
-    {
-      "name": "offmychest",
-      "total": 25,
-      "unused": 25
-    },
     {
       "name": "TalesFromRetail",
       "total": 25,
@@ -32,7 +27,7 @@
       "unused": 25
     },
     {
-      "name": "relationship_advice",
+      "name": "offmychest",
       "total": 24,
       "unused": 24
     },
@@ -62,6 +57,11 @@
       "unused": 24
     },
     {
+      "name": "relationship_advice",
+      "total": 23,
+      "unused": 23
+    },
+    {
       "name": "MaliciousCompliance",
       "total": 23,
       "unused": 23
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 13
+    "next_index": 15
   },
   "youtube": {
     "privacy": "public",
@@ -97,11 +97,33 @@
       "20:00"
     ],
     "next_publish_utc": [
-      "2026-08-15T12:00:00Z",
-      "2026-08-15T20:00:00Z"
+      "2026-08-17T12:00:00Z",
+      "2026-08-17T20:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786685431_captioned_1786685438.mp4",
+      "title": "\"I spent 13 years hiding from my reality, and it nearly destroyed me...\"",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "WyHkUZ5dtqw",
+      "url": "https://youtu.be/WyHkUZ5dtqw",
+      "posted_at": "2026-08-14T05:44:14Z",
+      "publish_at": "2026-08-16T20:00:00Z"
+    },
+    {
+      "video_file": "output_1786682288_captioned_1786682292.mp4",
+      "title": "\"My girlfriend held hands with a coworker while I was away for 2 weeks... what was going on?\"",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "VBTm6L8uVpQ",
+      "url": "https://youtu.be/VBTm6L8uVpQ",
+      "posted_at": "2026-08-14T05:44:04Z",
+      "publish_at": "2026-08-16T12:00:00Z"
+    },
     {
       "video_file": "output_1786598254_captioned_1786598257.mp4",
       "title": "\"Swim test disaster: 1 in 5 kids fails, but that's not the worst part...\"",
@@ -185,26 +207,6 @@
       "video_id": "qNA_ZUFlFFo",
       "url": "https://youtu.be/qNA_ZUFlFFo",
       "posted_at": "2026-08-10T13:46:10Z"
-    },
-    {
-      "video_file": "output_1786336932_captioned_1786336937.mp4",
-      "title": "\"I set one clear boundary, but this entitled client turned it into a full-blown meltdown.\"",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "3YJLbBgRzpo",
-      "url": "https://youtu.be/3YJLbBgRzpo",
-      "posted_at": "2026-08-10T04:51:31Z"
-    },
-    {
-      "video_file": "output_1786335317_captioned_1786335321.mp4",
-      "title": "\"He 'forgot' to send me a nude... for a whole year... on accident?\"",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "domuel_CbDo",
-      "url": "https://youtu.be/domuel_CbDo",
-      "posted_at": "2026-08-10T04:51:09Z"
     }
   ]
 }
