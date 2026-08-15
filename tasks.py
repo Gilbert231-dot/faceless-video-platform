@@ -17,7 +17,7 @@ from reddit_story_loader import RedditStoryLoader
 from video_compile import compile_video, get_duration, EXTRACT_FACTOR
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
-from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED
+from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED, platform_tags
 
 # ElevenLabs Voice IDs
 MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"  # Custom Gen Z voice
@@ -52,7 +52,13 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
         "score": score,
         "author": author,
         "description": f"Story from r/{subreddit_name}\n\n{title}\n\nSubscribe for more Reddit stories! 🔔",
-        "tags": ["RedditStories", "Storytime", subreddit_name, "TrueStory", "FacelessContent"],
+        # YouTube tags: plain words (no '#') — the exact list the API needs.
+        "tags": platform_tags("youtube", subreddit_name),
+        # Facebook hashtags for the description (build_description reads this).
+        "facebook_tags": platform_tags("facebook", subreddit_name),
+        # TikTok hashtags for the caption — keyed tiktok_tags so the manual
+        # uploader knows which list to paste on tiktok.com.
+        "tiktok_tags": platform_tags("tiktok", subreddit_name),
         "video_path": video_path
     }
     metadata_path = video_path.replace(".mp4", "_metadata.json")
@@ -64,9 +70,7 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
     # the user uploads the video by hand on tiktok.com, this JSON gives the
     # exact caption + settings to use — same caption the API would post
     # (kept in sync with tiktok_uploader.build_caption).
-    hashtags = ["#redditstories", "#storytime", "#fyp"]
-    if subreddit_name:
-        hashtags.append("#" + subreddit_name.replace(" ", "").replace("#", ""))
+    hashtags = platform_tags("tiktok", subreddit_name)
     suggested_slot = _next_tiktok_slot()
     tiktok_meta = {
         "video_file": os.path.basename(video_path),

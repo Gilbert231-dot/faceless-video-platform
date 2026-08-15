@@ -31,6 +31,8 @@ import time
 
 import requests
 
+from config import platform_tags
+
 logger = logging.getLogger("facebook_poster")
 if not logger.handlers:
     logger.addHandler(logging.StreamHandler())
@@ -302,12 +304,12 @@ def build_description(metadata, max_len=5000):
     """Build a Facebook video description from the story metadata JSON.
 
     The title is a separate field on Facebook, so the description is the
-    hashtag line only (FB shows the title as its own line above it).
+    hashtag line only (FB shows the title as its own line above it). Uses the
+    curated Facebook tag set (config.PLATFORM_TAGS) — the '#'-prefixed list
+    that Facebook recognizes, not the YouTube or TikTok lists.
     """
     subreddit = (metadata.get("subreddit") or "").strip()
-    tags = ["#redditstories", "#storytime", "#fyp"]
-    if subreddit:
-        tags.append("#" + subreddit.replace(" ", "").replace("#", ""))
+    tags = metadata.get("facebook_tags") or platform_tags("facebook", subreddit)
     return " ".join(tags)[:max_len]
 
 

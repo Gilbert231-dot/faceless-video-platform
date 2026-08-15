@@ -25,6 +25,66 @@ DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() in ("true", "1", "yes")
 # Captions are timed to this exact value (whisper timestamps are divided by
 # it) so they stay in sync no matter the value.
 VOICE_SPEED = 1.12
+
+# ===========================
+# PER-PLATFORM TAGS
+# ===========================
+
+# Each platform has its own tagging conventions for the SAME content, so the
+# tags are curated per platform (user request):
+#   - YouTube takes PLAIN WORDS (no '#') in its tags field.
+#   - Facebook hashtags live in the video description.
+#   - TikTok hashtags live in the caption and are the most hashtag-heavy.
+# The story's subreddit name is appended to the chosen platform's list at
+# save time (see platform_tags()).
+PLATFORM_TAGS = {
+    "youtube": [
+        "RedditStories",
+        "Storytime",
+        "Reddit",
+        "TrueStory",
+        "StoryNarration",
+        "AudioStory",
+        "AskReddit",
+        "RedditReads",
+        "StoryChannel",
+        "FacelessChannel",
+    ],
+    "facebook": [
+        "#RedditStories",
+        "#StoryTime",
+        "#Reddit",
+        "#Storytelling",
+        "#TrueStory",
+        "#AudioStory",
+        "#StoryNarration",
+    ],
+    "tiktok": [
+        "#redditstories",
+        "#storytime",
+        "#fyp",
+        "#foryou",
+        "#reddit",
+        "#truestory",
+        "#storynarration",
+    ],
+}
+
+
+def platform_tags(platform, subreddit=""):
+    """Return the curated tag list for one platform, plus the subreddit tag.
+
+    YouTube tags are plain words; Facebook/TikTok tags get '#'. The subreddit
+    is appended the same way ('AITAH' on YouTube, '#AITAH' on FB/TikTok).
+    """
+    tags = list(PLATFORM_TAGS[platform])
+    if subreddit:
+        subreddit = subreddit.strip()
+        if platform == "youtube":
+            tags.append(subreddit)
+        else:
+            tags.append("#" + subreddit.replace(" ", "").replace("#", ""))
+    return tags
 # ===========================
 # CAPTIONS SETTINGS
 # ===========================

@@ -146,8 +146,10 @@ live on Facebook automatically.
   the poster trims automatically.
 - **Rate limits:** posting is ~4 API calls per video; Facebook's page limits
   (hundreds of calls per window) are nowhere near being hit at 2 videos/day.
-- **Hashtags:** the description carries `#redditstories #storytime #fyp` +
-  the subreddit tag, so posts surface in hashtag feeds.
+- **Hashtags:** the description carries Facebook's curated tag set
+  (`#RedditStories #StoryTime #Reddit ...` + the subreddit hashtag), defined in
+  `config.py` → `PLATFORM_TAGS["facebook"]` — distinct from the YouTube and
+  TikTok lists so each platform gets the tags it actually recognizes.
 - **Monetization:** the Page becomes eligible for Facebook **Content
   Monetization** (invite-only, 5,000+ followers / 60,000 minutes watched in
   60 days) — express interest from the mobile app → Professional Dashboard →

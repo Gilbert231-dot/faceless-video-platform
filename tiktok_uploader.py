@@ -31,6 +31,8 @@ import time
 
 import requests
 
+from config import platform_tags
+
 logger = logging.getLogger("tiktok_uploader")
 if not logger.handlers:
     logger.addHandler(logging.StreamHandler())
@@ -264,12 +266,16 @@ def save_refresh_token_via_gh(new_refresh_token):
 
 
 def build_caption(metadata, max_len=2200):
-    """Build a TikTok caption from the story metadata JSON."""
+    """Build a TikTok caption from the story metadata JSON.
+
+    Uses the curated TikTok tag set (config.PLATFORM_TAGS) — the hashtags
+    TikTok actually recognizes (fyp/foryou etc.), not the YouTube/Facebook
+    lists. Prefers metadata["tiktok_tags"] when present (written by
+    tasks.save_metadata into both _metadata.json and _tiktok.json).
+    """
     title = (metadata.get("title") or "").strip()
     subreddit = (metadata.get("subreddit") or "").strip()
-    tags = ["#redditstories", "#storytime", "#fyp"]
-    if subreddit:
-        tags.append("#" + subreddit.replace(" ", "").replace("#", ""))
+    tags = metadata.get("tiktok_tags") or platform_tags("tiktok", subreddit)
     caption = f"{title}\n\n{' '.join(tags)}" if title else " ".join(tags)
     return caption[:max_len]
 
