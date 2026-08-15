@@ -115,6 +115,34 @@
             font-weight: 600;
         }
 
+        /* Rightward looping summary ticker above the demo video. */
+        .ticker-wrap {
+            overflow: hidden;
+            max-width: 840px;
+            margin: 6px auto 28px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--bg-soft);
+        }
+        .ticker-track {
+            display: flex;
+            width: max-content;
+            animation: ticker-scroll 26s linear infinite;
+            will-change: transform;
+        }
+        .ticker-text {
+            white-space: nowrap;
+            padding: 11px 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent-2);
+            letter-spacing: 0.01em;
+        }
+        @keyframes ticker-scroll {
+            from { transform: translateX(-50%); }
+            to   { transform: translateX(0); }
+        }
+
         footer {
             border-top: 1px solid var(--border);
             padding: 34px 5%;
@@ -186,6 +214,12 @@
     <section style="text-align:center;">
         <h2>See it in action</h2>
         <p class="section-sub">A real sample from a finished video — background footage with word-synced captions burned in.</p>
+        <div class="ticker-wrap">
+            <div class="ticker-track">
+                <span class="ticker-text">AI stories&nbsp;&rarr;&nbsp;voiceover&nbsp;&rarr;&nbsp;word-synced captions&nbsp;&rarr;&nbsp;auto-posted to YouTube, TikTok &amp; Facebook&nbsp;&nbsp;✦&nbsp;&nbsp;Official Content Posting API&nbsp;&nbsp;✦&nbsp;&nbsp;Private-by-default&nbsp;&nbsp;✦&nbsp;&nbsp;AI-content disclosure on&nbsp;&nbsp;✦&nbsp;&nbsp;</span>
+                <span class="ticker-text" aria-hidden="true">AI stories&nbsp;&rarr;&nbsp;voiceover&nbsp;&rarr;&nbsp;word-synced captions&nbsp;&rarr;&nbsp;auto-posted to YouTube, TikTok &amp; Facebook&nbsp;&nbsp;✦&nbsp;&nbsp;Official Content Posting API&nbsp;&nbsp;✦&nbsp;&nbsp;Private-by-default&nbsp;&nbsp;✦&nbsp;&nbsp;AI-content disclosure on&nbsp;&nbsp;✦&nbsp;&nbsp;</span>
+            </div>
+        </div>
         <div style="max-width:420px;margin:0 auto;">
             <video
                 controls

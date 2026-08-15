@@ -474,6 +474,13 @@ jobs:
         run: |
           python dashboard/build_data.py
 
+      # Refresh the landing-page demo clip (assets/demo/real_demo.mp4) from
+      # the newest generated video, so the app's website always shows the
+      # latest product sample. Committed by the Push state files step below.
+      - name: Refresh landing-page demo
+        run: |
+          python make_landing_demo.py
+
       - name: Push state files
         run: |
           # Persist used-story IDs and clip state so the next run doesn't reuse
@@ -495,6 +502,10 @@ jobs:
           git add -f video_history.json 2>/dev/null || true
           # Regenerated dashboard data (story stats + video history).
           git add -f dashboard/data.json 2>/dev/null || true
+          # Landing-page demo clip + poster (regenerated from the newest video
+          # by the Refresh landing-page demo step above).
+          git add -f assets/demo/real_demo.mp4 2>/dev/null || true
+          git add -f assets/demo/real_poster.jpg 2>/dev/null || true
           # Voiceover QA report (residual 'ale' check) — one per video.
           git add -f output/voiceover_qa_*.json 2>/dev/null || true
           # Exact text sent to ElevenLabs (proves what the narrator was asked
