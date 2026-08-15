@@ -43,12 +43,10 @@ GRAPH_VIDEO = f"https://graph-video.facebook.com/v{API_VERSION}"
 HTTP_TIMEOUT = 60
 UPLOAD_TIMEOUT = 900  # a ~300 MB file over a slow runner link can take a while
 
-# Upload the file in 8 MB chunks. The official protocol supports this and it
-# makes the upload resumable: if a chunk is dropped mid-flight, the session
-# GET reports the last byte Facebook actually recorded and we resume from
-# there instead of starting over (and instead of silently uploading a
-# truncated video — which Facebook rejects at publish time with 390/1363030).
-UPLOAD_CHUNK = 8 * 1024 * 1024
+# The official Resumable Upload flow uploads the whole file in one POST and
+# only resumes (from the server-reported byte offset) if that request is
+# interrupted — see _upload_file. Subdividing the file into many small chunk
+# POSTs makes the server silently stop recording partway, so we never do that.
 
 # Transient failures worth retrying (Graph API HTTP status codes)
 RETRYABLE_HTTP = {429, 500, 502, 503, 504}
@@ -152,17 +150,47 @@ def _start_upload_session(app_id, token, video_path):
 
 
 def _upload_file(session_id, token, video_path):
-    """Upload the mp4 bytes to the session in chunks -> verified file handle.
+    """Upload the mp4 to the session per the documented Resumable Upload flow.
 
-    Resumes from whatever Facebook already recorded (the session GET reports
-    the authoritative byte offset), then verifies the whole file landed before
-    returning the handle — a truncated upload must never be published.
+    The official protocol (developers.facebook.com/docs/graph-api/guides/upload)
+    uploads the WHOLE file in a single POST at file_offset 0 and returns the
+    handle 'h'. There is no multi-chunk variant: subdividing the file into
+    many small chunk POSTs (as some third-party docs suggest) makes the server
+    stop recording after a while — we learned that the hard way (Facebook
+    recorded exactly 80 MB of a 306 MB file).
+
+    If that single POST is interrupted, we GET the authoritative byte offset
+    and POST only the remaining bytes from there, repeating until the server
+    returns the handle. We never publish a truncated file: if no handle ever
+    arrives and the recorded offset is short of the real size, we fail loudly.
     """
     size = os.path.getsize(video_path)
 
-    # Resume: see how many bytes Facebook already has for this session.
-    offset = 0
-    try:
+    def _post_from(offset):
+        with open(video_path, "rb") as fh:
+            fh.seek(offset)
+            data = fh.read()
+        headers = {
+            "Authorization": f"OAuth {token}",
+            "file_offset": str(offset),
+            "Content-Type": "video/mp4",
+        }
+        resp = requests.post(
+            f"{GRAPH}/{session_id}",
+            headers=headers,
+            data=data,
+            timeout=UPLOAD_TIMEOUT,
+        )
+        return _check(resp, "upload file")
+
+    # 1) The documented single-shot upload of the entire file.
+    payload = _post_from(0)
+    if payload.get("h"):
+        return payload["h"]
+
+    # 2) The single shot didn't complete (interrupted/truncated mid-flight).
+    #    Resume from wherever the server actually recorded bytes.
+    for _ in range(10):  # bounded resume loop
         resp = requests.get(
             f"{GRAPH}/{session_id}",
             headers={"Authorization": f"OAuth {token}"},
@@ -170,33 +198,13 @@ def _upload_file(session_id, token, video_path):
         )
         payload = _check(resp, "upload status")
         offset = int(payload.get("file_offset") or 0)
-    except FacebookError:
-        offset = 0  # fresh session — start from the beginning
+        if offset >= size:
+            break
+        payload = _post_from(offset)
+        if payload.get("h"):
+            return payload["h"]
 
-    handle = None
-    with open(video_path, "rb") as fh:
-        fh.seek(offset)
-        while True:
-            data = fh.read(UPLOAD_CHUNK)
-            if not data:
-                break
-            headers = {
-                "Authorization": f"OAuth {token}",
-                "file_offset": str(offset),
-                "Content-Type": "video/mp4",
-            }
-            resp = requests.post(
-                f"{GRAPH}/{session_id}",
-                headers=headers,
-                data=data,
-                timeout=UPLOAD_TIMEOUT,
-            )
-            payload = _check(resp, "upload file")
-            if payload.get("h"):
-                handle = payload["h"]
-            offset += len(data)
-
-    # Verify the server recorded EVERY byte before trusting the handle.
+    # 3) Never publish a truncated file — fail loudly instead.
     resp = requests.get(
         f"{GRAPH}/{session_id}",
         headers={"Authorization": f"OAuth {token}"},
@@ -209,9 +217,7 @@ def _upload_file(session_id, token, video_path):
             f"Upload incomplete: Facebook recorded {recorded}/{size} bytes — "
             "refusing to publish a truncated video."
         )
-    if not handle:
-        raise FacebookError("Upload finished but no file handle was returned.")
-    return handle
+    raise FacebookError("Upload finished but no file handle was returned.")
 
 
 def _to_unix(scheduled):
@@ -337,7 +343,7 @@ def publish_to_facebook(
         attempt += 1
         try:
             logger.info(
-                "Uploading %s (%.1f MB) via Resumable Upload (8 MB chunks)...",
+                "Uploading %s (%.1f MB) via Resumable Upload (single-shot, resumable)...",
                 os.path.basename(video_path),
                 os.path.getsize(video_path) / (1024 * 1024),
             )
