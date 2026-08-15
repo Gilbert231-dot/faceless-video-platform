@@ -128,8 +128,11 @@
         .ticker-track {
             display: flex;
             width: max-content;
-            animation: ticker-scroll 26s linear infinite;
+            animation: ticker-scroll 40s linear infinite;
             will-change: transform;
+        }
+        .ticker-wrap:hover .ticker-track {
+            animation-play-state: paused;
         }
         .ticker-text {
             white-space: nowrap;
