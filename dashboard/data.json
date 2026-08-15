@@ -1,21 +1,16 @@
 {
-  "generated_at": "2026-08-15T01:51:13Z",
-  "total_stories": 357,
-  "unused_stories": 352,
+  "generated_at": "2026-08-15T03:41:43Z",
+  "total_stories": 355,
+  "unused_stories": 350,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
-  "days_of_stories": 176,
-  "runway_date": "2027-02-07",
+  "days_of_stories": 175,
+  "runway_date": "2027-02-06",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
   "subreddits": [
-    {
-      "name": "AmItheAsshole",
-      "total": 25,
-      "unused": 25
-    },
     {
       "name": "TalesFromRetail",
       "total": 25,
@@ -25,6 +20,11 @@
       "name": "AITAH",
       "total": 25,
       "unused": 25
+    },
+    {
+      "name": "AmItheAsshole",
+      "total": 24,
+      "unused": 24
     },
     {
       "name": "tifu",
@@ -57,11 +57,6 @@
       "unused": 24
     },
     {
-      "name": "relationship_advice",
-      "total": 23,
-      "unused": 23
-    },
-    {
       "name": "MaliciousCompliance",
       "total": 23,
       "unused": 23
@@ -70,6 +65,11 @@
       "name": "unpopularopinion",
       "total": 25,
       "unused": 23
+    },
+    {
+      "name": "relationship_advice",
+      "total": 22,
+      "unused": 22
     },
     {
       "name": "self",
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 16
+    "next_index": 18
   },
   "youtube": {
     "privacy": "public",
@@ -97,11 +97,55 @@
       "20:00"
     ],
     "next_publish_utc": [
-      "2026-08-18T12:00:00Z",
-      "2026-08-18T20:00:00Z"
+      "2026-08-19T12:00:00Z",
+      "2026-08-19T20:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786764983_captioned_1786764985.mp4",
+      "title": "\"I cooked my dad a gourmet lunch, but my 13yo half brother ATE IT ALL, leaving me with nothing.\"",
+      "subreddit": "AmItheAsshole",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122095644267447442",
+      "url": "https://www.facebook.com/reel/1112608708088288",
+      "posted_at": "2026-08-15T03:41:43Z",
+      "publish_at": "2026-08-18T20:00:00Z"
+    },
+    {
+      "video_file": "output_1786763784_captioned_1786763788.mp4",
+      "title": "\"You've been dating for a year, but is everything he told you a lie?\"",
+      "subreddit": "relationship_advice",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122095644165447442",
+      "url": "https://www.facebook.com/reel/1750701062637953",
+      "posted_at": "2026-08-15T03:41:28Z",
+      "publish_at": "2026-08-18T12:00:00Z"
+    },
+    {
+      "video_file": "output_1786764983_captioned_1786764985.mp4",
+      "title": "\"I cooked my dad a gourmet lunch, but my 13yo half brother ATE IT ALL, leaving me with nothing.\"",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "HW1chrDHMhI",
+      "url": "https://youtu.be/HW1chrDHMhI",
+      "posted_at": "2026-08-15T03:41:05Z",
+      "publish_at": "2026-08-18T20:00:00Z"
+    },
+    {
+      "video_file": "output_1786763784_captioned_1786763788.mp4",
+      "title": "\"You've been dating for a year, but is everything he told you a lie?\"",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "epWtHhFHQbw",
+      "url": "https://youtu.be/epWtHhFHQbw",
+      "posted_at": "2026-08-15T03:40:59Z",
+      "publish_at": "2026-08-18T12:00:00Z"
+    },
     {
       "video_file": "output_1786758249_captioned_1786758252.mp4",
       "title": "[TEST] \"I made a $ mistake online, bank said they couldn't fix it\"",
@@ -165,48 +209,6 @@
       "url": "https://youtu.be/1tBnkWIPUWw",
       "posted_at": "2026-08-13T05:24:15Z",
       "publish_at": "2026-08-14T12:00:00Z"
-    },
-    {
-      "video_file": "output_1786512448_captioned_1786512454.mp4",
-      "title": "\"Grandma's epic excuse for NOT bringing drama: you won't believe why she bailed...\"",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "hqIAatxzSoI",
-      "url": "https://youtu.be/hqIAatxzSoI",
-      "posted_at": "2026-08-12T05:41:22Z",
-      "publish_at": "2026-08-12T20:00:00Z"
-    },
-    {
-      "video_file": "output_1786509308_captioned_1786509312.mp4",
-      "title": "\"I've been staring into the void, trying to imagine a world without my own spark of life\"",
-      "subreddit": "self",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "byaltxv7OXA",
-      "url": "https://youtu.be/byaltxv7OXA",
-      "posted_at": "2026-08-12T05:41:06Z",
-      "publish_at": "2026-08-12T12:00:00Z"
-    },
-    {
-      "video_file": "output_1786494404_captioned_1786494409.mp4",
-      "title": "[TEST] \"My suburban utopia was actually a dictatorship, and I was about to uncover the president's biggest secret\"",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "IP1gKd4RqkE",
-      "url": "https://youtu.be/IP1gKd4RqkE",
-      "posted_at": "2026-08-12T00:37:03Z"
-    },
-    {
-      "video_file": "output_1786468414_captioned_1786468418.mp4",
-      "title": "[TEST] \"I'm 3 hours away from grandma, but her new husband's kids think I'm the problem.\"",
-      "subreddit": "AmItheAsshole",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "eC51VhkPo2k",
-      "url": "https://youtu.be/eC51VhkPo2k",
-      "posted_at": "2026-08-11T17:23:20Z"
     }
   ]
 }
