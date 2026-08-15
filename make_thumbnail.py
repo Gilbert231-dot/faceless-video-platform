@@ -48,11 +48,19 @@ def _ffprobe_duration(path):
 
 
 def _extract_frame(video_path, t, out_path, size=(THUMB_W, THUMB_H)):
-    """Grab one frame at t seconds, scaled to `size`. Returns True on success."""
+    """Grab one frame at t seconds, scaled to `size`. Returns True on success.
+
+    The frame is taken straight from the finished video (never re-blurred):
+    lanczos downscale + a light unsharp mask so the background gameplay is
+    as crisp as the original encode. Whichever frame lands as the thumbnail,
+    it's razor sharp.
+    """
     try:
         r = subprocess.run(
             ["ffmpeg", "-y", "-ss", str(t), "-i", video_path,
-             "-frames:v", "1", "-vf", f"scale={size[0]}:{size[1]}",
+             "-frames:v", "1",
+             "-vf", f"scale={size[0]}:{size[1]}:flags=lanczos,"
+                     "unsharp=5:5:0.4:5:5:0.0",
              "-q:v", "2", out_path],
             capture_output=True, timeout=120,
         )
@@ -71,8 +79,14 @@ def _pick_hold_time(video_path):
 
 
 def _composite_fallback(video_path, card_path, out_path):
-    """Blurred video still + sharp card — used only if frame grab fails."""
-    from PIL import Image, ImageFilter, ImageDraw, ImageEnhance
+    """Sharp video still + card — used only if the direct frame grab fails.
+
+    The background stays as crisp as the original frame (lanczos, no blur);
+    it's only slightly darkened so the white card pops. We never blur the
+    thumbnail background — a sharp backdrop is what makes the video look
+    high-quality at a glance.
+    """
+    from PIL import Image, ImageDraw, ImageEnhance
 
     frame_path = out_path + ".frame.png"
     t = _pick_hold_time(video_path)
@@ -81,8 +95,7 @@ def _composite_fallback(video_path, card_path, out_path):
     canvas = Image.new("RGB", (THUMB_W, THUMB_H), (18, 18, 26))
     if have_frame:
         bg = Image.open(frame_path).convert("RGB").resize((THUMB_W, THUMB_H), Image.LANCZOS)
-        bg = bg.filter(ImageFilter.GaussianBlur(28))
-        bg = ImageEnhance.Brightness(bg).enhance(0.5)
+        bg = ImageEnhance.Brightness(bg).enhance(0.6)  # slightly darker, still sharp
         canvas = bg
     else:
         ImageDraw.Draw(canvas).rectangle([0, 0, THUMB_W, THUMB_H], fill=(24, 24, 34))
