@@ -115,7 +115,8 @@
             font-weight: 600;
         }
 
-        /* Rightward looping summary ticker above the demo video. */
+        /* Leftward looping summary ticker above the demo video (reads like a
+           classic marquee: text enters from the right, exits left). */
         .ticker-wrap {
             overflow: hidden;
             max-width: 840px;
@@ -139,8 +140,8 @@
             letter-spacing: 0.01em;
         }
         @keyframes ticker-scroll {
-            from { transform: translateX(-50%); }
-            to   { transform: translateX(0); }
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
         }
 
         footer {
