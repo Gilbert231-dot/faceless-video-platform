@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faceless Video Creator — AI Story Videos, Automated</title>
+    <meta name="description" content="Faceless Video Creator turns Reddit stories into narrated, captioned videos with AI voiceovers and posts them to YouTube, TikTok and Facebook automatically." />
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-soft: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --muted: #8b949e;
+            --accent: #7c5cff;
+            --accent-2: #22d3ee;
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        a { color: var(--accent-2); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 5%;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: rgba(13, 17, 23, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+        .brand { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+        .brand span { color: var(--accent-2); }
+        .nav-links a { margin-left: 22px; color: var(--muted); font-size: 0.95rem; }
+        .nav-links a:hover { color: var(--text); }
+
+        header.hero {
+            text-align: center;
+            padding: 90px 5% 70px;
+            background:
+                radial-gradient(ellipse at top, rgba(124, 92, 255, 0.18), transparent 55%),
+                radial-gradient(ellipse at bottom, rgba(34, 211, 238, 0.10), transparent 55%);
+        }
+        .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -0.02em; }
+        .hero h1 em { font-style: normal; color: var(--accent-2); }
+        .hero p.tagline {
+            font-size: clamp(1rem, 2.2vw, 1.25rem);
+            color: var(--muted);
+            max-width: 640px;
+            margin: 18px auto 34px;
+        }
+        .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+        .btn {
+            display: inline-block;
+            padding: 13px 26px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.98rem;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .btn:hover { transform: translateY(-2px); text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, var(--accent), #9b5cff); color: #fff; box-shadow: 0 8px 24px rgba(124, 92, 255, 0.35); }
+        .btn-ghost { border: 1px solid var(--border); color: var(--text); }
+        .btn-ghost:hover { border-color: var(--accent-2); }
+
+        section { padding: 64px 5%; max-width: 1080px; margin: 0 auto; }
+        h2 { font-size: 1.7rem; font-weight: 700; margin-bottom: 10px; }
+        .section-sub { color: var(--muted); margin-bottom: 34px; }
+
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+        .step {
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+        .step .num {
+            width: 34px; height: 34px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 50%;
+            font-weight: 700; font-size: 0.95rem;
+            margin-bottom: 14px;
+        }
+        .step h3 { font-size: 1.05rem; margin-bottom: 6px; }
+        .step p { color: var(--muted); font-size: 0.92rem; }
+
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+        .feature {
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+        }
+        .feature .icon { font-size: 1.5rem; margin-bottom: 10px; }
+        .feature h3 { font-size: 1.02rem; margin-bottom: 6px; }
+        .feature p { color: var(--muted); font-size: 0.92rem; }
+
+        .platforms { display: flex; gap: 26px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+        .platform {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 34px 5%;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+        footer .links { margin-bottom: 12px; }
+        footer .links a { margin: 0 14px; color: var(--muted); }
+        footer .links a:hover { color: var(--text); }
+
+        @media (max-width: 640px) {
+            header.hero { padding: 60px 5% 48px; }
+            .nav-links a { margin-left: 14px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a class="brand" href="/faceless-video-platform/">Faceless<span>Video</span>Creator</a>
+        <div class="nav-links">
+            <a href="/faceless-video-platform/dashboard/">Dashboard</a>
+            <a href="/faceless-video-platform/privacy.html">Privacy</a>
+            <a href="/faceless-video-platform/terms.html">Terms</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Stories become <em>viral videos</em> — automatically.</h1>
+        <p class="tagline">
+            Faceless Video Creator turns Reddit stories into fully narrated,
+            captioned short videos with premium AI voiceovers — then publishes
+            them to YouTube, TikTok and Facebook on a schedule, with no manual work.
+        </p>
+        <div class="cta-row">
+            <a class="btn btn-primary" href="/faceless-video-platform/dashboard/">View live dashboard</a>
+            <a class="btn btn-ghost" href="/faceless-video-platform/privacy.html">Privacy &amp; terms</a>
+        </div>
+    </header>
+
+    <section>
+        <h2>How it works</h2>
+        <p class="section-sub">A fully automated content pipeline, from story to published video.</p>
+        <div class="steps">
+            <div class="step">
+                <div class="num">1</div>
+                <h3>Pick a story</h3>
+                <p>The app pulls popular Reddit stories and picks one at random, never repeating a story you've already used.</p>
+            </div>
+            <div class="step">
+                <div class="num">2</div>
+                <h3>AI rewrites the script</h3>
+                <p>A large language model rewrites the story into a first-person, hook-first narration tuned for short-form video.</p>
+            </div>
+            <div class="step">
+                <div class="num">3</div>
+                <h3>Voiceover + captions</h3>
+                <p>A premium AI voice narrates the story while word-synced captions are burned into the video over cinematic background footage.</p>
+            </div>
+            <div class="step">
+                <div class="num">4</div>
+                <h3>Auto-post on schedule</h3>
+                <p>The finished video is uploaded and scheduled to go public on your channels at the best posting times — hands-free.</p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Everything handled for you</h2>
+        <p class="section-sub">Built for creators who want consistent output without the production grind.</p>
+        <div class="features">
+            <div class="feature">
+                <div class="icon">🎙️</div>
+                <h3>Premium AI voiceovers</h3>
+                <p>Natural male and female narration voices, speed-tuned for story delivery.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">💬</div>
+                <h3>Word-synced captions</h3>
+                <p>Captions that appear in sync with the narration, styled and sized for clarity.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">🎬</div>
+                <h3>Cinematic backgrounds</h3>
+                <p>High-resolution footage that automatically advances to a new segment for every video.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">📅</div>
+                <h3>Smart scheduling</h3>
+                <p>Videos publish at preset slots hours apart, so one post never shadows another.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">🤖</div>
+                <h3>AI-content disclosure</h3>
+                <p>Every video is labelled as AI-generated on each platform, keeping channels compliant.</p>
+            </div>
+            <div class="feature">
+                <div class="icon">📊</div>
+                <h3>Live dashboard</h3>
+                <p>Track story counts, next publish times and your latest uploads in one glance.</p>
+            </div>
+        </div>
+    </section>
+
+    <section style="text-align:center;">
+        <h2>Publish everywhere</h2>
+        <p class="section-sub">One render, distributed to every platform you use.</p>
+        <div class="platforms">
+            <div class="platform">▶️ YouTube</div>
+            <div class="platform">🎵 TikTok</div>
+            <div class="platform">📘 Facebook Reels</div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="links">
+            <a href="/faceless-video-platform/dashboard/">Dashboard</a>
+            <a href="/faceless-video-platform/privacy.html">Privacy Policy</a>
+            <a href="/faceless-video-platform/terms.html">Terms of Service</a>
+        </div>
+        <p>© 2026 Faceless Video Creator. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
