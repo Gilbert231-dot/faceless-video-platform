@@ -81,6 +81,9 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
         # Copy this whole caption into TikTok's "Caption" box.
         "caption": f"{title}\n\n{' '.join(hashtags)}",
         "hashtags": hashtags,
+        # Same list under the key you asked for, so it's easy to spot in the
+        # artifact zip (tiktok_tags) alongside the YouTube-style metadata.
+        "tiktok_tags": hashtags,
         "upload_settings": {
             "visibility": "Only me (private) — switch to Public after you review",
             "ai_generated_content_label": "ON — required (AI voiceover)",
