@@ -8,6 +8,8 @@
 !assets/storylab_avatar.png
 *.txt
 www.youtube.com_cookies.txt
+# Browser cookies export for the Reddit story refill (Option B) — never commit
+reddit_cookies.txt
 venv/
 __pycache__/
 cached_videos/

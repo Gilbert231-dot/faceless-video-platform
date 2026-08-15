@@ -28,19 +28,30 @@ Story selection (see fetch_listings):
 Run manually:   python fetch_stories.py
 Schedule:       weekly via Windows Task Scheduler (see STORY_REFILL.md).
 
+Reddit blocks bare .json scraping from many home IPs (403 HTML block
+page). If that happens:
+  • Drop a browser cookies export at reddit_cookies.txt (Netscape format
+    — e.g. the "Get cookies.txt LOCALLY" extension, after passing Reddit's
+    "verify you're human" check) and the script rides that browser session
+    past the block, or
+  • Run from a different network (the block is IP-scoped).
+
 Optional env overrides:
   MIN_UNUSED=20        refill when unused stories fall below this
   SUBREDDITS=AITAH,tifu  only fetch these subreddits
+  COOKIES_FILE=path    where to read the browser cookies export
 """
 
+import datetime
 import glob
+import http.cookiejar
 import json
 import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
-import datetime
 
 try:
     import requests
@@ -67,6 +78,57 @@ HOT_LIMIT = 50
 COMMENT_LIMIT = 30
 USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+
+# Reddit blocks bare .json scraping from many home IPs (403 HTML block
+# page). Option B: a Netscape-format cookies.txt export from the browser
+# (after passing the "verify you're human" check) rides that session past
+# the block. Same convention as broll_fetcher's www.youtube.com_cookies.txt.
+COOKIES_FILE = os.environ.get("COOKIES_FILE", "reddit_cookies.txt")
+_BLOCK_HINT_PRINTED = False
+
+
+def _load_cookie_jar():
+    """Load the cookies export (Netscape format) into a jar, tolerating the
+    '#HttpOnly_' prefix Chrome/Edge extensions add. None if missing/broken."""
+    if not os.path.exists(COOKIES_FILE):
+        return None
+    try:
+        with open(COOKIES_FILE, encoding="utf-8") as f:
+            lines = f.read().splitlines()
+    except Exception:
+        return None
+    cleaned = "\n".join(l for l in lines if not l.strip().startswith("#HttpOnly_"))
+    tmp = None
+    try:
+        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False,
+                                         encoding="utf-8") as tf:
+            tf.write(cleaned)
+            tmp = tf.name
+        jar = http.cookiejar.MozillaCookieJar()
+        jar.load(tmp, ignore_discard=True, ignore_expires=True)
+        return jar
+    except Exception:
+        return None
+    finally:
+        if tmp:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+
+
+def _build_session():
+    """One requests.Session, reusing the browser's Reddit cookies if present."""
+    session = requests.Session()
+    session.headers.update({"User-Agent": USER_AGENT})
+    jar = _load_cookie_jar()
+    if jar is not None:
+        session.cookies = jar
+        print(f"   🍪 Riding browser session from {COOKIES_FILE} ({len(list(jar))} cookies)")
+    return session
+
+
+SESSION = _build_session()
 
 # Same narrator intro/outro lines the old process_comments.py used, so the
 # comment_script style stays consistent across the whole story bank.
@@ -165,9 +227,10 @@ def fetch_listings(sub):
 
 def fetch_json(url):
     """GET a Reddit .json endpoint with retries on 429/403."""
+    global _BLOCK_HINT_PRINTED
     for attempt in range(4):
         try:
-            r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
+            r = SESSION.get(url, timeout=30)
         except Exception as e:
             print(f"   ⚠️ Request failed: {e}")
             time.sleep(5)
@@ -179,6 +242,11 @@ def fetch_json(url):
             print(f"   ⏳ HTTP {r.status_code} on {url} — retrying in {wait}s")
             time.sleep(wait)
             continue
+        if r.status_code == 403 and not _BLOCK_HINT_PRINTED:
+            _BLOCK_HINT_PRINTED = True
+            print("   ℹ️  Reddit is blocking this IP for .json scraping. Options:")
+            print("       • drop a browser cookies export at reddit_cookies.txt and re-run, or")
+            print("       • run from a different network (non-MTN IP).")
         print(f"   ⚠️ HTTP {r.status_code} on {url}")
         return None
     return None
