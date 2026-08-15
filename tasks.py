@@ -497,7 +497,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                     mux_audio_path=final_audio_1,  # exact audio in the video (sped + music)
                     output_path=video_path_1.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
                     whisper_model="base",   # more accurate word-by-word captions
-                    font_size=18,
+                    font_size=16,  # smaller captions (user request) — scaled per frame height
                     speed_factor=VOICE_SPEED,  # timestamps map exactly onto the sped-up audio
                     bold=True,
                     alignment=10,
@@ -554,7 +554,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                         mux_audio_path=final_audio_2,  # exact audio in the video (sped + music)
                         output_path=video_path_2.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
                         whisper_model="base",   # more accurate word-by-word captions
-                        font_size=18,
+                        font_size=16,  # smaller captions (user request) — scaled per frame height
                         # FIXED: Part 2 was missing speed_factor, so its captions
                         # were timed to the raw voice while the video played the
                         # sped-up track — out of sync.
