@@ -18,13 +18,12 @@ manual flow:
      stories first, then commits + pushes.
 
 Story selection (see fetch_listings):
-  * Most subreddits fetch CONTROVERSIAL (this week) FIRST — the most
-    hotly-debated posts, which get people arguing in the comments and
-    engaging with the videos. If controversy yields nothing usable, we
-    fall back to HOT stories sorted by engagement (most comments, then
-    highest score) so the bank still gets the posts people engaged with.
-  * r/relationship_advice is the exception: its drama is in the story
-    itself, so it takes ALL usable hot stories.
+  * EVERY subreddit fetches BOTH listing sorts — CONTROVERSIAL (this
+    week) and HOT — since Reddit supports both filters universally.
+    Controversial comes first (the most hotly-debated posts, which get
+    people arguing in the comments and engaging with the videos), then
+    hot stories ranked by engagement (most comments, then highest
+    score). Both listings are deduped by post id, so nothing doubles up.
 
 Run manually:   python fetch_stories.py
 Schedule:       weekly via Windows Task Scheduler (see STORY_REFILL.md).
@@ -135,20 +134,16 @@ def fetch_listings(sub):
          that even when controversy yields nothing, we still pull the posts
          people engaged with most.
 
-    r/relationship_advice is the exception: its drama is in the story
-    itself, so we take ALL usable hot stories instead of only the
-    controversial ones.
+    Every subreddit supports both listing sorts (Reddit's filters are
+    universal), so we always fetch CONTROVERSIAL (this week) and HOT.
 
     Returns deduped post dicts (id-keyed), tagged with _source, ordered
     controversial-first then by most comments / highest score.
     """
-    if sub == "relationship_advice":
-        urls = [("hot", f"https://www.reddit.com/r/{sub}/hot.json?limit={HOT_LIMIT}")]
-    else:
-        urls = [
-            ("controversial", f"https://www.reddit.com/r/{sub}/controversial.json?t=week&limit={HOT_LIMIT}"),
-            ("hot", f"https://www.reddit.com/r/{sub}/hot.json?limit={HOT_LIMIT}"),
-        ]
+    urls = [
+        ("controversial", f"https://www.reddit.com/r/{sub}/controversial.json?t=week&limit={HOT_LIMIT}"),
+        ("hot", f"https://www.reddit.com/r/{sub}/hot.json?limit={HOT_LIMIT}"),
+    ]
     posts, seen = [], set()
     for label, url in urls:
         data = fetch_json(url)
