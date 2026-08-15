@@ -37,7 +37,7 @@ page). If that happens:
   • Run from a different network (the block is IP-scoped).
 
 Optional env overrides:
-  MIN_UNUSED=20        refill when unused stories fall below this
+  MIN_UNUSED=100       refill when unused stories fall below this
   SUBREDDITS=AITAH,tifu  only fetch these subreddits
   COOKIES_FILE=path    where to read the browser cookies export
 """
@@ -71,7 +71,7 @@ REPO = os.path.dirname(os.path.abspath(__file__))
 STORIES_DIR = "reddit_stories"
 USED_IDS_FILE = "used_story_ids.json"
 
-MIN_UNUSED = int(os.environ.get("MIN_UNUSED", "20"))
+MIN_UNUSED = int(os.environ.get("MIN_UNUSED", "100"))
 MIN_BODY = 100          # ignore posts with a body shorter than this
 TOP_COMMENTS = 5        # comments per story, by score
 HOT_LIMIT = 50

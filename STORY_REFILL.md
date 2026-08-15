@@ -8,11 +8,12 @@ runs low.
 ## How it works
 
 1. **Counts unused stories** (total minus `used_story_ids.json`).
-2. If unused ≥ **20** (`MIN_UNUSED`), it prints "plenty left" and exits — a scheduled run
+2. If unused ≥ **100** (`MIN_UNUSED`), it prints "plenty left" and exits — a scheduled run
    costs nothing when the bank is healthy.
-3. If unused < 20, it fetches every subreddit's `hot.json` + each new story's comments
-   `.json` from **your laptop's residential IP** (Reddit blocks GitHub's datacenter IPs —
-   that's why this can't run inside the workflow).
+3. If unused < 100, it fetches every subreddit's **controversial (this week) + hot**
+   listings + each new story's comments `.json` from **your laptop's residential IP**
+   (Reddit blocks GitHub's datacenter IPs — that's why this can't run inside the
+   workflow). Controversial-first, hot-by-engagement fallback; both deduped by post id.
 4. Builds the exact story format the pipeline consumes (`top_comments`, `comment_script`,
    `quality_score`), **tags new stories with `added_at=today`** so the pipeline picks OLD
    stories first, consolidates each subreddit into one file, then commits + pushes.
@@ -29,9 +30,15 @@ python -m pip install requests
 python fetch_stories.py        # manual run — should print "Plenty of stories left"
 ```
 
+If Reddit blocks your IP for `.json` scraping (403), drop a browser cookies export at
+`reddit_cookies.txt` (Netscape format — "Get cookies.txt LOCALLY" extension, after
+passing Reddit's "verify you're human" check) and the script rides that browser session
+past the block. Or run from a different network.
+
 Optional env overrides:
-- `MIN_UNUSED=20` — refill when unused stories fall below this (default 20).
+- `MIN_UNUSED=100` — refill when unused stories fall below this (default 100).
 - `SUBREDDITS=AITAH,tifu` — only fetch these subreddits.
+- `COOKIES_FILE=path` — where to read the browser cookies export.
 
 ## Schedule it weekly (Windows Task Scheduler)
 
