@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-08-14T05:44:14Z",
+  "generated_at": "2026-08-15T01:51:13Z",
   "total_stories": 357,
   "unused_stories": 352,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 20,
   "days_of_stories": 176,
-  "runway_date": "2027-02-06",
+  "runway_date": "2027-02-07",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
   "subreddits": [
     {
-      "name": "TalesFromRetail",
+      "name": "AmItheAsshole",
       "total": 25,
       "unused": 25
     },
     {
-      "name": "AmItheAsshole",
+      "name": "TalesFromRetail",
       "total": 25,
       "unused": 25
     },
@@ -27,13 +27,8 @@
       "unused": 25
     },
     {
-      "name": "offmychest",
+      "name": "tifu",
       "total": 24,
-      "unused": 24
-    },
-    {
-      "name": "pettyrevenge",
-      "total": 25,
       "unused": 24
     },
     {
@@ -42,8 +37,13 @@
       "unused": 24
     },
     {
-      "name": "tifu",
+      "name": "offmychest",
       "total": 24,
+      "unused": 24
+    },
+    {
+      "name": "TrueOffMyChest",
+      "total": 25,
       "unused": 24
     },
     {
@@ -52,7 +52,7 @@
       "unused": 24
     },
     {
-      "name": "TrueOffMyChest",
+      "name": "pettyrevenge",
       "total": 25,
       "unused": 24
     },
@@ -72,12 +72,12 @@
       "unused": 23
     },
     {
-      "name": "confession",
+      "name": "self",
       "total": 22,
       "unused": 22
     },
     {
-      "name": "self",
+      "name": "confession",
       "total": 22,
       "unused": 22
     },
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 15
+    "next_index": 16
   },
   "youtube": {
     "privacy": "public",
@@ -97,11 +97,31 @@
       "20:00"
     ],
     "next_publish_utc": [
-      "2026-08-17T12:00:00Z",
-      "2026-08-17T20:00:00Z"
+      "2026-08-18T12:00:00Z",
+      "2026-08-18T20:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786758249_captioned_1786758252.mp4",
+      "title": "[TEST] \"I made a $ mistake online, bank said they couldn't fix it\"",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1066507092439377",
+      "url": "https://www.facebook.com/1272041649331476/videos/1066507092439377",
+      "posted_at": "2026-08-15T01:51:13Z"
+    },
+    {
+      "video_file": "output_1786758249_captioned_1786758252.mp4",
+      "title": "[TEST] \"I made a $ mistake online, bank said they couldn't fix it\"",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "hOHTOzi-Otg",
+      "url": "https://youtu.be/hOHTOzi-Otg",
+      "posted_at": "2026-08-15T01:50:54Z"
+    },
     {
       "video_file": "output_1786685431_captioned_1786685438.mp4",
       "title": "\"I spent 13 years hiding from my reality, and it nearly destroyed me...\"",
@@ -187,26 +207,6 @@
       "video_id": "eC51VhkPo2k",
       "url": "https://youtu.be/eC51VhkPo2k",
       "posted_at": "2026-08-11T17:23:20Z"
-    },
-    {
-      "video_file": "output_1786371004_captioned_1786371009.mp4",
-      "title": "[TEST] \"I joined a lit project with two 'geniuses', but they had NO IDEA what we were supposed to do\"",
-      "subreddit": "MaliciousCompliance",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "YGHPuv5NR-Y",
-      "url": "https://youtu.be/YGHPuv5NR-Y",
-      "posted_at": "2026-08-10T14:18:33Z"
-    },
-    {
-      "video_file": "output_1786369063_captioned_1786369067.mp4",
-      "title": "[TEST] \"I thought walking out was a bold move, but it was only the beginning...\"",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "qNA_ZUFlFFo",
-      "url": "https://youtu.be/qNA_ZUFlFFo",
-      "posted_at": "2026-08-10T13:46:10Z"
     }
   ]
 }
