@@ -74,12 +74,18 @@ def _extract_frame(video_path, t, out_path, size=(THUMB_W, THUMB_H)):
 
 
 def _load_card(card_path):
-    """Return the reddit card cropped to its visible white rect (transparent
-    margins removed), so we can place it exactly where it appears in the
-    video intro and scale it 1:1 to the 4K canvas."""
+    """Return (card, width_ratio) where width_ratio is the visible card width
+    divided by the full PNG width.
+
+    The card PNG has transparent side margins (the generator's card_inset) —
+    in the video intro the card therefore occupies ~90% of the screen width,
+    NOT the full width. We crop to the visible white rect but remember the
+    ratio so the 4K thumbnail keeps the exact same side margins the video has
+    (the card must NOT stretch edge-to-edge).
+    """
     from PIL import Image
     if not os.path.exists(card_path):
-        return None
+        return None, 1.0
     im = Image.open(card_path).convert("RGBA")
     w, h = im.size
     px = im.load()
@@ -98,8 +104,10 @@ def _load_card(card_path):
                 if bottom is None or y > bottom:
                     bottom = y
     if None in (left, right, top, bottom):
-        return im  # fallback: whole image
-    return im.crop((left, top, right + 1, bottom + 1))
+        return im, 1.0  # fallback: whole image
+    visible_w = right - left + 1
+    ratio = min(visible_w / w, 1.0)
+    return im.crop((left, top, right + 1, bottom + 1)), ratio
 
 
 def _make_thumbnail(video_path, card_path, out_path):
@@ -121,25 +129,26 @@ def _make_thumbnail(video_path, card_path, out_path):
         bg = Image.open(bg_path).convert("RGB")
         if bg.size != (THUMB_W, THUMB_H):
             bg = bg.resize((THUMB_W, THUMB_H), Image.LANCZOS)
-        bg = ImageEnhance.Brightness(bg).enhance(0.62)  # slightly darker for pop
+        bg = ImageEnhance.Brightness(bg).enhance(0.95)  # keep it bright, barely dim
         canvas = bg
     else:
         ImageDraw.Draw(canvas).rectangle([0, 0, THUMB_W, THUMB_H], fill=(24, 24, 34))
 
-    # 2) Foreground: the card from its native PNG, scaled to (nearly) full
-    #    width — crisper text than the card rendered inside the 1440p video.
-    card = _load_card(card_path)
+    # 2) Foreground: the card from its native PNG, scaled so its VISIBLE width
+    #    keeps the same proportional side margins it has in the video intro
+    #    (the generator's card_inset) — the card must NOT stretch edge-to-edge.
+    card, width_ratio = _load_card(card_path)
     if card is not None:
-        # Card spans the full width in the video intro; scale native -> 4K width.
-        scale = THUMB_W / card.width
-        card = card.resize((THUMB_W, round(card.height * scale)), Image.LANCZOS)
-        x = 0
+        target_w = round(THUMB_W * width_ratio)
+        scale = target_w / card.width
+        card = card.resize((target_w, round(card.height * scale)), Image.LANCZOS)
+        x = (THUMB_W - card.width) // 2
         y = round(CARD_TOP_RATIO * THUMB_H)
         # soft drop shadow behind the card for separation from the footage
         from PIL import ImageFilter
         shadow = Image.new("RGBA", card.size, (0, 0, 0, 0))
         ImageDraw.Draw(shadow).rounded_rectangle(
-            [6, 8, card.width - 6, card.height + 8], radius=20, fill=(0, 0, 0, 120)
+            [6, 8, card.width - 6, card.height + 8], radius=20, fill=(0, 0, 0, 90)
         )
         shadow = shadow.filter(ImageFilter.GaussianBlur(14))
         canvas = canvas.convert("RGBA")
