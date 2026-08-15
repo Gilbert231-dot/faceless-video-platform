@@ -37,6 +37,51 @@ OUTPUT_H = 2560
 # the sped-up video end BEFORE the narration so -shortest cut stories short.
 EXTRACT_FACTOR = round((SPEED_FACTOR / VOICE_SPEED) * 1.1, 3)
 
+# --- ANIMATED TITLE INTRO (burned into segment 0's filter chain) ---
+# The narrator speaks the story TITLE at the very start of the voiceover
+# ("<title>. <story>..."), so the title is put on screen while it's being
+# said: it fades + slides UP into the upper third, holds while the title is
+# narrated, then fades + slides UP and away. Pure drawtext inside segment 0's
+# existing encode - no extra pass, negligible CPU on the Actions runner.
+TITLE_FADE_SEC = 0.45    # fade/slide duration on entry and exit
+TITLE_DELAY_SEC = 0.35   # beat after the video starts before the title enters
+TITLE_MIN_SEC = 1.8      # never shorter than this (tiny titles still readable)
+TITLE_MAX_SEC = 12.0     # never longer than this (covers the longest hooks)
+TITLE_LINE_CHARS = 30    # wrap width per line
+TITLE_MAX_LINES = 5      # never render more than this many lines
+# Set TITLE_INTRO=false in the workflow env to disable the intro entirely.
+TITLE_INTRO = os.environ.get("TITLE_INTRO", "true").lower() != "false"
+
+
+def _wrap_text(text: str, max_chars: int, max_lines: int):
+    """Greedy word-wrap; returns a list of lines, each <= max_chars."""
+    lines, cur = [], ""
+    for w in text.split():
+        if cur and len(cur) + 1 + len(w) > max_chars:
+            lines.append(cur)
+            cur = w
+        else:
+            cur = (cur + " " + w).strip()
+    if cur:
+        lines.append(cur)
+    return lines[:max_lines]
+
+
+def _find_font_file():
+    """Return a bold font path, or None. GitHub runner + Windows candidates."""
+    candidates = [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf",
+        "C:/Windows/Fonts/arialbd.ttf",
+        "C:/Windows/Fonts/segoeuib.ttf",
+        "C:/Windows/Fonts/DejaVuSans-Bold.ttf",
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    return None
+
 # Helper: Measure integrated loudness (LUFS) and true peak (dBFS) via EBU R128.
 def measure_loudness(media_path: str):
     """Return (integrated_LUFS, true_peak_dBFS), or (None, None) on failure."""
@@ -177,12 +222,98 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     audio_duration = get_duration(audio_path)
     print(f"   🎙️ Audio duration: {audio_duration:.2f}s")
     
-    extract_duration = audio_duration * EXTRACT_FACTOR
-    print(f"   ⏱️ Extracting {extract_duration:.2f}s of footage (will be sped up {SPEED_FACTOR}x)")
-    
     output_dir = os.environ.get('OUTPUT_DIR', '.')
     if not os.path.exists(output_dir):
         output_dir = '.'
+    
+    # --- ANIMATED TITLE INTRO: build the segment-0 drawtext filter ---
+    # Timing comes from the script word-ratio: ElevenLabs speaks at a
+    # near-uniform rate, so the title's share of the measured audio duration
+    # is roughly its share of the words. The audio is later sped up by
+    # VOICE_SPEED, so the title hold time on the FINAL timeline is that share
+    # divided by VOICE_SPEED (same math as the caption timestamps).
+    title_filter = None
+    title_file = None
+    font_file = None
+    if title and TITLE_INTRO:
+        font_file = _find_font_file()
+        # drawtext splits option values on ':', so ANY path containing ':'
+        # (a Windows drive letter like C:/ or D:/) breaks the filter — quotes
+        # and \: escaping are NOT honored for textfile/fontfile. Fix: make
+        # both paths cwd-relative before passing them (the workflow runs
+        # ffmpeg from the repo root with OUTPUT_DIR=output, so relative paths
+        # are always colon-free and resolve correctly). On Windows the system
+        # font is copied next to the outputs first; the Linux runner's
+        # /usr/share/... font path has no ':' and is used directly.
+        font_ref = font_file
+        if font_file and ":" in font_file:
+            font_dst = os.path.join(output_dir, "title_font.ttf")
+            try:
+                shutil.copy2(font_file, font_dst)
+                font_ref = font_dst
+            except OSError:
+                font_ref = font_file
+
+        def _rel_no_colon(path):
+            """cwd-relative path, or None if it can't be made colon-free."""
+            rel = os.path.relpath(path)
+            rel = rel.replace("\\", "/")
+            return rel if ":" not in rel else None
+
+        font_safe = _rel_no_colon(font_ref) if font_ref else None
+        if font_safe:
+            font_file = font_safe
+            total_words = len((script or "").split())
+            title_words = len(title.split())
+            if total_words and title_words:
+                title_secs = (audio_duration * title_words / total_words) / VOICE_SPEED
+                final_dur = audio_duration / VOICE_SPEED
+                title_secs = min(max(title_secs, TITLE_MIN_SEC), TITLE_MAX_SEC, max(final_dur - 0.5, 1.0))
+                title_file = os.path.join(output_dir, f"title_text_{int(time.time())}.txt")
+                with open(title_file, "w", encoding="utf-8") as f:
+                    f.write("\n".join(_wrap_text(title, TITLE_LINE_CHARS, TITLE_MAX_LINES)))
+                title_safe = _rel_no_colon(title_file)
+                if not title_safe:
+                    print("   ⚠️ Title intro skipped (title text path can't be made colon-free)")
+                    title_filter = None
+                t1 = TITLE_DELAY_SEC
+                t2 = t1 + TITLE_FADE_SEC
+                t4 = title_secs
+                t3 = t4 - TITLE_FADE_SEC
+                base_y = round(0.14 * OUTPUT_H)
+                slide = round(0.05 * OUTPUT_H)
+                fontsize = round(48 * OUTPUT_H / 1920)
+                alpha_expr = (
+                    f"if(lt(t,{t1:.3f}),0,"
+                    f"if(lt(t,{t2:.3f}),(t-{t1:.3f})/{t2 - t1:.3f},"
+                    f"if(lt(t,{t3:.3f}),1,"
+                    f"if(lt(t,{t4:.3f}),({t4:.3f}-t)/{t4 - t3:.3f},0))))"
+                )
+                y_expr = (
+                    f"{base_y}+{slide}*(1-clip((t-{t1:.3f})/{t2 - t1:.3f},0,1))"
+                    f"-{slide}*clip((t-{t3:.3f})/{t4 - t3:.3f},0,1)"
+                )
+                title_filter = (
+                    f"drawtext=textfile='{title_safe}':"
+                    f"fontfile='{font_file}':"
+                    f"fontcolor=white:"
+                    f"fontsize={fontsize}:"
+                    f"borderw=4:bordercolor=black:"
+                    f"shadowx=0:shadowy=0:"
+                    f"line_spacing=16:"
+                    f"x=(w-text_w)/2:"
+                    f"y='{y_expr}':"
+                    f"alpha='{alpha_expr}'"
+                )
+                print(f"   ✨ Animated title intro: \"{title[:60]}{'...' if len(title) > 60 else ''}\" "
+                      f"({title_secs:.1f}s on screen, {len(_wrap_text(title, TITLE_LINE_CHARS, TITLE_MAX_LINES))} line(s))")
+            else:
+                print("   ⚠️ Title intro skipped (empty title or script)")
+        else:
+            print("   ⚠️ No font file found for the title intro - skipping it")
+    
+    extract_duration = audio_duration * EXTRACT_FACTOR
+    print(f"   ⏱️ Extracting {extract_duration:.2f}s of footage (will be sped up {SPEED_FACTOR}x)")
     
     gameplay_segment = os.path.join(output_dir, f"gameplay_segment_{int(time.time())}.mp4")
     source_video = video_paths[0]
@@ -259,6 +390,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         # IMPORTANT: `-t` must stay BEFORE `-i`. As an output option it
         # defeats the setpts speed-up — the segment renders at 1x (verified
         # empirically: same chain, 33 frames/1.10s vs 25 frames/0.83s).
+        # The animated title intro (if any) is appended to segment 0's chain
+        # only — the fade/hold/fade-out all happen inside the first ~12s.
+        if i == 0 and title_filter:
+            vf_chain += "," + title_filter
         cmd_process = [
             'ffmpeg', '-y',
             '-ss', str(start_time),
@@ -312,6 +447,19 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             print(f"   ✅ Segment {i+1} complete (fallback)")
     
     pbar.close()
+    
+    # The title text file (drawtext textfile) is no longer needed, and the
+    # copied Windows font can go too (it's only referenced during the render).
+    if title_file and os.path.exists(title_file):
+        try:
+            os.unlink(title_file)
+        except OSError:
+            pass
+    if font_file and os.path.basename(font_file) == "title_font.ttf" and os.path.exists(font_file):
+        try:
+            os.unlink(font_file)
+        except OSError:
+            pass
     
     # Concatenate segments
     print("   🔗 Concatenating segments...")
