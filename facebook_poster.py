@@ -245,6 +245,13 @@ def _publish(page_id, token, handle, title, description, published, scheduled_un
         "description": description[:5000],
         chunk_field: handle,
         "published": "true" if published else "false",
+        # Self-disclosure that the video was created with AI (the Facebook
+        # equivalent of YouTube's containsSyntheticMedia). The Graph API
+        # documents it for Reels/Stories/Instagram; Meta also accepts it here
+        # on regular Page videos (verified live — the video then carries the
+        # "AI-generated" label). Our whole pipeline is AI-generated, so this
+        # is always true.
+        "is_ai_generated": "true",
     }
     if not published:
         # DRAFT = only people who can manage the page see the video (the
@@ -274,6 +281,7 @@ def _publish_source(page_id, token, video_path, title, description, published, s
         "title": title[:255],
         "description": description[:5000],
         "published": "true" if published else "false",
+        "is_ai_generated": "true",
     }
     if not published:
         data["unpublished_content_type"] = "DRAFT"
