@@ -12,6 +12,7 @@ from gender_detector import GenderDetector
 from drive_clip_manager import get_next_segment
 from broll_fetcher import fetch_gameplay_footage
 from caption_utils import add_subtitles_to_video
+from generate_reddit_frame import generate_frame
 from tts_clean import clean_for_tts
 from reddit_story_loader import RedditStoryLoader
 from video_compile import compile_video, get_duration, EXTRACT_FACTOR
@@ -23,6 +24,9 @@ from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED, platform_ta
 MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"  # Custom Gen Z voice
 FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Sarah
 DEFAULT_VOICE_ID = MALE_VOICE_ID
+
+# Channel name shown on the animated reddit frame (the account name).
+FRAME_USERNAME = "StoryLab"
 
 # When unused stories fall to this many, the run warns loudly so the user
 # refills the bank (fetch_stories.py on the laptop, or its weekly schedule).
@@ -253,7 +257,7 @@ def concat_clips(clip_paths, output_path):
 
 def generate_single_video(title, script, part_label=None, topic=None,
                           include_title_in_script=True, subreddit=None,
-                          voice_id=None):
+                          voice_id=None, intro_frame=None):
     """Generate a single video with proper Part 1/Part 2 voiceover handling."""
     
     # Build the script with proper Part handling
@@ -288,7 +292,7 @@ def generate_single_video(title, script, part_label=None, topic=None,
         audio_path=audio_path,
         script=full_script,
         subtitle_path=None,
-        intro_frame=None,
+        intro_frame=intro_frame,
         title=title,
         part_label=part_label
     )
@@ -474,6 +478,35 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         else:
             print(f"   🚀 This is a PRODUCTION video - story will be marked as used")
         
+        # ----- ANIMATED REDDIT FRAME (the intro card) -----
+        # The reddit post card is drawn with the REAL story data (subreddit,
+        # title, score, comments) and overlaid on the start of every part
+        # while the narrator says the title. It's generated once per story
+        # and reused by both parts (the same title opens both voiceovers).
+        frame_path = None
+        try:
+            comment_count = None
+            if story.get('top_comments'):
+                comment_count = len(story['top_comments'])
+            elif story.get('comments'):
+                comment_count = len(story['comments'])
+            frame_dir = os.environ.get('OUTPUT_DIR', '.')
+            if not os.path.exists(frame_dir):
+                frame_dir = '.'
+            frame_path = os.path.join(
+                frame_dir, f"reddit_frame_{int(time.time())}.png")
+            generate_frame(
+                title=title,
+                subreddit=subreddit_name,
+                username=FRAME_USERNAME,
+                score=score,
+                comments=comment_count,
+                out_path=frame_path,
+            )
+        except Exception as e:
+            print(f"   ⚠️ Reddit frame generation failed (continuing without it): {e}")
+            frame_path = None
+        
         # ----- GENERATE PART 1 -----
         print("\n🎬 GENERATING PART 1...")
         video_path_1, audio_path_1, final_audio_1 = generate_single_video(
@@ -483,7 +516,8 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             topic=title,
             include_title_in_script=True,
             subreddit=subreddit_name,
-            voice_id=selected_voice
+            voice_id=selected_voice,
+            intro_frame=frame_path
         )
         print(f"✅ Part 1 ready: {video_path_1}")
         
@@ -540,7 +574,8 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 topic=title,
                 include_title_in_script=True,
                 subreddit=subreddit_name,
-                voice_id=selected_voice
+                voice_id=selected_voice,
+                intro_frame=frame_path
             )
             print(f"✅ Part 2 ready: {video_path_2}")
             

@@ -5,6 +5,7 @@
 *.mp3
 *.srt
 *.png
+!assets/storylab_avatar.png
 *.txt
 www.youtube.com_cookies.txt
 venv/
