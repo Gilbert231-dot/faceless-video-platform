@@ -34,6 +34,7 @@ filled from files already in this repo:
 | Category | **Developer tools** or **Entertainment** (either is fine) |
 | Privacy Policy URL | `https://gilbert231-dot.github.io/faceless-video-platform/privacy.html` |
 | Terms of Service URL | `https://gilbert231-dot.github.io/faceless-video-platform/terms.html` |
+| Desktop URL (Web URL) | `https://gilbert231-dot.github.io/faceless-video-platform/` — the app's landing page (built from `index.html` in the repo root, auto-deploys on every push). **This was the only rejection reason** (reviewer: "Website must be fully developed") — the site is now a fully-developed landing page with an embedded demo video, so keep this exact value on any resubmission. |
 | Redirect URI | `http://localhost:8080/callback` |
 | Platform | **Desktop App** |
 | Scopes | `user.info.basic` + `video.publish` |
