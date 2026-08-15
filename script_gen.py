@@ -7,6 +7,12 @@ openai_client = OpenAI(
     base_url="https://api.groq.com/openai/v1"
 )
 
+# Groq decommissioned llama-3.1-8b-instant on 2026-08-16 (requests after that
+# date are no longer served). Groq's recommended replacement — and the model
+# now used for ALL story/hook generation here — is openai/gpt-oss-20b
+# (slightly higher price per token, still on the free/developer tier).
+GROQ_MODEL = "openai/gpt-oss-20b"
+
 # ===========================
 # SLANG / ACRONYM NORMALIZATION
 # ===========================
@@ -63,7 +69,7 @@ def generate_hook(story_text, title, subreddit=None):
     Hook:"""
     
     response = openai_client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=GROQ_MODEL,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=30,
         temperature=0.9
@@ -262,7 +268,7 @@ The goal is to make the story feel fresh, personal, and engaging."""
     
     # --- INCREASED MAX TOKENS FOR COMPLETE STORIES ---
     response = openai_client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=GROQ_MODEL,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content}
@@ -346,7 +352,7 @@ COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.
 Keep the script 500-700 words."""
     
     response = openai_client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model=GROQ_MODEL,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Write a dramatic story about: {topic}"}
