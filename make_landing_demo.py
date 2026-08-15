@@ -17,9 +17,10 @@ import subprocess
 
 FRAME_W, FRAME_H = 1080, 1920
 CLIP_SECONDS = 9.0
-# Start ~20% into the video (past the hook/title) so the sample lands in the
-# narration where captions are rolling.
-WINDOW_OFFSET_RATIO = 0.20
+# Start at the very beginning so the demo shows the animated reddit-card
+# intro (fade-in, hold while the title is narrated) — the first thing a
+# TikTok reviewer sees on the landing page is the frame, matching the videos.
+WINDOW_OFFSET_RATIO = 0.0
 CRF = "18"        # same quality bar as the pipeline's caption pass
 PRESET = "slow"
 

@@ -45,7 +45,8 @@ _debug_mode = os.environ.get('DEBUG_MODE', 'False').lower() == 'true'
 story_loader = RedditStoryLoader(STORY_DATA_PATH, debug_mode=_debug_mode)
 
 
-def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
+def save_metadata(video_path, title, subreddit_name, score=0, author="unknown",
+                  thumbnail=None):
     """Save story metadata alongside the video for YouTube upload."""
     # NOTE: the Kevin MacLeod CC BY attribution is intentionally NOT added
     # to the description anymore (user request). CC BY technically asks for
@@ -63,7 +64,10 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown"):
         # TikTok hashtags for the caption — keyed tiktok_tags so the manual
         # uploader knows which list to paste on tiktok.com.
         "tiktok_tags": platform_tags("tiktok", subreddit_name),
-        "video_path": video_path
+        "video_path": video_path,
+        # Custom thumbnail (1280x720 JPEG) matching the reddit-card intro;
+        # the YouTube uploader calls thumbnails().set with it when present.
+        "thumbnail": thumbnail,
     }
     metadata_path = video_path.replace(".mp4", "_metadata.json")
     with open(metadata_path, "w") as f:
@@ -619,9 +623,26 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         
         # ----- SAVE METADATA FOR THE YOUTUBE UPLOAD STEP -----
         print("\n📝 SAVING VIDEO METADATA...")
-        save_metadata(video_path_1, title, subreddit_name, score, author)
+        # Custom thumbnail matching the reddit-card intro: a still from the
+        # video (blurred background) + the sharp card. One per video, so the
+        # YouTube custom thumbnail shows the exact intro frame.
+        def _make_thumb(video_path):
+            if not frame_path:
+                return None
+            thumb_path = video_path.replace(".mp4", "_thumb.jpg")
+            try:
+                from make_thumbnail import _make_thumbnail as _mt
+                _mt(video_path, frame_path, thumb_path)
+                return thumb_path if os.path.exists(thumb_path) else None
+            except Exception as e:
+                print(f"   ⚠️ Thumbnail skipped: {e}")
+                return None
+
+        thumb_1 = _make_thumb(video_path_1)
+        save_metadata(video_path_1, title, subreddit_name, score, author, thumb_1)
         if video_path_2 and isinstance(video_path_2, str):
-            save_metadata(video_path_2, f"{title} (Part 2)", subreddit_name, score, author)
+            thumb_2 = _make_thumb(video_path_2)
+            save_metadata(video_path_2, f"{title} (Part 2)", subreddit_name, score, author, thumb_2)
 
         # Mark the story as used (only in production mode)
         marked = False

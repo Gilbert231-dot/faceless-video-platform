@@ -122,12 +122,16 @@ def upload_to_youtube(
     tags = []
 
     # --- Load metadata from JSON if available ---
+    thumbnail_path = None
     if metadata_path and os.path.exists(metadata_path):
         with open(metadata_path, "r") as f:
             metadata = json.load(f)
         title = metadata.get("title", title)
         description = metadata.get("description", description)
         tags = metadata.get("tags", tags)
+        thumb = metadata.get("thumbnail")
+        if thumb and os.path.exists(thumb):
+            thumbnail_path = thumb
 
     body = build_upload_body(title, description, tags, privacy_status, publish_at)
     if publish_at:
@@ -155,6 +159,33 @@ def upload_to_youtube(
                 video_id,
                 video_id,
             )
+            # Set the custom thumbnail (the reddit card) so the intro and the
+            # thumbnail match. Requires a phone-verified channel + the
+            # youtube.upload scope (already in SCOPES). Fails SOFTLY: an
+            # unverified channel returns 403, and the video is already live
+            # by then — the upload itself must never fail because of it.
+            if thumbnail_path:
+                try:
+                    youtube.thumbnails().set(
+                        videoId=video_id,
+                        media_body=MediaFileUpload(thumbnail_path, mimetype="image/jpeg"),
+                    ).execute()
+                    logger.info("🖼️ Custom thumbnail set: %s", thumbnail_path)
+                except HttpError as te:
+                    status = te.resp.status
+                    if status == 403:
+                        logger.warning(
+                            "⚠️ Custom thumbnail skipped: the channel isn't verified "
+                            "for custom thumbnails (HTTP 403). Verify your channel in "
+                            "YouTube Studio to enable them — the video itself is fine."
+                        )
+                    else:
+                        logger.warning(
+                            "⚠️ Custom thumbnail failed (HTTP %s), continuing without it: %s",
+                            status, te.reason,
+                        )
+                except Exception as te:
+                    logger.warning("⚠️ Custom thumbnail failed, continuing: %s", te)
             return video_id
         except HttpError as e:
             status = e.resp.status
