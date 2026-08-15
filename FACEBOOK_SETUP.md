@@ -150,6 +150,10 @@ live on Facebook automatically.
   (`#RedditStories #StoryTime #Reddit ...` + the subreddit hashtag), defined in
   `config.py` → `PLATFORM_TAGS["facebook"]` — distinct from the YouTube and
   TikTok lists so each platform gets the tags it actually recognizes.
+- **Reels vs video posts:** videos up to 90 seconds are posted as **Reels**
+  (they appear in the Reels discovery feed — regular posts don't); longer
+  stories automatically fall back to a regular page video post. Both paths
+  set `is_ai_generated=true` so every video carries the AI label.
 - **Monetization:** the Page becomes eligible for Facebook **Content
   Monetization** (invite-only, 5,000+ followers / 60,000 minutes watched in
   60 days) — express interest from the mobile app → Professional Dashboard →

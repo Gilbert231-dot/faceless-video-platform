@@ -3,7 +3,17 @@ facebook_poster.py — post generated videos to a Facebook Page via the official
 Graph API Video API (no unofficial bots, nothing that can get the account
 banned).
 
-Flow per video (Graph API v25.0):
+Two posting paths, chosen per video:
+
+  REELS (<= REEL_MAX_SECONDS, ~90s) — posted through the video_reels API so
+  they appear in the Facebook Reels discovery feed (regular video posts do
+  not). Flow: POST /{PAGE_ID}/video_reels upload_phase=start -> upload_url,
+  PUT the mp4 to rupload.facebook.com, then upload_phase=finish with
+  video_state DRAFT/SCHEDULED/PUBLISHED. is_ai_generated is officially
+  documented here.
+
+  REGULAR VIDEO (longer stories, or when the Reels path fails) — the classic
+  flow:
   1. Resumable Upload API: POST /{APP_ID}/uploads  ->  upload:<session_id>
   2. POST /upload:<session_id> with the mp4 bytes (file_offset 0) -> file handle
   3. POST graph-video.facebook.com /{PAGE_ID}/videos with the handle,
@@ -26,6 +36,7 @@ import datetime
 import json
 import logging
 import os
+import subprocess
 import sys
 import time
 
@@ -52,6 +63,11 @@ UPLOAD_TIMEOUT = 900  # a ~300 MB file over a slow runner link can take a while
 
 # Transient failures worth retrying (Graph API HTTP status codes)
 RETRYABLE_HTTP = {429, 500, 502, 503, 504}
+
+# Facebook Reels cap at 90 seconds (official spec: 3-90s, 9:16). Videos at or
+# under this are posted as Reels so they appear in the Reels discovery feed;
+# longer stories fall back to a regular page video post.
+REEL_MAX_SECONDS = 90
 
 # Meta-side bug (documented across the developer community): a video handle
 # returned by the Resumable Upload API is sometimes REJECTED at the publish
@@ -300,6 +316,122 @@ def _publish_source(page_id, token, video_path, title, description, published, s
     return payload["id"]
 
 
+def _video_duration(video_path):
+    """Return the video length in seconds via ffprobe, or None if unknown.
+
+    Used to decide Reels (<= REEL_MAX_SECONDS) vs regular video post. The
+    runner installs ffprobe as a system dependency, so this is reliable in
+    GitHub Actions; on machines without it we return None and safely fall
+    back to a regular video post.
+    """
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", video_path],
+            capture_output=True, text=True, timeout=60,
+        )
+        if result.returncode != 0:
+            return None
+        return float(result.stdout.strip())
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+
+
+def _publish_reel(page_id, token, video_path, title, description, published,
+                  scheduled_unix):
+    """Publish the video as a Facebook Reel via the video_reels API.
+
+    Flow (per Meta's Reels Publishing docs):
+      1. POST /{page_id}/video_reels upload_phase=start -> video_id + upload_url
+      2. PUT the mp4 to the upload_url (rupload.facebook.com), resuming from
+         bytes_transfered if interrupted
+      3. POST /{page_id}/video_reels upload_phase=finish with video_state
+         DRAFT / SCHEDULED / PUBLISHED, title, description and is_ai_generated
+
+    Reels appear in the Reels discovery feed — regular video posts do not.
+    """
+    size = os.path.getsize(video_path)
+    logger.info(
+        "Uploading %s (%.1f MB) as a Reel...",
+        os.path.basename(video_path), size / (1024 * 1024),
+    )
+
+    # 1) Start the upload session.
+    resp = requests.post(
+        f"{GRAPH}/{page_id}/video_reels",
+        data={"upload_phase": "start", "access_token": token},
+        timeout=HTTP_TIMEOUT,
+    )
+    payload = _check(resp, "start reel upload")
+    video_id = payload["video_id"]
+    upload_url = payload["upload_url"]
+
+    # 2) PUT the file. If the server didn't record everything, resume from
+    #    the reported bytes_transfered instead of starting over.
+    offset = 0
+    for _ in range(5):
+        if offset >= size:
+            break
+        with open(video_path, "rb") as fh:
+            fh.seek(offset)
+            data = fh.read()
+        headers = {
+            "Authorization": f"OAuth {token}",
+            "file_size": str(size),
+            "offset": str(offset),
+            "Content-Type": "application/octet-stream",
+        }
+        resp = requests.post(upload_url, headers=headers, data=data,
+                             timeout=UPLOAD_TIMEOUT)
+        payload = _check(resp, "upload reel file")
+        if payload.get("success"):
+            break
+        # Partial/interrupted upload — ask where to resume.
+        status = requests.get(
+            f"{GRAPH}/{video_id}",
+            params={"fields": "status", "access_token": token},
+            timeout=HTTP_TIMEOUT,
+        )
+        sp = _check(status, "reel upload status")
+        phase = sp.get("status", {}).get("uploading_phase", {})
+        new_offset = int(phase.get("bytes_transfered") or 0)
+        if new_offset <= offset:
+            raise FacebookError(
+                f"Reel upload stalled at {new_offset}/{size} bytes."
+            )
+        offset = new_offset
+
+    # 3) Finish + publish.
+    state = "SCHEDULED" if scheduled_unix else ("PUBLISHED" if published else "DRAFT")
+    data = {
+        "video_id": video_id,
+        "upload_phase": "finish",
+        "video_state": state,
+        "title": title[:255],
+        "description": description[:5000],
+        # Officially documented on the video_reels endpoint (even cleaner than
+        # the page-videos route): the video is AI-generated, always.
+        "is_ai_generated": "true",
+        "access_token": token,
+    }
+    if scheduled_unix:
+        data["scheduled_publish_time"] = str(scheduled_unix)
+    resp = requests.post(f"{GRAPH}/{page_id}/video_reels", data=data,
+                         timeout=UPLOAD_TIMEOUT)
+    payload = _check(resp, "publish reel")
+    post_id = payload.get("post_id") or video_id
+    result = {
+        "id": post_id,
+        "url": f"https://www.facebook.com/reel/{video_id}",
+        "published": published,
+        "reel": True,
+    }
+    if scheduled_unix:
+        result["scheduled_publish_time"] = scheduled_unix
+    logger.info("✅ Reel publish complete: %s", result)
+    return result
+
+
 def build_description(metadata, max_len=5000):
     """Build a Facebook video description from the story metadata JSON.
 
@@ -352,6 +484,24 @@ def publish_to_facebook(
     while attempt < max_attempts:
         attempt += 1
         try:
+            # Reels when the video fits Facebook's 90s Reel limit (discovery
+            # in the Reels feed). If the Reel path fails for ANY reason
+            # (wrong duration, spec mismatch, transient error), fall back to
+            # a regular video post below so the video always lands.
+            duration = _video_duration(video_path)
+            if duration is not None and duration <= REEL_MAX_SECONDS:
+                try:
+                    return _publish_reel(
+                        page_id, token, video_path, title, description,
+                        published, scheduled_unix,
+                    )
+                except FacebookError as exc:
+                    last_error = exc
+                    logger.warning(
+                        "Reels publish failed (%s) — falling back to a "
+                        "regular video post.", exc,
+                    )
+
             logger.info(
                 "Uploading %s (%.1f MB) via Resumable Upload (single-shot, resumable)...",
                 os.path.basename(video_path),
