@@ -10,12 +10,21 @@ manual flow:
   2. Counts UNUSED stories (vs used_story_ids.json).
   3. If unused >= MIN_UNUSED, prints "plenty left" and exits — so you can run
      it on a schedule and it only does work when the bank actually runs low.
-  4. Otherwise fetches each subreddit's hot.json, then each NEW story's
+  4. Otherwise fetches each subreddit's listings, then each NEW story's
      comments .json, builds the exact story format the pipeline consumes
      (top_comments + comment_script + quality_score), consolidates each
      subreddit's stories into one stories_with_comments_<ts>.json (old +
      new), tags new stories with added_at=today so the pipeline picks OLD
      stories first, then commits + pushes.
+
+Story selection (see fetch_listings):
+  * Most subreddits fetch CONTROVERSIAL (this week) FIRST — the most
+    hotly-debated posts, which get people arguing in the comments and
+    engaging with the videos. If controversy yields nothing usable, we
+    fall back to HOT stories sorted by engagement (most comments, then
+    highest score) so the bank still gets the posts people engaged with.
+  * r/relationship_advice is the exception: its drama is in the story
+    itself, so it takes ALL usable hot stories.
 
 Run manually:   python fetch_stories.py
 Schedule:       weekly via Windows Task Scheduler (see STORY_REFILL.md).
@@ -39,6 +48,14 @@ try:
 except ImportError:
     print("❌ 'requests' is not installed. Run:  python -m pip install requests")
     sys.exit(1)
+
+# Windows consoles default to cp1252, which can't encode the emoji in our
+# prints (✅ ⏳ 📊 ...) and would crash the refill mid-run. Force UTF-8 out.
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 STORIES_DIR = "reddit_stories"
@@ -104,6 +121,51 @@ def load_used_ids():
             return set(json.load(f))
     except Exception:
         return set()
+
+
+def fetch_listings(sub):
+    """Candidates for one subreddit: controversial first, hot fallback.
+
+    Reddit's .json endpoints accept a listing kind (hot/controversial/top...)
+    plus a time filter for controversial/top. Most subs get BOTH:
+
+      1. controversial (t=week) — the most-debated posts, exactly what gets
+         people arguing in the comments (and engaging with our videos).
+      2. hot — the fallback, sorted by engagement (comments, then score) so
+         that even when controversy yields nothing, we still pull the posts
+         people engaged with most.
+
+    r/relationship_advice is the exception: its drama is in the story
+    itself, so we take ALL usable hot stories instead of only the
+    controversial ones.
+
+    Returns deduped post dicts (id-keyed), tagged with _source, ordered
+    controversial-first then by most comments / highest score.
+    """
+    if sub == "relationship_advice":
+        urls = [("hot", f"https://www.reddit.com/r/{sub}/hot.json?limit={HOT_LIMIT}")]
+    else:
+        urls = [
+            ("controversial", f"https://www.reddit.com/r/{sub}/controversial.json?t=week&limit={HOT_LIMIT}"),
+            ("hot", f"https://www.reddit.com/r/{sub}/hot.json?limit={HOT_LIMIT}"),
+        ]
+    posts, seen = [], set()
+    for label, url in urls:
+        data = fetch_json(url)
+        if not data:
+            continue
+        for child in data.get("data", {}).get("children", []):
+            p = child.get("data", {})
+            pid = p.get("id")
+            if not pid or pid in seen:
+                continue
+            seen.add(pid)
+            p["_source"] = label
+            posts.append(p)
+    # Controversial first; within a group, most comments, then highest score.
+    posts.sort(key=lambda p: (0 if p.get("_source") == "controversial" else 1,
+                              -p.get("num_comments", 0), -p.get("score", 0)))
+    return posts
 
 
 def fetch_json(url):
@@ -243,12 +305,11 @@ def main():
             folder = os.path.join(STORIES_DIR, sub)
             os.makedirs(folder, exist_ok=True)
             seen_ids = {(s.get("story_id") or s.get("id")) for s in existing_stories(sub)}
-            hot = fetch_json(f"https://www.reddit.com/r/{sub}/hot.json?limit={HOT_LIMIT}")
-            if not hot:
+            candidates = fetch_listings(sub)
+            if not candidates:
                 continue
             new = []
-            for child in hot.get("data", {}).get("children", []):
-                p = child.get("data", {})
+            for p in candidates:
                 body = p.get("selftext") or ""
                 if len(body) < MIN_BODY:
                     continue
@@ -272,6 +333,7 @@ def main():
                     "top_comments": top,
                     "comment_script": build_comment_script(sub, top),
                     "has_comments": bool(top),
+                    "source": p.get("_source", "hot"),
                     # New stories are tagged with today's date so the pipeline
                     # sorts them LAST (old stories get picked first).
                     "added_at": datetime.date.today().isoformat(),

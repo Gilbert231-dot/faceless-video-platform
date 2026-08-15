@@ -4,7 +4,10 @@ from config import REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT
 from script_gen import adapt_reddit_story
 
 def fetch_reddit_story(subreddit="AmItheAsshole", post_type="hot"):
-    """Fetch the top post from a subreddit."""
+    """Fetch the top post from a subreddit.
+
+    post_type: "hot" | "top" | "controversial" | "new"
+    """
     if not REDDIT_CLIENT_ID or not REDDIT_CLIENT_SECRET:
         raise Exception("Reddit API credentials not set in .env file")
     
@@ -20,6 +23,8 @@ def fetch_reddit_story(subreddit="AmItheAsshole", post_type="hot"):
             post = next(subreddit_obj.hot(limit=1))
         elif post_type == "top":
             post = next(subreddit_obj.top(limit=1))
+        elif post_type == "controversial":
+            post = next(subreddit_obj.controversial(limit=1))
         else:
             post = next(subreddit_obj.new(limit=1))
     except StopIteration:
