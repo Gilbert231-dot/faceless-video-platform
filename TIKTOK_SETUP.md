@@ -28,7 +28,7 @@ filled from files already in this repo:
 
 | Form field | What to enter |
 |---|---|
-| App name | Any name you like, e.g. **Faceless Video Creator** (the ToS/privacy pages already use this name) |
+| App name | Must match the site. Use **Faceless Video Creator Poster** (the ToS/privacy pages already use this name) |
 | App icon | Download **`app_icon.png`** from the repo (repo root) and upload it — already 1024×1024, ready to go |
 | App description | Paste: *"Automates creation and posting of short-form faceless story videos. Users provide story text; the app rewrites it, generates an AI voiceover, compiles a captioned video and posts it to the user's own TikTok account via the official API."* |
 | Category | **Developer tools** or **Entertainment** (either is fine) |

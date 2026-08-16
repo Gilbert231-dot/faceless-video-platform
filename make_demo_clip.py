@@ -15,7 +15,7 @@ SIZE = (1080, 1920)
 SCENE_SECONDS = 3
 
 SCENES = [
-    ("Faceless Video Creator", "AI stories  \u2192  voiceover  \u2192  captions  \u2192  TikTok"),
+    ("Faceless Video Creator Poster", "AI stories  \u2192  voiceover  \u2192  captions  \u2192  TikTok"),
     ("Demo: official Content Posting API", "video/init \u00b7 direct upload \u00b7 status poll"),
     ("Posts PRIVATE to your own account", "user.info.basic + video.publish \u00b7 is_aigc disclosure on"),
 ]

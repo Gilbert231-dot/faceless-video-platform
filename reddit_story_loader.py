@@ -314,9 +314,8 @@ class RedditStoryLoader:
         unused = self.get_unused_stories(subreddit, limit=1, force_real=force_real)
         if unused:
             story = unused[0]
-            if self.debug_mode:
-                if 'title' in story:
-                    story['title'] = f"[TEST] {story['title']}"
+            # NOTE: no [TEST] prefix here — tasks.py applies it exactly once
+            # AFTER hook/normalization, so titles never double-prefix.
             return story
         return None
     

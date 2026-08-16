@@ -26,7 +26,7 @@ def main():
         print(f"Video not found: {video}")
         sys.exit(1)
 
-    title = "Faceless Video Creator - API demo (private post)"
+    title = "Faceless Video Creator Poster - API demo (private post)"
     print(f"Posting {os.path.basename(video)} to TikTok as SELF_ONLY (private)...")
     result = publish_tiktok(video, title=title, privacy_level="SELF_ONLY")
     print("DONE:", result)
