@@ -469,14 +469,21 @@ def burn_subtitles_segmented(
             print(f"      ⚠️ Audio extraction failed: {e}")
             audio_file = None
     
-    segment_files = []
+    segment_files = [None] * total_segments
     abs_srt = os.path.abspath(srt_path)
     
-    for i in range(total_segments):
+    # FIXED (60fps timeout): caption segments are independent ffmpeg burns —
+    # run two at a time (the runner has 2 cores) so the CRF 18 + slow burn
+    # at 1440x2560@60 stays inside the job timeout. Each worker owns its own
+    # temp files (unique per index), and results are stored by index so the
+    # concat stays ordered.
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    
+    def _burn_segment(i):
         start_time = i * segment_duration
         seg_duration = min(segment_duration, duration - start_time)
         if seg_duration <= 0:
-            break
+            return i, None
         
         # Create shifted SRT for this segment
         shifted_srt = os.path.join(temp_dir, f"shifted_{i:04d}.srt")
@@ -516,10 +523,10 @@ def burn_subtitles_segmented(
         ]
         print(f"      Burning segment {i+1}/{total_segments} ({seg_duration:.1f}s) with {quality_label}...")
         try:
-            # Generous timeout: CRF 18 + slow at 1440x2560 needs ~4-5 min per
-            # 30s segment on a 2-core runner (was ~2 min at 1080p).
-            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=900)
-            segment_files.append(seg_output)
+            # Generous timeout: CRF 18 + slow at 1440x2560@60 needs ~8-10 min
+            # per 30s segment on a 2-core runner (was ~4-5 min at 30fps).
+            subprocess.run(cmd_burn, check=True, capture_output=True, timeout=1200)
+            result = seg_output
         except Exception as e:
             print(f"      ⚠️ Segment {i+1} failed: {e}")
             # FIXED (Errno 39 bug): a timed-out/killed ffmpeg leaves a PARTIAL
@@ -544,10 +551,18 @@ def burn_subtitles_segmented(
                 '-an',
                 fallback_output
             ], check=True, capture_output=True, timeout=60)
-            segment_files.append(fallback_output)
+            result = fallback_output
         
         # Clean shifted SRT
         os.unlink(shifted_srt)
+        return i, result
+    
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        futures = {ex.submit(_burn_segment, i): i for i in range(total_segments)}
+        for fut in as_completed(futures):
+            i, out = fut.result()
+            segment_files[i] = out
+    segment_files = [s for s in segment_files if s]
     
     # Concatenate segments
     print(f"   🔗 Concatenating {len(segment_files)} segments...")

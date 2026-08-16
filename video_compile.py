@@ -9,14 +9,20 @@ from tqdm import tqdm
 from config import VOICE_SPEED
 
 # --- ENCODING CONSTANTS (module-level so tasks.py can stay in sync) ---
-# Background footage playback speed. Lower = calmer/slower movement.
-SPEED_FACTOR = 1.35
+# Background footage playback speed. 1.0 = the source's ORIGINAL speed —
+# the 4K 60fps gameplay plays at native motion (no added blur from temporal
+# stretching). The narration is still sped to VOICE_SPEED; EXTRACT_FACTOR
+# below buys back enough footage to cover the sped narration.
+SPEED_FACTOR = 1.0
 SEGMENT_DURATION = 45
-# Locked output framerate: every video renders at exactly 30fps regardless of
-# the background source (a 60fps source gets downsampled here, halving encode
-# time and file size; a 24fps source is pulled up to 30). YouTube processes
-# constant-fps 30fps files most reliably.
-OUTPUT_FPS = 30
+# Locked output framerate: every video renders at exactly 60fps to MATCH
+# the 4K 60fps background sources (a 24/30fps source is pulled up to 60).
+# FIXED (motion blur): the old 30fps cap halved the 60fps source's motion
+# detail, and combined with the 1.35x speed-up every output frame carried
+# ~2.7x the source's motion — fast gameplay (Fortnite) rendered visibly
+# blurry no matter the CRF. 60fps keeps the source's native motion, and
+# YouTube/Shorts accept 60fps.
+OUTPUT_FPS = 60
 # Output resolution (9:16 vertical). Was 1080x1920; now 1440x2560 so the
 # 4K (3840x2160) background sources pay off: a 9:16 center-crop of a 4K
 # landscape frame is 1215x2160 native pixels, so 1440x2560 is only a mild
@@ -24,8 +30,9 @@ OUTPUT_FPS = 30
 # detail. Going 2160x3840 would be a 1.78x upscale (SOFTER than 1440p, not
 # sharper) and ~4x the veryslow encode time, risking the Actions timeout,
 # so 1440p is the quality/risk sweet spot. YouTube offers a 1440p stream on
-# phones, fixing the "lower quality on my phone" complaint. H.264 level 5.0
-# is required for 1440x2560@30 (level 4.0 caps at ~1080p frame sizes).
+# phones, fixing the "lower quality on my phone" complaint. H.264 level 5.1
+# is required for 1440x2560@60 (level 5.0 caps below 1440p60; level 4.0
+# caps at ~1080p frame sizes).
 OUTPUT_W = 1440
 OUTPUT_H = 2560
 # How much footage to grab relative to the narration: the background plays at
@@ -270,9 +277,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"   📦 Splitting into {total_segments} segments of ~{seg_plan[0][1]:.1f}s each (even split — no degenerate tail)")
     print(f"   📊 Quality: uniform CRF {CRF_VALUE}, preset {PRESET} (same quality for every segment)")
     
-    segment_files = []
     pbar = tqdm(total=total_segments, desc="🎬 Rendering segments", unit="segment")
     
+    jobs = []
     for i, (start_time, segment_duration) in enumerate(seg_plan):
         if segment_duration <= 0:
             break
@@ -348,17 +355,26 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-preset', segment_preset,
             '-crf', str(segment_crf),
             '-profile:v', 'high',
-            '-level', '5.0',
+            '-level', '5.1',
             '-an',
             '-movflags', '+faststart',
             segment_output
         ]
         
+        jobs.append((i, segment_output, cmd_process))
+    
+    # FIXED (60fps timeout): segments are independent ffmpeg encodes — run
+    # two at a time (the runner has 2 cores) so the veryslow 1440x2560@60
+    # render stays inside the job timeout. Every worker keeps the SAME
+    # CRF 15 and only falls back to a faster preset if its primary times
+    # out. Results are stored by segment index so the concat stays ordered.
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    
+    def _run_segment(job):
+        i, segment_output, cmd_process = job
         try:
             run_ffmpeg(cmd_process, timeout=1500, label=f"segment {i+1} render")
-            segment_files.append(segment_output)
-            pbar.update(1)
-            print(f"   ✅ Segment {i+1}/{total_segments} complete ({quality_label})")
+            return i, segment_output, False
         except Exception as e:
             print(f"   ⚠️ Segment {i+1} failed: {e}")
             print(f"   🔄 Using fallback for segment {i+1}...")
@@ -373,10 +389,20 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             cmd_fallback[cmd_fallback.index('-preset') + 1] = 'slow'
             cmd_fallback[cmd_fallback.index('-crf') + 1] = str(CRF_VALUE)
             run_ffmpeg(cmd_fallback, timeout=1500, label=f"segment {i+1} fallback")
-            segment_files.append(segment_output)
-            print(f"   ✅ Segment {i+1} complete (fallback)")
+            return i, segment_output, True
     
+    segment_files = [None] * len(jobs)
+    pbar = tqdm(total=len(jobs), desc="🎬 Rendering segments", unit="segment")
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        futures = {ex.submit(_run_segment, job): job[0] for job in jobs}
+        for fut in as_completed(futures):
+            i, out, used_fallback = fut.result()
+            segment_files[i] = out
+            pbar.update(1)
+            print(f"   ✅ Segment {i+1}/{total_segments} complete"
+                  + (" (fallback)" if used_fallback else f" ({quality_label})"))
     pbar.close()
+    segment_files = [s for s in segment_files if s]
     
     # Concatenate segments
     print("   🔗 Concatenating segments...")
