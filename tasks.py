@@ -489,11 +489,22 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         # and reused by both parts (the same title opens both voiceovers).
         frame_path = None
         try:
-            comment_count = None
-            if story.get('top_comments'):
-                comment_count = len(story['top_comments'])
-            elif story.get('comments'):
-                comment_count = len(story['comments'])
+            # FIXED (frame never appeared): the story bank stores 'comments'
+            # as an INT count (not a list of comment dicts), so
+            # len(story['comments']) threw TypeError on EVERY story, the
+            # exception was silently swallowed, and every video shipped with
+            # no intro card and no thumbnail. Handle both shapes: a list ->
+            # use its length, an int -> use it directly.
+            def _count_comments(story):
+                for key in ("top_comments", "comments"):
+                    v = story.get(key)
+                    if isinstance(v, list):
+                        return len(v)
+                    if isinstance(v, int):
+                        return v
+                return None
+
+            comment_count = _count_comments(story)
             frame_dir = os.environ.get('OUTPUT_DIR', '.')
             if not os.path.exists(frame_dir):
                 frame_dir = '.'
@@ -673,7 +684,11 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             "author": author,
             "score": score,
             "has_comments": bool(comment_script),
-            "comment_count": len(story.get('top_comments', [])),
+            # Same shape-tolerant count as the frame (comments may be a list
+            # or an int in the bank).
+            "comment_count": (lambda v: len(v) if isinstance(v, list) else (v if isinstance(v, int) else 0))(
+                story.get('top_comments', story.get('comments'))
+            ),
             "debug_mode": DEBUG_MODE,
             "marked_used": marked,
             "detected_gender": detected_gender,
