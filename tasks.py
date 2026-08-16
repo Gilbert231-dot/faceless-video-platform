@@ -377,6 +377,14 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         
         print(f"   📝 Normalized title: {title}")
         
+        # The reddit card (intro overlay + thumbnail) shows the CLEAN story
+        # title — the [TEST] prefix belongs on the YouTube title ONLY, never
+        # inside the frame. (tts_clean.py already stops the narrator from
+        # speaking it; this stops it from being drawn into the card too.)
+        frame_title = title
+        if frame_title.startswith("[TEST] "):
+            frame_title = frame_title[len("[TEST] "):]
+        
         # --- GENDER DETECTION ---
         detected_gender = gender_detector.detect_gender(
             username=author,
@@ -511,7 +519,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             frame_path = os.path.join(
                 frame_dir, f"reddit_frame_{int(time.time())}.png")
             generate_frame(
-                title=title,
+                title=frame_title,
                 subreddit=subreddit_name,
                 username=FRAME_USERNAME,
                 score=score,
