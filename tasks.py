@@ -30,7 +30,7 @@ FRAME_USERNAME = "StoryLab"
 
 # When unused stories fall to this many, the run warns loudly so the user
 # refills the bank (fetch_stories.py on the laptop, or its weekly schedule).
-STORY_REFILL_THRESHOLD = 20
+STORY_REFILL_THRESHOLD = 100  # must match MIN_UNUSED in fetch_stories.py
 
 # Initialize gender detector
 gender_detector = GenderDetector(default_voice="male")

@@ -29,7 +29,7 @@ YT_SCHEDULE_FILE = os.path.join(REPO, "youtube_schedule_state.json")
 YT_PRIVACY_FILE = os.path.join(REPO, "YOUTUBE_PRIVACY")
 VIDEO_HISTORY_FILE = os.path.join(REPO, "video_history.json")
 OUT = os.path.join(REPO, "dashboard", "data.json")
-THRESHOLD = 20  # must match STORY_REFILL_THRESHOLD in tasks.py
+THRESHOLD = 100  # must match MIN_UNUSED in fetch_stories.py (the refill point)
 VIDEOS_PER_DAY = 2  # daily cadence (2 AM UTC run makes 2 videos)
 
 # Default YouTube publish slots (must match youtube_schedule.py)
