@@ -65,7 +65,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg redis-server postgresql postgresql-contrib \
-                                  mpg123 sox lame unzip tree
+                                  mpg123 sox lame unzip tree \
+                                  fonts-dejavu-core fonts-liberation
 
       - name: Start Redis & PostgreSQL
         run: |

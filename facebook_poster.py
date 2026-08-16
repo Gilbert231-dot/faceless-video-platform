@@ -257,12 +257,19 @@ def _publish(page_id, token, handle, title, description, published, scheduled_un
     handle under 'fbuploader_video_file_chunk1' is the community-confirmed
     workaround (see HANDLE_REJECT_CODES).
     """
+    # FIXED (#100 "You cannot specify a scheduled publish time on a published
+    # post"): Facebook rejects scheduling a post that is ALSO published=true.
+    # To schedule, the post must be created UNPUBLISHED with the future
+    # scheduled_publish_time — Facebook auto-publishes it at that moment.
+    # So when a schedule is present, published is forced to false here
+    # (the schedule itself is what makes it go live).
+    publish_now = published and not scheduled_unix
     data = {
         "access_token": token,
         "title": title[:255],            # FB caps video titles at 255 chars
         "description": description[:5000],
         chunk_field: handle,
-        "published": "true" if published else "false",
+        "published": "true" if publish_now else "false",
         # Self-disclosure that the video was created with AI (the Facebook
         # equivalent of YouTube's containsSyntheticMedia). The Graph API
         # documents it for Reels/Stories/Instagram; Meta also accepts it here
@@ -271,7 +278,7 @@ def _publish(page_id, token, handle, title, description, published, scheduled_un
         # is always true.
         "is_ai_generated": "true",
     }
-    if not published:
+    if not publish_now and not scheduled_unix:
         # DRAFT = only people who can manage the page see the video (the
         # Facebook equivalent of YouTube's "private").
         data["unpublished_content_type"] = "DRAFT"
@@ -294,14 +301,17 @@ def _publish_source(page_id, token, video_path, title, description, published, s
     size ceiling (our ~100-300 MB outputs are usually fine), so it's a useful
     escape hatch when the resumable-handle path is broken for a given file.
     """
+    # Same fix as _publish: a scheduled post must NOT also be published=true
+    # (Facebook rejects that with #100). The schedule makes it go live.
+    publish_now = published and not scheduled_unix
     data = {
         "access_token": token,
         "title": title[:255],
         "description": description[:5000],
-        "published": "true" if published else "false",
+        "published": "true" if publish_now else "false",
         "is_ai_generated": "true",
     }
-    if not published:
+    if not publish_now and not scheduled_unix:
         data["unpublished_content_type"] = "DRAFT"
     if scheduled_unix:
         data["scheduled_publish_time"] = str(scheduled_unix)

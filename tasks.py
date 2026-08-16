@@ -508,6 +508,17 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 out_path=frame_path,
             )
         except Exception as e:
+            # FIXED (silent-failure bug): this print used to go to STDOUT, which
+            # the workflow pipes through `tail -1`, so a frame failure vanished
+            # from the log — the run shipped videos with NO intro card and NO
+            # thumbnail and nobody could tell why. Stderr is NOT piped, so the
+            # failure is now visible in the Actions log. The video still
+            # generates (frame is an enhancement, not the story), but we can
+            # see exactly why it's missing.
+            import sys
+            import traceback
+            print("   ❌ REDDIT FRAME GENERATION FAILED — videos will have NO intro card:", file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
             print(f"   ⚠️ Reddit frame generation failed (continuing without it): {e}")
             frame_path = None
         
