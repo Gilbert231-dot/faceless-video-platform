@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-16T14:40:47Z",
+  "generated_at": "2026-08-16T17:32:50Z",
   "total_stories": 355,
   "unused_stories": 350,
   "used_stories": 5,
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 19
+    "next_index": 21
   },
   "youtube": {
     "privacy": "public",
@@ -102,6 +102,46 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786900647_captioned_1786900651.mp4",
+      "title": "[TEST] I've given up on life and I wish for it to end every single day",
+      "subreddit": "confession",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1389473389944759",
+      "url": "https://www.facebook.com/1272041649331476/videos/1389473389944759",
+      "posted_at": "2026-08-16T17:32:50Z"
+    },
+    {
+      "video_file": "output_1786896577_captioned_1786896581.mp4",
+      "title": "[TEST] Brag about how you’ll just outbid me? Fine, I’ll just outplay you.",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122096630589447442",
+      "url": "https://www.facebook.com/reel/1770509434079949",
+      "posted_at": "2026-08-16T17:32:17Z"
+    },
+    {
+      "video_file": "output_1786900647_captioned_1786900651.mp4",
+      "title": "[TEST] I've given up on life and I wish for it to end every single day",
+      "subreddit": "confession",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Dk7YIqAVDRs",
+      "url": "https://youtu.be/Dk7YIqAVDRs",
+      "posted_at": "2026-08-16T17:31:57Z"
+    },
+    {
+      "video_file": "output_1786896577_captioned_1786896581.mp4",
+      "title": "[TEST] Brag about how you’ll just outbid me? Fine, I’ll just outplay you.",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "pplQY3k75wM",
+      "url": "https://youtu.be/pplQY3k75wM",
+      "posted_at": "2026-08-16T17:31:39Z"
+    },
     {
       "video_file": "output_1786890690_captioned_1786890695.mp4",
       "title": "[TEST] [TEST] I basically financially ruined my family through shortselling",
@@ -165,48 +205,6 @@
       "url": "https://youtu.be/epWtHhFHQbw",
       "posted_at": "2026-08-15T03:40:59Z",
       "publish_at": "2026-08-18T12:00:00Z"
-    },
-    {
-      "video_file": "output_1786758249_captioned_1786758252.mp4",
-      "title": "[TEST] \"I made a $ mistake online, bank said they couldn't fix it\"",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1066507092439377",
-      "url": "https://www.facebook.com/1272041649331476/videos/1066507092439377",
-      "posted_at": "2026-08-15T01:51:13Z"
-    },
-    {
-      "video_file": "output_1786758249_captioned_1786758252.mp4",
-      "title": "[TEST] \"I made a $ mistake online, bank said they couldn't fix it\"",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "hOHTOzi-Otg",
-      "url": "https://youtu.be/hOHTOzi-Otg",
-      "posted_at": "2026-08-15T01:50:54Z"
-    },
-    {
-      "video_file": "output_1786685431_captioned_1786685438.mp4",
-      "title": "\"I spent 13 years hiding from my reality, and it nearly destroyed me...\"",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "WyHkUZ5dtqw",
-      "url": "https://youtu.be/WyHkUZ5dtqw",
-      "posted_at": "2026-08-14T05:44:14Z",
-      "publish_at": "2026-08-16T20:00:00Z"
-    },
-    {
-      "video_file": "output_1786682288_captioned_1786682292.mp4",
-      "title": "\"My girlfriend held hands with a coworker while I was away for 2 weeks... what was going on?\"",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "VBTm6L8uVpQ",
-      "url": "https://youtu.be/VBTm6L8uVpQ",
-      "posted_at": "2026-08-14T05:44:04Z",
-      "publish_at": "2026-08-16T12:00:00Z"
     }
   ]
 }
