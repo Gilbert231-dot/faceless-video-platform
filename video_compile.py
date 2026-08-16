@@ -54,6 +54,7 @@ EXTRACT_FACTOR = round((SPEED_FACTOR / VOICE_SPEED) * 1.1, 3)
 # Actions runner.
 TITLE_FADE_SEC = 0.45    # fade/slide duration on entry and exit
 TITLE_DELAY_SEC = 0.35   # beat after the video starts before the frame enters
+TITLE_HOLD_SEC = 1.8     # extra time the card stays FULLY visible after the title is narrated
 TITLE_MIN_SEC = 1.8      # never shorter than this (tiny titles still readable)
 TITLE_MAX_SEC = 12.0     # never longer than this (covers the longest hooks)
 # Set TITLE_INTRO=false in the workflow env to disable the intro entirely.
@@ -216,6 +217,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         title_words = len(title.split()) if title else 0
         if total_words and title_words:
             title_secs = (audio_duration * title_words / total_words) / VOICE_SPEED
+            # Hold the card on screen a beat AFTER the title is done being
+            # narrated so viewers have time to read it (the user's request:
+            # it should stay a little longer before going away).
+            title_secs = title_secs + TITLE_HOLD_SEC
             final_dur = audio_duration / VOICE_SPEED
             title_secs = min(max(title_secs, TITLE_MIN_SEC), TITLE_MAX_SEC, max(final_dur - 0.5, 1.0))
             t1 = TITLE_DELAY_SEC
