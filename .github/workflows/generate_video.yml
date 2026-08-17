@@ -2,7 +2,10 @@ name: Generate Faceless Videos
 
 on:
   schedule:
-    - cron: "0 2 * * *"   # Daily at 2 AM UTC
+    # Daily generation moved 2h EARLIER (midnight UTC): the 60fps renders
+    # now take ~2 hours, so starting at 2 AM meant videos finished ~4 AM.
+    # Midnight keeps the batch done around 2 AM as before.
+    - cron: "0 0 * * *"   # Daily at 12 AM (midnight) UTC
   workflow_dispatch:
     inputs:
       count:
