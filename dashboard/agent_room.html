@@ -59,6 +59,25 @@
   body.day .window-bg { fill:#bcd4f5; }
   body.day .window-frame { stroke:#5a6a8a; }
   #clock { margin-left:auto; font-size:12px; color:var(--dim); }
+
+  /* ---------- station zoom + teacher mode ---------- */
+  .room-wrap { position:relative; }
+  #zoomgroup { transform-origin:0 0; transition:transform .9s cubic-bezier(.22,1,.36,1); }
+  [id^="st-"] { cursor:pointer; }
+  [id^="st-"]:hover { filter:brightness(1.3); }
+  [id^="st-"].zoomed { filter:brightness(1.45); }
+  #zoom-btn {
+    position:absolute; top:10px; right:12px; z-index:5; display:none;
+    background:#fb923c; color:#1c1c2e; border:none; border-radius:8px;
+    padding:6px 12px; font-weight:700; font-size:12px; cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,.5);
+  }
+  #zoom-btn:hover { background:#fcab63; }
+  .teacher-ring { animation:ringPulse 1.6s ease-in-out infinite; }
+  @keyframes ringPulse {
+    0%,100% { stroke-opacity:.0; stroke-width:2; }
+    50% { stroke-opacity:.8; stroke-width:3; }
+  }
 </style>
 </head>
 <body>
@@ -69,6 +88,7 @@
 </header>
 <main>
   <div class="room-wrap">
+    <button id="zoom-btn" title="Zoom back out">✕ Back to HQ</button>
     <svg id="room" viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
@@ -87,6 +107,9 @@
           <stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#a78bfa"/>
         </linearGradient>
       </defs>
+
+      <!-- everything inside this group zooms when a station is clicked -->
+      <g id="zoomgroup">
 
       <!-- room shell -->
       <rect x="0" y="0" width="960" height="430" fill="url(#wall)"/>
@@ -208,6 +231,8 @@
         <rect x="714" y="260" width="36" height="10" rx="2" fill="#fb923c"/>
         <text x="685" y="288" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">BANNER STUDIO</text>
       </g>
+
+      </g><!-- /zoomgroup -->
     </svg>
   </div>
 
@@ -277,6 +302,7 @@ const SAMPLE_STORIES = INITIAL.stories;
 const SVGNS = "http://www.w3.org/2000/svg";
 const room = document.getElementById("room");
 const agents = {};   // key -> {g, bubble, cur:{x,y}, target:{x,y}, moving}
+const AGENT_SCALE = 1.4;   // characters are ~40% bigger now
 
 /* ---------- character factory (Minecraft-style: head + face, torso, arms, legs) ---------- */
 function makeAgent(key, meta) {
@@ -376,6 +402,31 @@ function makeAgent(key, meta) {
 
   g.appendChild(head);
 
+  // teacher ring (pulsing circle under the feet — shows when this agent teaches at a zoomed station)
+  const ring = document.createElementNS(SVGNS, "ellipse");
+  ring.setAttribute("cx", 0); ring.setAttribute("cy", 5); ring.setAttribute("rx", 22); ring.setAttribute("ry", 6);
+  ring.setAttribute("fill", "none"); ring.setAttribute("stroke", "#fb923c"); ring.setAttribute("stroke-width", "2");
+  ring.setAttribute("class", "teacher-ring"); ring.setAttribute("display", "none");
+  g.appendChild(ring);
+
+  // handheld items — Buffy sips coffee, Bro munches pizza (You keeps his phone)
+  let sipArm = null;
+  if (key === "buffy") {
+    const cup = document.createElementNS(SVGNS, "g");
+    const cbody = document.createElementNS(SVGNS, "rect"); cbody.setAttribute("x", -3); cbody.setAttribute("y", 6); cbody.setAttribute("width", 7); cbody.setAttribute("height", 9); cbody.setAttribute("rx", 1.6); cbody.setAttribute("fill", "#8a5a3b"); cbody.setAttribute("stroke", "#5d3a24"); cbody.setAttribute("stroke-width", "1"); cup.appendChild(cbody);
+    const chandle = document.createElementNS(SVGNS, "rect"); chandle.setAttribute("x", 3); chandle.setAttribute("y", 8); chandle.setAttribute("width", 2.6); chandle.setAttribute("height", 4.4); chandle.setAttribute("rx", 1); chandle.setAttribute("fill", "#8a5a3b"); cup.appendChild(chandle);
+    const steam = document.createElementNS(SVGNS, "path"); steam.setAttribute("d", "M -1.5 4 q 1 -3 -0.5 -4.5 M 1.5 4 q 1 -3 -0.5 -4.5"); steam.setAttribute("stroke", "#e9e9f2"); steam.setAttribute("stroke-width", "1.1"); steam.setAttribute("fill", "none"); steam.setAttribute("opacity", ".5"); cup.appendChild(steam);
+    armL.appendChild(cup);
+    sipArm = "L";
+  } else if (key === "bro") {
+    const pizza = document.createElementNS(SVGNS, "g");
+    const slice = document.createElementNS(SVGNS, "polygon"); slice.setAttribute("points", "0,3 9,15 -7,15"); slice.setAttribute("fill", "#e8a13a"); slice.setAttribute("stroke", "#c67f24"); slice.setAttribute("stroke-width", "1"); pizza.appendChild(slice);
+    const pep1 = document.createElementNS(SVGNS, "circle"); pep1.setAttribute("cx", 1); pep1.setAttribute("cy", 8); pep1.setAttribute("r", 1.6); pep1.setAttribute("fill", "#c0392b"); pizza.appendChild(pep1);
+    const pep2 = document.createElementNS(SVGNS, "circle"); pep2.setAttribute("cx", 4); pep2.setAttribute("cy", 12); pep2.setAttribute("r", 1.3); pep2.setAttribute("fill", "#c0392b"); pizza.appendChild(pep2);
+    armR.appendChild(pizza);
+    sipArm = "R";
+  }
+
   // name label (beneath the feet)
   const lbl = document.createElementNS(SVGNS, "text");
   lbl.setAttribute("x", 0); lbl.setAttribute("y", 24); lbl.setAttribute("text-anchor", "middle");
@@ -397,10 +448,12 @@ function makeAgent(key, meta) {
   room.appendChild(g);
   agents[key] = {
     g, bubble, btx, armL, armR, legL, legR, head, eyeL, eyeR,
+    ring, sipArm,
     cur: {...STATIONS[meta.station]},
     target: {...STATIONS[meta.station]},
     moving: false,
-    bubbleBox: bx
+    bubbleBox: bx,
+    sipAt: undefined
   };
   updateBubble(key, meta.activity);
 }
@@ -448,7 +501,9 @@ function renderStoryWall(stories) {
   }
 }
 
+let lastState = null;
 function applyState(state) {
+  lastState = state;
   document.getElementById("room-status").textContent =
     (state.room || "Story Lab HQ") + " — updated " + (state.updated_at || "");
   renderStoryWall(state.stories);
@@ -457,8 +512,10 @@ function applyState(state) {
   for (const key of ["buffy", "you", "bro"]) {
     const meta = (state.agents && state.agents[key]) || INITIAL.agents[key];
     const station = (meta.station || "LOUNGE").toUpperCase();
-    agents[key].target = STATIONS[station] || STATIONS["LOUNGE"];
-    updateBubble(key, meta.activity);
+    if (!zoomOn) {   // while a station is zoomed, the teacher stays in place
+      agents[key].target = STATIONS[station] || STATIONS["LOUNGE"];
+      updateBubble(key, meta.activity);
+    }
     const row = document.createElement("div");
     row.className = "agent-row";
     row.innerHTML = `<span class="dot" style="background:${meta.color}"></span>
@@ -500,7 +557,7 @@ function frame(now) {
 
     // body bob: bouncy step while walking, gentle breathing while idle
     const bob = a.moving ? Math.abs(Math.sin(t * 10)) * -4 : Math.sin(t * 2.2) * 1.4;
-    a.g.setAttribute("transform", `translate(${a.cur.x.toFixed(1)}, ${(a.cur.y + bob).toFixed(1)})`);
+    a.g.setAttribute("transform", `translate(${a.cur.x.toFixed(1)}, ${(a.cur.y + bob).toFixed(1)}) scale(${AGENT_SCALE})`);
     a.bubble.setAttribute("transform", `translate(0, ${(bob - 4).toFixed(1)})`);
     a.bubble.setAttribute("opacity", a.moving ? 0.45 : 1);
 
@@ -508,10 +565,15 @@ function frame(now) {
     const walkPhase = a.moving ? t * 11 : t * 2.1;
     const swing = Math.sin(walkPhase) * (a.moving ? 30 : 4);
     const armSwing = -swing * 0.85;   // arms counter-balance the legs
+    // occasional coffee sip / pizza bite — lift the item-holding arm toward the mouth
+    if (a.sipAt === undefined) a.sipAt = t + 2 + Math.random() * 4;
+    const sipping = t > a.sipAt && t < a.sipAt + 1.8;
+    if (t > a.sipAt + 1.8) a.sipAt = t + 7 + Math.random() * 9;
+    const lift = sipping ? 55 : 0;
     a.legL.setAttribute("transform", `translate(-5, -8) rotate(${swing.toFixed(1)})`);
     a.legR.setAttribute("transform", `translate(5, -8) rotate(${(-swing).toFixed(1)})`);
-    a.armL.setAttribute("transform", `translate(-11, -26) rotate(${armSwing.toFixed(1)})`);
-    a.armR.setAttribute("transform", `translate(11, -26) rotate(${(-armSwing).toFixed(1)})`);
+    a.armL.setAttribute("transform", `translate(-11, -26) rotate(${(armSwing + (a.sipArm === "L" ? lift : 0)).toFixed(1)})`);
+    a.armR.setAttribute("transform", `translate(11, -26) rotate(${(-armSwing + (a.sipArm === "R" ? lift : 0)).toFixed(1)})`);
 
     // head: slight nod while walking, tiny tilt while idle
     const headTilt = a.moving ? Math.sin(t * 11) * 3 : Math.sin(t * 1.6) * 2;
@@ -550,6 +612,7 @@ function demoLoop() {
   if (demoOn) return;
   demoOn = true;
   const tick = () => {
+    if (zoomOn) { setTimeout(tick, 2000); return; }   // paused while a station is zoomed
     const [key, station, act] = DEMO_MOVES[demoI % DEMO_MOVES.length];
     demoI++;
     agents[key].target = STATIONS[station] || STATIONS.LOUNGE;
@@ -569,6 +632,68 @@ function demoLoop() {
   };
   tick();
 }
+
+/* ---------- station zoom + teacher mode ---------- */
+const OWNERS = {
+  "LOUNGE": "you", "PROJECT FOLDER": "buffy", "COFFEE": "bro",
+  "LAPTOP": "buffy", "STUDIO": "buffy", "BRO'S DESK": "bro",
+  "STORY WALL": "you", "BANNER STUDIO": "buffy"
+};
+const TEACHER_LINES = {
+  "LOUNGE": "Welcome back! So — what are we thinking about today?",
+  "PROJECT FOLDER": "I'm at the code. What do you want me to change?",
+  "COFFEE": "Coffee's ready ☕ — what's on your mind?",
+  "LAPTOP": "Laptop's all set. What are we working on next?",
+  "STUDIO": "Render's under control. What's next on the list?",
+  "BRO'S DESK": "I'm right here — what do you need help with?",
+  "STORY WALL": "Great picks today — which story catches your eye?",
+  "BANNER STUDIO": "Banner's ready — what should we tweak?"
+};
+const zoomgroup = document.getElementById("zoomgroup");
+const zoomBtn = document.getElementById("zoom-btn");
+let zoomOn = false;
+let zoom = { s: 1, tx: 0, ty: 0 };
+
+function screenToSvg(sx, sy) {
+  return { x: (sx - zoom.tx) / zoom.s, y: (sy - zoom.ty) / zoom.s };
+}
+
+function zoomTo(stationKey) {
+  const st = STATIONS[stationKey] || STATIONS.LOUNGE;
+  const s = 2.6, tx = 480 - st.x * s, ty = 310 - st.y * s;
+  zoom = { s, tx, ty };
+  zoomOn = true;
+  zoomgroup.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${s})`;
+  zoomBtn.style.display = "block";
+  document.querySelectorAll("[id^=\"st-\"]").forEach(el => el.classList.remove("zoomed"));
+  const stg = document.getElementById("st-" + stationKey);
+  if (stg) stg.classList.add("zoomed");
+  // the agent responsible for this station walks to the left, teacher-style
+  const owner = OWNERS[stationKey] || "buffy";
+  const podium = screenToSvg(150, 470);
+  agents[owner].target = podium;
+  updateBubble(owner, TEACHER_LINES[stationKey] || "So — what are you thinking about?");
+  if (agents[owner].ring) agents[owner].ring.setAttribute("display", "inline");
+}
+
+function unzoom() {
+  zoomOn = false;
+  zoomgroup.style.transform = "";
+  zoomBtn.style.display = "none";
+  document.querySelectorAll("[id^=\"st-\"]").forEach(el => el.classList.remove("zoomed"));
+  for (const key of Object.keys(agents)) {
+    if (agents[key].ring) agents[key].ring.setAttribute("display", "none");
+  }
+  applyState(lastState || INITIAL);
+  updateBubble("buffy", "Back to HQ — good talk! 🚀");
+}
+
+room.addEventListener("click", (e) => {
+  const st = e.target && e.target.closest ? e.target.closest("[id^=\"st-\"]") : null;
+  if (st) { zoomTo(String(st.getAttribute("id") || "").slice(3)); return; }
+  if (zoomOn) unzoom();
+});
+zoomBtn.addEventListener("click", () => unzoom());
 
 /* ---------- Summon Bro console ---------- */
 const BRIDGE = "http://127.0.0.1:8766";
