@@ -150,9 +150,13 @@ def load_youtube_schedule():
 
 def main():
     stories = load_bank()
-    total = len(stories)
     unused = sum(1 for s in stories if not s["used"])
-    used = total - unused
+    # FIXED: used_stories used to be computed as bank_total - unused, but the
+    # daily cleanup (cleanup_used_stories.py) DELETES used stories from the
+    # bank, so that count collapsed to ~5 and never grew. The true narrated
+    # count lives in used_story_ids.json - read it directly.
+    used = len(load_used_ids())
+    total = unused + used
 
     by_sub = {}
     for s in stories:
