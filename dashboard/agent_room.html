@@ -177,15 +177,32 @@
       <text x="480" y="100" text-anchor="middle" font-size="11" fill="#9ab5ac" font-family="Segoe UI,Arial">est. 2026 — 3 agents, 1 mission</text>
 
       <!-- potted plants in the corners -->
-      <g transform="translate(44, 428)">
+      <g id="plant-l" transform="translate(44, 428)">
         <rect x="-9" y="-2" width="18" height="13" rx="3" fill="#c67f4a"/>
         <path d="M -10 -2 q -2 -16 0 -22 q 8 2 6 14 q 2 -10 8 -12 q 6 8 0 20 q -6 4 -14 0 z" fill="#2f8f5b"/>
         <path d="M 0 -4 q -4 -14 2 -24 q 8 4 4 16" fill="#3aa869"/>
       </g>
-      <g transform="translate(916, 428)">
+      <g id="plant-r" transform="translate(916, 428)">
         <rect x="-9" y="-2" width="18" height="13" rx="3" fill="#c67f4a"/>
         <path d="M -10 -2 q -2 -16 0 -22 q 8 2 6 14 q 2 -10 8 -12 q 6 8 0 20 q -6 4 -14 0 z" fill="#2f8f5b"/>
         <path d="M 0 -4 q -4 -14 2 -24 q 8 4 4 16" fill="#3aa869"/>
+      </g>
+
+      <!-- December: decorated tree in the corner (hidden until winter) -->
+      <g id="season-tree" display="none" transform="translate(42, 436)">
+        <rect x="-10" y="34" width="20" height="10" rx="2" fill="#c67f4a"/>
+        <rect x="-2.5" y="27" width="5" height="9" fill="#7c4a2a"/>
+        <polygon points="0,-36 -15,0 15,0" fill="#1f7a4d"/>
+        <polygon points="0,-22 -13,12 13,12" fill="#2f8f5b"/>
+        <polygon points="0,-8 -11,30 11,30" fill="#3aa869"/>
+        <polygon points="0,-41 1.8,-35.5 8,-35.5 3.2,-31.8 4.8,-25.8 0,-29.6 -4.8,-25.8 -3.2,-31.8 -8,-35.5 -1.8,-35.5" fill="#fbbf24"/>
+        <path d="M -8 -14 Q 0 -8 8 -14" stroke="#fde68a" stroke-width="1" fill="none" opacity=".8"/>
+        <circle cx="0" cy="-24" r="2.4" fill="#e74c3c"/>
+        <circle cx="-7" cy="-10" r="2.4" fill="#4ade80"/>
+        <circle cx="6" cy="-4" r="2.4" fill="#a78bfa"/>
+        <circle cx="-4" cy="8" r="2.4" fill="#fbbf24"/>
+        <circle cx="5" cy="14" r="2.4" fill="#e74c3c"/>
+        <circle cx="0" cy="-34" r="1.7" fill="#e9f2f2"/>
       </g>
 
       <!-- ============ STATIONS ============ -->
@@ -869,6 +886,7 @@ function frame(now) {
   }
   botFrame(t);
   neonFrame(t);
+  seasonFrame(t);
   requestAnimationFrame(frame);
 }
 
@@ -1132,6 +1150,72 @@ function neonFrame(t) {
       neon.setAttribute("opacity", 1);
       neonStart = -1;
     }
+  }
+}
+
+/* ---------- seasonal touches (autumn leaves / December tree + snow) ---------- */
+// real season from the clock; override with ?season=autumn or ?season=winter to preview
+const SEASON_PARAM = new URLSearchParams(location.search).get("season");
+const seasonMonth = SEASON_PARAM === "autumn" ? 8 : SEASON_PARAM === "winter" ? 11 : new Date().getMonth();
+const seasonParticles = [];
+let leafNext = 2, snowNext = 1;
+
+if (seasonMonth === 11) {
+  const tree = document.getElementById("season-tree");
+  if (tree) tree.setAttribute("display", "inline");
+  const pl = document.getElementById("plant-l");
+  if (pl) pl.setAttribute("display", "none");   // the tree takes the corner
+}
+
+const LEAF_COLORS = ["#d97706", "#ea580c", "#b45309", "#c2410c", "#a16207", "#dc2626"];
+
+function spawnLeaf() {
+  if (seasonParticles.length > 14) return;
+  const g = document.createElementNS(SVGNS, "g");
+  g.appendChild(mk("path", { d: "M 0 4 Q 3.5 0 0 -4 Q -3.5 0 0 4", fill: LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)], "stroke-width": .5, stroke: "rgba(0,0,0,.22)" }));
+  g.appendChild(mk("line", { x1: 0, y1: -4, x2: 0, y2: -7.5, stroke: "rgba(0,0,0,.3)", "stroke-width": .6 }));
+  const x = Math.random() * 960;
+  g.setAttribute("transform", `translate(${x.toFixed(0)}, -20)`);
+  zoomgroup.appendChild(g);
+  seasonParticles.push({ el: g, x, y: -20, vy: .7 + Math.random() * .8, swayAmp: .6 + Math.random() * 1.2, swaySpeed: 1 + Math.random() * 1.2, phase: Math.random() * 6.28, rot: Math.random() * 360, vrot: (Math.random() - .5) * 3 });
+}
+
+function spawnSnow() {
+  if (seasonParticles.length > 45) return;
+  const g = document.createElementNS(SVGNS, "g");
+  g.appendChild(mk("circle", { r: 1.2 + Math.random() * 1.3, fill: "#e9f2f2", opacity: .85 }));
+  const x = Math.random() * 960;
+  g.setAttribute("transform", `translate(${x.toFixed(0)}, -15)`);
+  zoomgroup.appendChild(g);
+  seasonParticles.push({ el: g, x, y: -15, vy: .35 + Math.random() * .5, swayAmp: .3 + Math.random() * .7, swaySpeed: .6 + Math.random() * .8, phase: Math.random() * 6.28, rot: 0, vrot: 0 });
+}
+
+function twinkleTree(t) {
+  const tree = document.getElementById("season-tree");
+  if (!tree || tree.getAttribute("display") === "none") return;
+  let i = 0;
+  for (const o of tree.querySelectorAll("circle")) {
+    o.setAttribute("opacity", (0.5 + 0.5 * Math.sin(t * 2.2 + i * 1.35)).toFixed(2));
+    i++;
+  }
+  const star = tree.querySelector("polygon");
+  if (star) star.setAttribute("opacity", (0.75 + 0.25 * Math.sin(t * 3.1)).toFixed(2));
+}
+
+function seasonFrame(t) {
+  if (seasonMonth === 8 || seasonMonth === 9 || seasonMonth === 10) {
+    if (t > leafNext) { spawnLeaf(); leafNext = t + 1.5 + Math.random() * 2; }
+  } else if (seasonMonth === 11) {
+    if (t > snowNext) { spawnSnow(); snowNext = t + .25 + Math.random() * .4; }
+    twinkleTree(t);
+  }
+  for (let i = seasonParticles.length - 1; i >= 0; i--) {
+    const p = seasonParticles[i];
+    p.y += p.vy;
+    p.x += Math.sin(t * p.swaySpeed + p.phase) * p.swayAmp;
+    p.rot += p.vrot;
+    p.el.setAttribute("transform", `translate(${p.x.toFixed(1)}, ${p.y.toFixed(1)}) rotate(${p.rot.toFixed(0)})`);
+    if (p.y > 670) { p.el.remove(); seasonParticles.splice(i, 1); }
   }
 }
 
