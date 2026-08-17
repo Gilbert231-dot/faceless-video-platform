@@ -150,6 +150,13 @@ jobs:
             exit 1
           fi
 
+      # Agent room: reflect the run kickoff in the live room state.
+      - name: Agent room — run start
+        run: |
+          python update_agent_state.py buffy "PROJECT FOLDER" "Kicking off a new story run"
+          python update_agent_state.py you   "LOUNGE"       "Watching the room come alive"
+          python update_agent_state.py bro   "BRO'S DESK"   "Standing by, ready to help"
+
       - name: Cache downloaded videos
         uses: actions/cache@v4
         id: video-cache
@@ -176,6 +183,7 @@ jobs:
       - name: Generate videos
         id: generate
         run: |
+          python update_agent_state.py buffy "STUDIO" "Rendering 4K stories (CRF 15, veryslow)"
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             COUNT="${{ inputs.count }}"
           else
@@ -482,10 +490,16 @@ jobs:
                   print(f"✅ Facebook post -> {result.get('url')}")
           PY
 
+      # Agent room: move Buffy to LAPTOP now that uploads are done.
+      - name: Agent room — uploading
+        run: |
+          python update_agent_state.py buffy "LAPTOP" "Uploading the finished videos"
+
       # Refresh the dashboard's data.json (story stats + video history) so the
       # deployed GitHub Pages dashboard stays current after every run.
       - name: Refresh dashboard data
         run: |
+          python update_agent_state.py buffy "PROJECT FOLDER" "Refreshing the dashboard data"
           python dashboard/build_data.py
 
       # Refresh the landing-page demo clip (assets/demo/real_demo.mp4) from
@@ -525,6 +539,8 @@ jobs:
           # Exact text sent to ElevenLabs (proves what the narrator was asked
           # to say — ale/markdown/brackets all cleaned pre-TTS).
           git add -f output/tts_script_*.json 2>/dev/null || true
+          # Agent room live state (who's where and doing what).
+          git add -f dashboard/agent_state.json 2>/dev/null || true
           # Cleaned story bank (used stories removed by cleanup_used_stories.py).
           git add -f reddit_stories/ 2>/dev/null || true
           git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Story Lab — Agent Room</title>
+<style>
+  :root { --bg:#12121c; --panel:#1c1c2e; --line:#2c2c46; --txt:#e9e9f2; --dim:#9a9ab8; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--txt); font-family:Segoe UI, system-ui, Arial, sans-serif; padding:20px; }
+  header { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  header h1 { font-size:22px; letter-spacing:.3px; }
+  header h1 span { color:#a78bfa; }
+  #room-status { font-size:12px; color:var(--dim); }
+  main { display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start; }
+  .room-wrap { flex:1 1 960px; max-width:100%; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.4); }
+  svg#room { width:100%; height:auto; display:block; border-radius:10px; }
+  aside { flex:0 1 320px; min-width:280px; display:flex; flex-direction:column; gap:16px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; }
+  .card h3 { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--dim); margin-bottom:10px; }
+  .agent-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid #23233a; }
+  .agent-row:last-child { border-bottom:none; }
+  .dot { width:12px; height:12px; border-radius:50%; flex:none; }
+  .agent-row .name { font-weight:600; font-size:13px; }
+  .agent-row .at { font-size:11px; color:var(--dim); }
+  .agent-row .act { font-size:11px; color:#cfcfe8; margin-top:1px; }
+  #log { max-height:300px; overflow-y:auto; }
+  .log-row { display:flex; gap:8px; font-size:11.5px; padding:4px 0; color:#c5c5dd; border-bottom:1px solid #20203a; }
+  .log-row .t { color:#6f6f92; flex:none; }
+  .log-row .who { font-weight:600; flex:none; }
+  .foot { font-size:11px; color:var(--dim); margin-top:10px; line-height:1.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎮 Story Lab <span>Agent Room</span></h1>
+  <span id="room-status">Loading…</span>
+</header>
+<main>
+  <div class="room-wrap">
+    <svg id="room" viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#1d1d33"/><stop offset="1" stop-color="#262642"/>
+        </linearGradient>
+        <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a2f34"/><stop offset="1" stop-color="#2a2226"/>
+        </linearGradient>
+        <radialGradient id="moon" cx=".4" cy=".4" r=".8">
+          <stop offset="0" stop-color="#f5e9b8"/><stop offset="1" stop-color="#d9c66b"/>
+        </radialGradient>
+      </defs>
+
+      <!-- room shell -->
+      <rect x="0" y="0" width="960" height="430" fill="url(#wall)"/>
+      <rect x="0" y="430" width="960" height="190" fill="url(#floor)"/>
+      <line x1="0" y1="430" x2="960" y2="430" stroke="#11111f" stroke-width="4"/>
+
+      <!-- window + moon + stars -->
+      <rect x="40" y="50" width="150" height="120" rx="8" fill="#0f0f1e" stroke="#33335c" stroke-width="3"/>
+      <line x1="115" y1="50" x2="115" y2="170" stroke="#33335c" stroke-width="3"/>
+      <line x1="40" y1="110" x2="190" y2="110" stroke="#33335c" stroke-width="3"/>
+      <circle cx="75" cy="80" r="16" fill="url(#moon)"/>
+      <circle cx="150" cy="70" r="1.6" fill="#fff" opacity=".7"/><circle cx="70" cy="135" r="1.2" fill="#fff" opacity=".5"/>
+      <circle cx="165" cy="135" r="1.4" fill="#fff" opacity=".6"/><circle cx="110" cy="60" r="1" fill="#fff" opacity=".5"/>
+
+      <!-- neon sign -->
+      <text x="480" y="70" text-anchor="middle" font-size="30" font-weight="800" fill="#a78bfa" opacity=".9" font-family="Segoe UI,Arial">STORY LAB HQ</text>
+      <text x="480" y="92" text-anchor="middle" font-size="11" fill="#6f6f9e" font-family="Segoe UI,Arial">est. 2026 — 3 agents, 1 mission</text>
+
+      <!-- ============ STATIONS ============ -->
+      <!-- LOUNGE -->
+      <g id="st-LOUNGE">
+        <ellipse cx="130" cy="452" rx="95" ry="18" fill="#241c2e"/>
+        <rect x="50" y="415" width="160" height="34" rx="12" fill="#5b4a6e"/>
+        <rect x="44" y="408" width="172" height="16" rx="8" fill="#6d5a83"/>
+        <rect x="56" y="421" width="26" height="20" rx="6" fill="#7c6894"/>
+        <rect x="112" y="421" width="26" height="20" rx="6" fill="#7c6894"/>
+        <rect x="168" y="421" width="26" height="20" rx="6" fill="#7c6894"/>
+        <text x="130" y="478" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">LOUNGE</text>
+      </g>
+
+      <!-- PROJECT FOLDER -->
+      <g id="st-PROJECT FOLDER">
+        <rect x="170" y="435" width="160" height="10" rx="3" fill="#4a3826"/>
+        <rect x="186" y="405" width="34" height="30" rx="3" fill="#5d4730"/>
+        <rect x="228" y="400" width="72" height="46" rx="4" fill="#14141f" stroke="#3a3a5e" stroke-width="2"/>
+        <rect x="234" y="408" width="60" height="20" rx="2" fill="#20203a"/>
+        <line x1="240" y1="418" x2="288" y2="418" stroke="#4ade80" stroke-width="2"/>
+        <line x1="240" y1="424" x2="280" y2="424" stroke="#a78bfa" stroke-width="2"/>
+        <path d="M252 400 h14 l6 8 h26 v38 h-46 z" fill="#f2b545"/>
+        <text x="250" y="483" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">PROJECT FOLDER</text>
+      </g>
+
+      <!-- COFFEE -->
+      <g id="st-COFFEE">
+        <rect x="498" y="390" width="44" height="52" rx="6" fill="#3a3a5e"/>
+        <rect x="542" y="398" width="14" height="26" rx="5" fill="#55557f"/>
+        <rect x="506" y="370" width="28" height="22" rx="6" fill="#2e2e4e"/>
+        <path d="M510 366 q4 -8 10 -2 q4 -6 8 0" stroke="#d9d9ee" stroke-width="2" fill="none" opacity=".5"/>
+        <path d="M522 366 q4 -8 10 -2" stroke="#d9d9ee" stroke-width="2" fill="none" opacity=".35"/>
+        <circle cx="516" cy="384" r="5" fill="#e07a5f"/>
+        <circle cx="528" cy="384" r="5" fill="#e07a5f"/>
+        <text x="520" y="452" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">COFFEE</text>
+      </g>
+
+      <!-- LAPTOP -->
+      <g id="st-LAPTOP">
+        <rect x="622" y="445" width="150" height="10" rx="3" fill="#4a3826"/>
+        <rect x="660" y="405" width="76" height="44" rx="4" fill="#1a1a28" stroke="#3a3a5e" stroke-width="2"/>
+        <rect x="668" y="412" width="60" height="30" rx="2" fill="#232338"/>
+        <text x="698" y="431" text-anchor="middle" font-size="11" fill="#8d8dff" font-family="monospace">python &#9654;</text>
+        <rect x="656" y="449" width="84" height="6" rx="2" fill="#33334f"/>
+        <text x="697" y="483" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">LAPTOP</text>
+      </g>
+
+      <!-- STUDIO -->
+      <g id="st-STUDIO">
+        <rect x="810" y="360" width="130" height="76" rx="6" fill="#131322" stroke="#4a4a76" stroke-width="2"/>
+        <rect x="822" y="372" width="106" height="52" rx="3" fill="#0c0c18"/>
+        <polygon points="862,382 862,414 892,398" fill="#4ade80"/>
+        <text x="875" y="352" text-anchor="middle" font-size="10" fill="#6f6f9e" font-family="Segoe UI,Arial">4K &#183; 60fps &#183; CRF 15</text>
+        <text x="875" y="452" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">STUDIO</text>
+      </g>
+
+      <!-- BRO'S DESK -->
+      <g id="st-BRO'S DESK">
+        <rect x="812" y="300" width="130" height="9" rx="3" fill="#4a3826"/>
+        <rect x="830" y="262" width="94" height="40" rx="4" fill="#14141f" stroke="#3a3a5e" stroke-width="2"/>
+        <text x="877" y="286" text-anchor="middle" font-size="18" fill="#fb923c" font-family="monospace">&gt;_</text>
+        <rect x="826" y="309" width="52" height="8" rx="3" fill="#33334f"/>
+        <rect x="884" y="309" width="16" height="14" rx="2" fill="#e07a5f"/>
+        <text x="877" y="322" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">BRO'S DESK</text>
+      </g>
+    </svg>
+  </div>
+
+  <aside>
+    <div class="card">
+      <h3>Who's doing what</h3>
+      <div id="agent-cards"></div>
+    </div>
+    <div class="card">
+      <h3>Activity log</h3>
+      <div id="log"></div>
+    </div>
+    <div class="foot">
+      <b>How it works:</b> Buffy (me), You and Bro each have a character here. When something happens in the
+      pipeline — or when I change something in the project — the right agent walks to the right station.
+      Watch it during a video run: Buffy goes to PROJECT FOLDER to write the script, then STUDIO to render,
+      then back to the couch when it's done. Add <code>?demo</code> to the URL to watch everyone wander.
+    </div>
+  </aside>
+
+<script>
+/* ---------- room geometry ---------- */
+const STATIONS = {
+  "LOUNGE":         {x: 130, y: 470},
+  "PROJECT FOLDER": {x: 250, y: 470},
+  "COFFEE":         {x: 520, y: 470},
+  "LAPTOP":         {x: 697, y: 470},
+  "STUDIO":         {x: 875, y: 470},
+  "BRO'S DESK":     {x: 877, y: 380}
+};
+
+/* fallback state so the page always renders (file://, offline, etc.) */
+const INITIAL = {
+  room: "Story Lab HQ",
+  agents: {
+    buffy: { name: "Buffy", color: "#a78bfa", station: "PROJECT FOLDER", activity: "Building the agent room" },
+    you:   { name: "You",   color: "#4ade80", station: "LOUNGE",         activity: "Watching the room come alive" },
+    bro:   { name: "Bro",   color: "#fb923c", station: "BRO'S DESK",     activity: "Standing by, ready to help" }
+  },
+  log: []
+};
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const room = document.getElementById("room");
+const agents = {};   // key -> {g, bubble, cur:{x,y}, target:{x,y}, moving}
+
+/* ---------- character factory ---------- */
+function makeAgent(key, meta) {
+  const g = document.createElementNS(SVGNS, "g");
+  const c = meta.color;
+
+  // shadow
+  const sh = document.createElementNS(SVGNS, "ellipse");
+  sh.setAttribute("cx", 0); sh.setAttribute("cy", 6); sh.setAttribute("rx", 17); sh.setAttribute("ry", 4);
+  sh.setAttribute("fill", "rgba(0,0,0,.4)"); g.appendChild(sh);
+
+  // body
+  const body = document.createElementNS(SVGNS, "rect");
+  body.setAttribute("x", -10); body.setAttribute("y", -22); body.setAttribute("width", 20); body.setAttribute("height", 24);
+  body.setAttribute("rx", 7); body.setAttribute("fill", c);
+  g.appendChild(body);
+
+  // head
+  const head = document.createElementNS(SVGNS, "circle");
+  head.setAttribute("cx", 0); head.setAttribute("cy", -32); head.setAttribute("r", 11); head.setAttribute("fill", "#f2c99b");
+  g.appendChild(head);
+
+  // hair
+  const hair = document.createElementNS(SVGNS, "path");
+  const hairColor = key === "buffy" ? "#7c5cd6" : (key === "you" ? "#2f2f2f" : "#8a5a2b");
+  hair.setAttribute("d", "M-11,-32 a11,11 0 0 1 22,0 l0,-3 a11,11 0 0 0 -22,0 z");
+  hair.setAttribute("fill", hairColor);
+  g.appendChild(hair);
+
+  // eyes
+  for (const ex of [-4, 4]) {
+    const e = document.createElementNS(SVGNS, "circle");
+    e.setAttribute("cx", ex); e.setAttribute("cy", -32); e.setAttribute("r", 1.6); e.setAttribute("fill", "#1c1c1c");
+    g.appendChild(e);
+  }
+
+  // accessory
+  if (key === "buffy") { // glasses
+    const g1 = document.createElementNS(SVGNS, "circle"); g1.setAttribute("cx", -4); g1.setAttribute("cy", -32); g1.setAttribute("r", 3.4); g1.setAttribute("fill", "none"); g1.setAttribute("stroke", "#1c1c1c"); g1.setAttribute("stroke-width", "1.2"); g.appendChild(g1);
+    const g2 = document.createElementNS(SVGNS, "circle"); g2.setAttribute("cx", 4);  g2.setAttribute("cy", -32); g2.setAttribute("r", 3.4); g2.setAttribute("fill", "none"); g2.setAttribute("stroke", "#1c1c1c"); g2.setAttribute("stroke-width", "1.2"); g.appendChild(g2);
+    const br = document.createElementNS(SVGNS, "line"); br.setAttribute("x1", -0.6); br.setAttribute("y1", -32); br.setAttribute("x2", 0.6); br.setAttribute("y2", -32); br.setAttribute("stroke", "#1c1c1c"); br.setAttribute("stroke-width", "1.2"); g.appendChild(br);
+  } else if (key === "you") { // phone
+    const ph = document.createElementNS(SVGNS, "rect"); ph.setAttribute("x", 12); ph.setAttribute("y", -20); ph.setAttribute("width", 7); ph.setAttribute("height", 12); ph.setAttribute("rx", 2); ph.setAttribute("fill", "#222233"); ph.setAttribute("stroke", "#4ade80"); ph.setAttribute("stroke-width", "1"); g.appendChild(ph);
+  } else { // bro: terminal badge
+    const tb = document.createElementNS(SVGNS, "text"); tb.setAttribute("x", 0); tb.setAttribute("y", -6); tb.setAttribute("text-anchor", "middle"); tb.setAttribute("font-size", "9"); tb.setAttribute("font-family", "monospace"); tb.setAttribute("fill", "#1c1c1c"); tb.textContent = ">_"; g.appendChild(tb);
+  }
+
+  // name label
+  const lbl = document.createElementNS(SVGNS, "text");
+  lbl.setAttribute("x", 0); lbl.setAttribute("y", 24); lbl.setAttribute("text-anchor", "middle");
+  lbl.setAttribute("font-size", "11"); lbl.setAttribute("font-weight", "700"); lbl.setAttribute("fill", "#e9e9f2");
+  lbl.textContent = meta.name;
+  g.appendChild(lbl);
+
+  // speech bubble
+  const bubble = document.createElementNS(SVGNS, "g");
+  const bx = document.createElementNS(SVGNS, "rect");
+  bx.setAttribute("x", -70); bx.setAttribute("y", -82); bx.setAttribute("width", 140); bx.setAttribute("height", 24);
+  bx.setAttribute("rx", 12); bx.setAttribute("fill", "#ffffff"); bx.setAttribute("opacity", "0.94");
+  const btx = document.createElementNS(SVGNS, "text");
+  btx.setAttribute("x", 0); btx.setAttribute("y", -65); btx.setAttribute("text-anchor", "middle");
+  btx.setAttribute("font-size", "10.5"); btx.setAttribute("fill", "#1c1c2e"); btx.setAttribute("font-family", "Segoe UI,Arial");
+  bubble.appendChild(bx); bubble.appendChild(btx);
+  g.appendChild(bubble);
+
+  // arms (simple two-tone sleeves) — drawn as small rects that swing via CSS-free bob
+  const armL = document.createElementNS(SVGNS, "rect"); armL.setAttribute("x", -14); armL.setAttribute("y", -20); armL.setAttribute("width", 6); armL.setAttribute("height", 12); armL.setAttribute("rx", 3); armL.setAttribute("fill", c);
+  const armR = document.createElementNS(SVGNS, "rect"); armR.setAttribute("x", 8);   armR.setAttribute("y", -20); armR.setAttribute("width", 6); armR.setAttribute("height", 12); armR.setAttribute("rx", 3); armR.setAttribute("fill", c);
+  g.appendChild(armL); g.appendChild(armR);
+
+  room.appendChild(g);
+  agents[key] = {
+    g, bubble, btx,
+    cur: {...STATIONS[meta.station]},
+    target: {...STATIONS[meta.station]},
+    moving: false,
+    bubbleBox: bx
+  };
+  updateBubble(key, meta.activity);
+}
+
+function updateBubble(key, text) {
+  const a = agents[key];
+  if (!a) return;
+  const t = (text || "").toString();
+  a.btx.textContent = t.length > 44 ? t.slice(0, 43) + "…" : t;
+  const w = Math.max(64, Math.min(200, a.btx.getComputedTextLength ? a.btx.getComputedTextLength() + 26 : 120));
+  a.bubbleBox.setAttribute("x", -w / 2);
+  a.bubbleBox.setAttribute("width", w);
+  a.bubble.setAttribute("display", t ? "inline" : "none");
+}
+
+function applyState(state) {
+  document.getElementById("room-status").textContent =
+    (state.room || "Story Lab HQ") + " — updated " + (state.updated_at || "");
+  const cards = document.getElementById("agent-cards");
+  cards.innerHTML = "";
+  for (const key of ["buffy", "you", "bro"]) {
+    const meta = (state.agents && state.agents[key]) || INITIAL.agents[key];
+    const station = (meta.station || "LOUNGE").toUpperCase();
+    agents[key].target = STATIONS[station] || STATIONS["LOUNGE"];
+    updateBubble(key, meta.activity);
+    const row = document.createElement("div");
+    row.className = "agent-row";
+    row.innerHTML = `<span class="dot" style="background:${meta.color}"></span>
+      <div><div class="name">${meta.name}</div>
+      <div class="at">${station}</div>
+      <div class="act">${(meta.activity || "").toString()}</div></div>`;
+    cards.appendChild(row);
+  }
+  // log feed (newest first)
+  const logEl = document.getElementById("log");
+  if (state.log && state.log.length) {
+    logEl.innerHTML = "";
+    for (const e of state.log.slice(0, 14)) {
+      const div = document.createElement("div");
+      div.className = "log-row";
+      div.innerHTML = `<span class="t">${e.t || ""}</span><span class="who" style="color:${colorOf(e.who)}">${e.who || ""}</span><span>→ ${e.station || ""} — ${e.activity || ""}</span>`;
+      logEl.appendChild(div);
+    }
+  }
+}
+
+function colorOf(name) {
+  const map = { Buffy: "#a78bfa", You: "#4ade80", Bro: "#fb923c" };
+  return map[name] || "#cfcfe8";
+}
+
+/* ---------- animation loop ---------- */
+let t0 = performance.now();
+function frame(now) {
+  const t = (now - t0) / 1000;
+  for (const key of Object.keys(agents)) {
+    const a = agents[key];
+    const dx = a.target.x - a.cur.x, dy = a.target.y - a.cur.y;
+    const dist = Math.hypot(dx, dy);
+    a.moving = dist > 2;
+    const step = a.moving ? 0.07 : 0.12;
+    a.cur.x += dx * step;
+    a.cur.y += dy * step;
+    const bob = a.moving ? Math.abs(Math.sin(t * 9)) * -5 : Math.sin(t * 2.2) * 1.6;
+    a.g.setAttribute("transform", `translate(${a.cur.x.toFixed(1)}, ${a.cur.y.toFixed(1) + bob.toFixed(1)})`);
+    a.bubble.setAttribute("transform", `translate(0, ${bob.toFixed(1) - 4})`);
+    a.bubble.setAttribute("opacity", a.moving ? 0.45 : 1);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- state loading ---------- */
+function load() {
+  fetch("agent_state.json?_=" + Date.now())
+    .then(r => { if (!r.ok) throw 0; return r.json(); })
+    .then(s => { applyState(s); document.getElementById("room-status").textContent += " ● live"; })
+    .catch(() => { applyState(INITIAL); demoLoop(); });
+  setTimeout(load, 6000);
+}
+
+/* ---------- demo mode (?demo) — everyone wanders so you can see it move ---------- */
+const DEMO_MOVES = [
+  ["buffy", "PROJECT FOLDER", "Editing video_compile.py"], ["you", "LAPTOP", "Watching the pipeline"],
+  ["buffy", "STUDIO", "Rendering segments @ 60fps"], ["bro", "COFFEE", "Refilling his mug"],
+  ["you", "COFFEE", "Getting a refill"], ["buffy", "PROJECT FOLDER", "Pushing the fix"],
+  ["bro", "STUDIO", "Monitoring the render"], ["buffy", "LOUNGE", "Done — what's next?"]
+];
+let demoI = 0, demoOn = false;
+function demoLoop() {
+  if (demoOn) return;
+  demoOn = true;
+  const tick = () => {
+    const [key, station, act] = DEMO_MOVES[demoI % DEMO_MOVES.length];
+    demoI++;
+    agents[key].target = STATIONS[station] || STATIONS.LOUNGE;
+    updateBubble(key, act);
+    // keep the WHO'S DOING WHAT panel in sync with the wander
+    const meta = INITIAL.agents[key];
+    const row = document.createElement("div");
+    row.className = "agent-row";
+    row.innerHTML = `<span class="dot" style="background:${meta.color}"></span>
+      <div><div class="name">${meta.name}</div>
+      <div class="at">${station}</div>
+      <div class="act">${act}</div></div>`;
+    const cards = document.getElementById("agent-cards");
+    const old = cards.children[["buffy", "you", "bro"].indexOf(key)];
+    if (old) cards.replaceChild(row, old);
+    setTimeout(tick, 5000);
+  };
+  tick();
+}
+
+/* init */
+for (const [key, meta] of Object.entries(INITIAL.agents)) makeAgent(key, meta);
+if (new URLSearchParams(location.search).has("demo")) {
+  applyState({ ...INITIAL, updated_at: "demo mode — everyone wandering" });
+  demoLoop();
+} else {
+  load();
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

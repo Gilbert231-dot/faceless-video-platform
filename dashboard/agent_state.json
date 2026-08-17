@@ -1,0 +1,62 @@
+{
+  "room": "Story Lab HQ",
+  "agents": {
+    "buffy": {
+      "name": "Buffy",
+      "color": "#a78bfa",
+      "station": "PROJECT FOLDER",
+      "activity": "Wiring the agent room into the pipeline"
+    },
+    "bro": {
+      "name": "Bro",
+      "color": "#fb923c",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    "you": {
+      "name": "You",
+      "color": "#4ade80",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    }
+  },
+  "log": [
+    {
+      "t": "12:48:19 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "12:48:19 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Wiring the agent room into the pipeline"
+    },
+    {
+      "t": "12:47:00 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "12:47:00 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "12:46:59 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Building the agent room"
+    },
+    {
+      "t": "12:46:46 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Building the agent room"
+    }
+  ],
+  "updated_at": "2026-08-17T12:48:19Z"
+}
