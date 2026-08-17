@@ -43,7 +43,10 @@ jobs:
           if [ -f AUTOMATION_PAUSED ]; then
             echo "⏸️  Automation is PAUSED — AUTOMATION_PAUSED file found in the repo."
             echo "    Delete that file on GitHub to resume (repo root → AUTOMATION_PAUSED → edit → delete)."
+            echo "    This run FAILS on purpose so you get the usual failure-style"
+            echo "    notification instead of a false 'success' ping."
             echo "go=false" >> "$GITHUB_OUTPUT"
+            exit 1
           else
             echo "✅ Automation active — no AUTOMATION_PAUSED file."
             echo "go=true" >> "$GITHUB_OUTPUT"

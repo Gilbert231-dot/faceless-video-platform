@@ -38,11 +38,14 @@ jobs:
       - name: Check if posting is enabled
         id: check_posting
         run: |
-          if [ -f POSTING_ENABLED ] && grep -q "true" POSTING_ENABLED; then
+          if [ -f POSTING_ENABLED ] && grep -qi "true" POSTING_ENABLED; then
             echo "enabled=true" >> $GITHUB_OUTPUT
           else
             echo "enabled=false" >> $GITHUB_OUTPUT
             echo "⏸️ Posting is paused. To enable, set POSTING_ENABLED to 'true'."
+            echo "    This run FAILS on purpose so you get the usual failure-style"
+            echo "    notification instead of a false 'success' ping."
+            exit 1
           fi
 
       - name: Set up Python
