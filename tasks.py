@@ -80,14 +80,21 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown",
     # (kept in sync with tiktok_uploader.build_caption).
     hashtags = platform_tags("tiktok", subreddit_name)
     suggested_slot = _next_tiktok_slot()
+    # The TikTok companion file is for MANUAL uploads the user might post
+    # publicly — never carry the [TEST] marker there (same rule as the reddit
+    # card). The YouTube metadata.json above keeps it, since test uploads are
+    # private and labeled.
+    tiktok_title = title
+    if tiktok_title.startswith("[TEST] "):
+        tiktok_title = tiktok_title[len("[TEST] "):]
     tiktok_meta = {
         "video_file": os.path.basename(video_path),
-        "title": title,
+        "title": tiktok_title,
         "subreddit": subreddit_name,
         "score": score,
         "author": author,
         # Copy this whole caption into TikTok's "Caption" box.
-        "caption": f"{title}\n\n{' '.join(hashtags)}",
+        "caption": f"{tiktok_title}\n\n{' '.join(hashtags)}",
         "hashtags": hashtags,
         # Same list under the key you asked for, so it's easy to spot in the
         # artifact zip (tiktok_tags) alongside the YouTube-style metadata.
