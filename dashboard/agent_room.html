@@ -30,6 +30,25 @@
   .log-row .who { font-weight:600; flex:none; }
   .foot { font-size:11px; color:var(--dim); margin-top:10px; line-height:1.5; }
 
+  /* ---------- Summon Bro console ---------- */
+  .dot-sm { display:inline-block; width:9px; height:9px; border-radius:50%; margin-left:6px; vertical-align:middle; background:#777; }
+  .dot-sm.on { background:#4ade80; box-shadow:0 0 6px #4ade80; }
+  .dot-sm.off { background:#e05a5a; box-shadow:0 0 6px #e05a5a; }
+  .bro-state { font-size:10px; color:var(--dim); margin-left:6px; text-transform:none; }
+  .bro-row { display:flex; gap:8px; }
+  #bro-input { flex:1; background:#14141f; border:1px solid var(--line); border-radius:8px; color:var(--txt); padding:8px 10px; font-size:12px; outline:none; }
+  #bro-input:focus { border-color:#fb923c; }
+  #bro-ask { background:#fb923c; border:none; color:#1c1c2e; font-weight:700; border-radius:8px; padding:0 14px; cursor:pointer; font-size:12px; }
+  #bro-ask:hover { background:#fcab63; }
+  #bro-ask:disabled { opacity:.5; cursor:wait; }
+  .bro-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .chip { background:#232338; border:1px solid var(--line); color:#cfcfe8; border-radius:20px; padding:4px 10px; font-size:11px; cursor:pointer; }
+  .chip:hover { border-color:#fb923c; color:#fb923c; }
+  .bro-out { margin-top:10px; background:#0c0c14; border:1px solid var(--line); border-radius:8px; padding:10px; font-family:Consolas, monospace; font-size:11px; line-height:1.5; color:#d8d8ea; white-space:pre-wrap; word-break:break-word; max-height:220px; overflow-y:auto; min-height:40px; }
+  .bro-out .err { color:#ff8a8a; }
+  .bro-out .ok { color:#9be8a8; }
+  .bro-out .think { color:#8f8fb8; font-style:italic; }
+
   /* ---------- day / night mode (follows UTC hours) ---------- */
   #suncircle, body.day #mooncircle, body.day .star { display:none; }
   body.day #suncircle { display:inline; }
@@ -197,6 +216,20 @@
     <div class="card">
       <h3>Activity log</h3>
       <div id="log"></div>
+    </div>
+    <div class="card" id="bro-card">
+      <h3>⚙️ Summon Bro <span id="bro-dot" class="dot-sm"></span><span id="bro-state" class="bro-state">checking…</span></h3>
+      <div class="bro-row">
+        <input id="bro-input" type="text" placeholder="Ask Bro anything… e.g. what's using my C: drive?" autocomplete="off" />
+        <button id="bro-ask">Ask</button>
+      </div>
+      <div class="bro-chips">
+        <button class="chip" data-task="disk">💾 Disk space</button>
+        <button class="chip" data-task="files">📁 List files</button>
+        <button class="chip" data-task="whoami">👤 Who am I</button>
+        <button class="chip" data-task="uptime">⏰ Uptime</button>
+      </div>
+      <pre id="bro-out" class="bro-out"></pre>
     </div>
     <div class="foot">
       <b>How it works:</b> Buffy (me), You and Bro each have a character here. When something happens in the
@@ -423,6 +456,127 @@ function demoLoop() {
   };
   tick();
 }
+
+/* ---------- Summon Bro console ---------- */
+const BRIDGE = "http://127.0.0.1:8766";
+const broOut = document.getElementById("bro-out");
+const broInput = document.getElementById("bro-input");
+const broAsk = document.getElementById("bro-ask");
+const broDot = document.getElementById("bro-dot");
+const broState = document.getElementById("bro-state");
+let broBusy = false;
+
+function broPrint(text, cls) {
+  const div = document.createElement("div");
+  div.className = cls || "";
+  div.textContent = text;
+  broOut.appendChild(div);
+  broOut.scrollTop = broOut.scrollHeight;
+}
+
+function broSetStatus(on, label) {
+  broDot.className = "dot-sm " + (on ? "on" : "off");
+  broState.textContent = label;
+}
+
+function broMove(station, activity) {
+  // Bro visibly walks to the station and his card + bubble update
+  if (agents.bro) agents.bro.target = STATIONS[station] || STATIONS["BRO'S DESK"];
+  updateBubble("bro", activity);
+  const meta = INITIAL.agents.bro;
+  const row = document.createElement("div");
+  row.className = "agent-row";
+  row.innerHTML = `<span class="dot" style="background:${meta.color}"></span>
+    <div><div class="name">${meta.name}</div>
+    <div class="at">${station}</div>
+    <div class="act">${activity}</div></div>`;
+  const cards = document.getElementById("agent-cards");
+  if (cards.children[2]) cards.replaceChild(row, cards.children[2]);
+}
+
+async function broPing() {
+  try {
+    const r = await fetch(BRIDGE + "/api/status");
+    const s = await r.json();
+    if (s.ok && s.bro) {
+      broSetStatus(s.key, s.key ? "online · AI ready" : "online · no AI key (quick tasks OK)");
+      return true;
+    }
+    broSetStatus(false, "bridge up but opencode missing");
+    return true;
+  } catch (e) {
+    broSetStatus(false, "offline — run: python bro_bridge.py");
+    return false;
+  }
+}
+
+async function broAskPrompt(prompt) {
+  if (broBusy) return;
+  broBusy = true;
+  broAsk.disabled = true;
+  broPrint("> " + prompt, "think");
+  broMove("BRO'S DESK", "Thinking… \"" + prompt.slice(0, 28) + "\"");
+  try {
+    const r = await fetch(BRIDGE + "/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      broPrint(d.answer, "ok");
+      broMove("BRO'S DESK", "Done — answer above 👆");
+    } else {
+      broPrint("⚠️ " + (d.error || "Bro couldn't answer."), "err");
+      broMove("BRO'S DESK", "Hit an error — check output");
+    }
+  } catch (e) {
+    broPrint("⚠️ Could not reach the bridge: " + e.message, "err");
+  } finally {
+    broBusy = false;
+    broAsk.disabled = false;
+  }
+}
+
+async function broRunTask(kind) {
+  if (broBusy) return;
+  broBusy = true;
+  broAsk.disabled = true;
+  const labels = { disk: "Checking disk space…", files: "Listing files…", whoami: "Reading your identity…", uptime: "Reading boot time…" };
+  broPrint("⚙️ " + (labels[kind] || kind), "think");
+  broMove("LAPTOP", labels[kind] || "Working…");
+  try {
+    const r = await fetch(BRIDGE + "/api/task?kind=" + encodeURIComponent(kind));
+    const d = await r.json();
+    if (d.ok) {
+      broPrint(d.text, "ok");
+      broMove("LAPTOP", "Task done ✅");
+    } else {
+      broPrint("⚠️ " + (d.error || "task failed"), "err");
+    }
+  } catch (e) {
+    broPrint("⚠️ Could not reach the bridge: " + e.message, "err");
+  } finally {
+    broBusy = false;
+    broAsk.disabled = false;
+  }
+}
+
+broAsk.addEventListener("click", () => {
+  const p = broInput.value.trim();
+  if (p) { broAskPrompt(p); broInput.value = ""; }
+});
+broInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    const p = broInput.value.trim();
+    if (p) { broAskPrompt(p); broInput.value = ""; }
+  }
+});
+document.querySelectorAll(".chip").forEach((c) => {
+  c.addEventListener("click", () => broRunTask(c.dataset.task));
+});
+broPing();
+setInterval(broPing, 15000);
 
 /* init */
 for (const [key, meta] of Object.entries(INITIAL.agents)) makeAgent(key, meta);
