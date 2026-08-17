@@ -259,7 +259,6 @@
         <rect x="515" y="362" width="9" height="4" rx="1" fill="#fb923c"/>
         <rect x="506" y="386" width="8" height="8" rx="2" fill="#fbbf24"/>
         <path d="M 528 384 q 7 2 5 9" stroke="#9fb5ae" stroke-width="2" fill="none"/>
-        <path d="M 502 346 q 2 -6 -1 -10 M 514 346 q 2 -6 -1 -10 M 526 346 q 2 -6 -1 -10" stroke="#d9e2df" stroke-width="1.6" fill="none" opacity=".5"/>
         <rect x="485" y="378" width="11" height="13" rx="2" fill="#ece5d8"/>
         <rect x="524" y="378" width="11" height="13" rx="2" fill="#ece5d8"/>
         <circle cx="472" cy="416" r="2" fill="#6b4a2b"/>
@@ -887,6 +886,7 @@ function frame(now) {
   botFrame(t);
   neonFrame(t);
   seasonFrame(t);
+  steamFrame(t);
   requestAnimationFrame(frame);
 }
 
@@ -1216,6 +1216,42 @@ function seasonFrame(t) {
     p.rot += p.vrot;
     p.el.setAttribute("transform", `translate(${p.x.toFixed(1)}, ${p.y.toFixed(1)}) rotate(${p.rot.toFixed(0)})`);
     if (p.y > 670) { p.el.remove(); seasonParticles.splice(i, 1); }
+  }
+}
+
+/* ---------- coffee steam (gentle wisps rising off the espresso machine) ---------- */
+const coffeeSteam = [];
+let steamNext = 1;
+const STEAM_SPAWNS = [
+  { x: 502, y: 348 },
+  { x: 514, y: 348 },
+  { x: 526, y: 348 }
+];
+
+function spawnSteam(t) {
+  if (coffeeSteam.length > 4) return;
+  const s = STEAM_SPAWNS[Math.floor(Math.random() * STEAM_SPAWNS.length)];
+  const g = document.createElementNS(SVGNS, "g");
+  g.appendChild(mk("path", { d: "M 0 3 Q 2.2 -1 0 -5 Q -2.2 -9 0 -13", stroke: "#e9f2f2", "stroke-width": 2.2, fill: "none", "stroke-linecap": "round" }));
+  const x = s.x + (Math.random() - 0.5) * 4;
+  g.setAttribute("transform", `translate(${x}, ${s.y}) scale(0.5)`);
+  g.setAttribute("opacity", "0");
+  zoomgroup.appendChild(g);
+  coffeeSteam.push({ el: g, x, y: s.y, t0: t, dur: 2.2 + Math.random() * 1.2, swayAmp: 2 + Math.random() * 2.5, phase: Math.random() * 6.28 });
+}
+
+function steamFrame(t) {
+  if (t > steamNext) { spawnSteam(t); steamNext = t + 0.7 + Math.random() * 0.9; }
+  for (let i = coffeeSteam.length - 1; i >= 0; i--) {
+    const p = coffeeSteam[i];
+    const k = Math.min(1, (t - p.t0) / p.dur);
+    const y = p.y - k * 26;                                   // drift up
+    const x = p.x + Math.sin(t * 1.4 + p.phase) * p.swayAmp;  // gentle sway
+    const sc = 0.5 + k * 0.7;                                 // stretch as it rises
+    const op = k < 0.2 ? k * 5 : 1 - (k - 0.2) / 0.8;         // fade in fast, out slow
+    p.el.setAttribute("transform", `translate(${x.toFixed(1)}, ${y.toFixed(1)}) scale(${sc.toFixed(2)})`);
+    p.el.setAttribute("opacity", Math.max(0, Math.min(1, op)).toFixed(2));
+    if (k >= 1) { p.el.remove(); coffeeSteam.splice(i, 1); }
   }
 }
 
