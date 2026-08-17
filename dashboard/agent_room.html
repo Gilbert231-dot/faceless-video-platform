@@ -731,6 +731,7 @@ function frame(now) {
     if (a.eyeL) { a.eyeL.setAttribute("height", eh); a.eyeL.setAttribute("y", ey); }
     if (a.eyeR) { a.eyeR.setAttribute("height", eh); a.eyeR.setAttribute("y", ey); }
   }
+  botFrame(t);
   requestAnimationFrame(frame);
 }
 
@@ -841,6 +842,131 @@ room.addEventListener("click", (e) => {
   if (zoomOn) unzoom();
 });
 zoomBtn.addEventListener("click", () => unzoom());
+
+/* ---------- pizza drone — flies in and drops snacks at the COFFEE station ---------- */
+function makeBot() {
+  const g = document.createElementNS(SVGNS, "g");
+  g.setAttribute("display", "none");
+
+  g.appendChild(mk("ellipse", { cx: 0, cy: 38, rx: 13, ry: 3, fill: "rgba(0,0,0,.35)" }));
+
+  // four spinning propellers
+  const mkProp = (tx, ty) => {
+    const pg = mk("g", {});
+    pg.tx = tx; pg.ty = ty;
+    pg.appendChild(mk("rect", { x: -6.5, y: -1.3, width: 13, height: 2.6, rx: 1.3, fill: "#8d9db8", opacity: .9 }));
+    pg.appendChild(mk("rect", { x: -1.3, y: -6.5, width: 2.6, height: 13, rx: 1.3, fill: "#8d9db8", opacity: .9 }));
+    g.appendChild(pg);
+    return pg;
+  };
+  const p1 = mkProp(-9, -5), p2 = mkProp(9, -5), p3 = mkProp(-9, 6), p4 = mkProp(9, 6);
+
+  // body
+  g.appendChild(mk("rect", { x: -11, y: -9, width: 22, height: 17, rx: 5, fill: "#4a6cf7", stroke: "#3450c8", "stroke-width": 1.5 }));
+  g.appendChild(mk("rect", { x: -11, y: -1, width: 22, height: 4, rx: 2, fill: "#6b8bff" }));
+
+  // face
+  g.appendChild(mk("circle", { cx: -4, cy: -4, r: 2.1, fill: "#e9e9f2" }));
+  g.appendChild(mk("circle", { cx: 4, cy: -4, r: 2.1, fill: "#e9e9f2" }));
+  g.appendChild(mk("path", { d: "M -2.5 1.5 Q 0 4 2.5 1.5", stroke: "#e9e9f2", "stroke-width": 1.3, fill: "none" }));
+
+  // pizza box carried underneath
+  const box = mk("g", {});
+  box.appendChild(mk("rect", { x: -7, y: 17, width: 14, height: 6, rx: 1.5, fill: "#e8a13a", stroke: "#c67f24", "stroke-width": 1 }));
+  box.appendChild(mk("rect", { x: -7, y: 17, width: 14, height: 2.5, rx: 1.5, fill: "#d98c2b" }));
+  box.appendChild(mk("line", { x1: 0, y1: 17, x2: 0, y2: 23, stroke: "#c67f24", "stroke-width": 1 }));
+  g.appendChild(box);
+
+  // name label + delivery bubble
+  const lbl = mk("text", { x: 0, y: 50, "text-anchor": "middle", "font-size": 10, "font-weight": 700, fill: "#8f9ce0" });
+  lbl.textContent = "PIZZA DRONE";
+  g.appendChild(lbl);
+
+  const bubble = mk("g", { display: "none" });
+  bubble.appendChild(mk("rect", { x: -36, y: -32, width: 72, height: 17, rx: 8, fill: "#ffffff", opacity: .95 }));
+  const btxt = mk("text", { x: 0, y: -19.5, "text-anchor": "middle", "font-size": 9.5, fill: "#1c1c2e" });
+  btxt.textContent = "Snacks are here! 🍕";
+  bubble.appendChild(btxt);
+  g.appendChild(bubble);
+
+  zoomgroup.appendChild(g);
+
+  return {
+    g, p1, p2, p3, p4, box, lbl, bubble, btxt,
+    state: "hidden", t0: 0, nextIn: (performance.now() / 1000) + 7
+  };
+}
+
+const COFFEE_HOVER = { x: 520, y: 330 };
+const COFFEE_DROP  = { x: 520, y: 408 };
+const BOT_IN  = { x: 1010, y: 90 };
+const BOT_OUT = { x: -70, y: 110 };
+let droppedBox = null;
+
+function dropSnackBox() {
+  if (droppedBox) droppedBox.remove();
+  const g = mk("g", {});
+  g.appendChild(mk("rect", { x: -9, y: 0, width: 18, height: 8, rx: 2, fill: "#e8a13a", stroke: "#c67f24", "stroke-width": 1.3 }));
+  g.appendChild(mk("rect", { x: -9, y: 0, width: 18, height: 3, fill: "#d98c2b" }));
+  g.appendChild(mk("rect", { x: -9, y: 2.8, width: 3.4, height: 1.4, fill: "#fff", opacity: .5 }));
+  g.appendChild(mk("rect", { x: 5.6, y: 2.8, width: 3.4, height: 1.4, fill: "#fff", opacity: .5 }));
+  g.setAttribute("transform", "translate(544, 474)");   // beside the machine, clear of where agents stand
+  g.setAttribute("opacity", "0");
+  zoomgroup.appendChild(g);
+  droppedBox = g;
+  requestAnimationFrame(() => requestAnimationFrame(() => g.setAttribute("opacity", "1")));
+  setTimeout(() => {
+    if (droppedBox === g) {
+      g.setAttribute("opacity", "0");
+      setTimeout(() => g.remove(), 1600);
+      droppedBox = null;
+    }
+  }, 26000);
+}
+
+function botFrame(t) {
+  const b = bot;
+  if (!b) return;
+  const spin = (t * 42) % 360;
+  for (const p of [b.p1, b.p2, b.p3, b.p4]) {
+    p.setAttribute("transform", `translate(${p.tx}, ${p.ty}) rotate(${spin.toFixed(0)})`);
+  }
+  if (b.state === "hidden") {
+    if (t > b.nextIn) { b.state = "in"; b.t0 = t; b.g.setAttribute("display", "inline"); }
+    return;
+  }
+  const el = t - b.t0;
+  const SCALE = 1.35;
+  if (b.state === "in") {
+    const k = Math.min(1, el / 2.4);
+    const sy = BOT_IN.y + (COFFEE_HOVER.y - BOT_IN.y) * k + Math.sin(el * 6) * 5;
+    b.g.setAttribute("transform", `translate(${(BOT_IN.x + (COFFEE_HOVER.x - BOT_IN.x) * k).toFixed(1)}, ${sy.toFixed(1)}) scale(${SCALE})`);
+    if (k >= 1) { b.state = "hover"; b.t0 = t; }
+  } else if (b.state === "hover") {
+    b.g.setAttribute("transform", `translate(${COFFEE_HOVER.x}, ${(COFFEE_HOVER.y + Math.sin(el * 3) * 7).toFixed(1)}) scale(${SCALE})`);
+    if (el > 1.8) { b.state = "drop"; b.t0 = t; }
+  } else if (b.state === "drop") {
+    const k = Math.min(1, el / 1.2);
+    b.g.setAttribute("transform", `translate(${COFFEE_HOVER.x}, ${(COFFEE_HOVER.y + (COFFEE_DROP.y - COFFEE_HOVER.y) * k).toFixed(1)}) scale(${SCALE})`);
+    b.bubble.setAttribute("display", k >= 0.4 ? "inline" : "none");
+    if (k >= 1) {
+      dropSnackBox();
+      b.box.setAttribute("display", "none");
+      b.bubble.setAttribute("display", "none");
+      b.state = "out"; b.t0 = t;
+    }
+  } else if (b.state === "out") {
+    const k = Math.min(1, el / 2.6);
+    const sy = COFFEE_DROP.y + (BOT_OUT.y - COFFEE_DROP.y) * k + Math.sin(el * 6) * 5;
+    b.g.setAttribute("transform", `translate(${(COFFEE_HOVER.x + (BOT_OUT.x - COFFEE_HOVER.x) * k).toFixed(1)}, ${sy.toFixed(1)}) scale(${SCALE})`);
+    if (k >= 1) {
+      b.state = "hidden";
+      b.g.setAttribute("display", "none");
+      b.box.setAttribute("display", "inline");
+      b.nextIn = t + 24 + Math.random() * 22;
+    }
+  }
+}
 
 /* ---------- Summon Bro console ---------- */
 const BRIDGE = "http://127.0.0.1:8766";
@@ -966,6 +1092,7 @@ setInterval(broPing, 15000);
 
 /* init */
 for (const [key, meta] of Object.entries(INITIAL.agents)) makeAgent(key, meta);
+const bot = makeBot();
 
 /* ---------- day / night clock (UTC) ---------- */
 function setMode() {
