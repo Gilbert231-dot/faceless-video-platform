@@ -346,6 +346,20 @@ function makeAgent(key, meta) {
   chest.setAttribute("stroke", shade(c, -25)); chest.setAttribute("stroke-width", "2");
   g.appendChild(chest);
 
+  // Bro's hoodie: a hood peeking above the head + kangaroo pocket + drawstrings
+  if (key === "bro") {
+    const hood = document.createElementNS(SVGNS, "rect");
+    hood.setAttribute("x", -11.5); hood.setAttribute("y", -52); hood.setAttribute("width", 23); hood.setAttribute("height", 13);
+    hood.setAttribute("rx", 6.5); hood.setAttribute("fill", shade(c, -45));
+    g.appendChild(hood);   // drawn before the head → the head covers its lower edge
+    const pocket = document.createElementNS(SVGNS, "rect");
+    pocket.setAttribute("x", -5.5); pocket.setAttribute("y", -12.5); pocket.setAttribute("width", 11); pocket.setAttribute("height", 6);
+    pocket.setAttribute("rx", 3); pocket.setAttribute("fill", shade(c, -30));
+    g.appendChild(pocket);
+    const ds1 = document.createElementNS(SVGNS, "line"); ds1.setAttribute("x1", -3); ds1.setAttribute("y1", -26); ds1.setAttribute("x2", -3.6); ds1.setAttribute("y2", -21.5); ds1.setAttribute("stroke", shade(c, -55)); ds1.setAttribute("stroke-width", "1.1"); g.appendChild(ds1);
+    const ds2 = document.createElementNS(SVGNS, "line"); ds2.setAttribute("x1", 3); ds2.setAttribute("y1", -26); ds2.setAttribute("x2", 3.6); ds2.setAttribute("y2", -21.5); ds2.setAttribute("stroke", shade(c, -55)); ds2.setAttribute("stroke-width", "1.1"); g.appendChild(ds2);
+  }
+
   // ----- arms (swing opposite the legs; pivot at the shoulder y=-26) -----
   const armL = document.createElementNS(SVGNS, "g");
   const armR = document.createElementNS(SVGNS, "g");
@@ -393,12 +407,18 @@ function makeAgent(key, meta) {
     const g1 = document.createElementNS(SVGNS, "rect"); g1.setAttribute("x", -7.4); g1.setAttribute("y", -11.2); g1.setAttribute("width", 5.6); g1.setAttribute("height", 5.4); g1.setAttribute("rx", 1.2); g1.setAttribute("fill", "none"); g1.setAttribute("stroke", "#1c1c1c"); g1.setAttribute("stroke-width", "1.1"); head.appendChild(g1);
     const g2 = document.createElementNS(SVGNS, "rect"); g2.setAttribute("x", 1.8); g2.setAttribute("y", -11.2); g2.setAttribute("width", 5.6); g2.setAttribute("height", 5.4); g2.setAttribute("rx", 1.2); g2.setAttribute("fill", "none"); g2.setAttribute("stroke", "#1c1c1c"); g2.setAttribute("stroke-width", "1.1"); head.appendChild(g2);
     const br = document.createElementNS(SVGNS, "line"); br.setAttribute("x1", -1.8); br.setAttribute("y1", -8.6); br.setAttribute("x2", 1.8); br.setAttribute("y2", -8.6); br.setAttribute("stroke", "#1c1c1c"); br.setAttribute("stroke-width", "1.1"); head.appendChild(br);
-  } else if (key === "you") { // phone in hand (attached to right arm)
-    const ph = document.createElementNS(SVGNS, "rect"); ph.setAttribute("x", -3.5); ph.setAttribute("y", 10); ph.setAttribute("width", 7); ph.setAttribute("height", 11); ph.setAttribute("rx", 1.5); ph.setAttribute("fill", "#222233"); ph.setAttribute("stroke", "#4ade80"); ph.setAttribute("stroke-width", "1"); armR.appendChild(ph);
-  } else { // bro: terminal badge on his chest
+  } else { // bro: terminal badge on his chest (over the hoodie)
     const tb = document.createElementNS(SVGNS, "rect"); tb.setAttribute("x", -4.5); tb.setAttribute("y", -22.5); tb.setAttribute("width", 9); tb.setAttribute("height", 6.5); tb.setAttribute("rx", 2); tb.setAttribute("fill", "#14141f"); tb.setAttribute("stroke", "#3a3a5e"); tb.setAttribute("stroke-width", "1"); g.appendChild(tb);
     const txt = document.createElementNS(SVGNS, "text"); txt.setAttribute("x", 0); txt.setAttribute("y", -17.6); txt.setAttribute("text-anchor", "middle"); txt.setAttribute("font-size", "6"); txt.setAttribute("font-family", "monospace"); txt.setAttribute("fill", "#fb923c"); txt.textContent = ">_"; g.appendChild(txt);
   }
+
+  // headphones — shown when working at STUDIO / LAPTOP / BRO'S DESK
+  const headphones = document.createElementNS(SVGNS, "g");
+  headphones.setAttribute("display", "none");
+  headphones.appendChild(mk("path", { d: "M -8 -11 Q 0 -22 8 -11", stroke: "#232333", "stroke-width": 2.6, fill: "none" }));
+  headphones.appendChild(mk("rect", { x: -11.6, y: -10, width: 3.2, height: 6, rx: 1.6, fill: "#232333" }));
+  headphones.appendChild(mk("rect", { x: 8.4, y: -10, width: 3.2, height: 6, rx: 1.6, fill: "#232333" }));
+  head.appendChild(headphones);
 
   g.appendChild(head);
 
@@ -409,23 +429,17 @@ function makeAgent(key, meta) {
   ring.setAttribute("class", "teacher-ring"); ring.setAttribute("display", "none");
   g.appendChild(ring);
 
-  // handheld items — Buffy sips coffee, Bro munches pizza (You keeps his phone)
-  let sipArm = null;
-  if (key === "buffy") {
-    const cup = document.createElementNS(SVGNS, "g");
-    const cbody = document.createElementNS(SVGNS, "rect"); cbody.setAttribute("x", -3); cbody.setAttribute("y", 6); cbody.setAttribute("width", 7); cbody.setAttribute("height", 9); cbody.setAttribute("rx", 1.6); cbody.setAttribute("fill", "#8a5a3b"); cbody.setAttribute("stroke", "#5d3a24"); cbody.setAttribute("stroke-width", "1"); cup.appendChild(cbody);
-    const chandle = document.createElementNS(SVGNS, "rect"); chandle.setAttribute("x", 3); chandle.setAttribute("y", 8); chandle.setAttribute("width", 2.6); chandle.setAttribute("height", 4.4); chandle.setAttribute("rx", 1); chandle.setAttribute("fill", "#8a5a3b"); cup.appendChild(chandle);
-    const steam = document.createElementNS(SVGNS, "path"); steam.setAttribute("d", "M -1.5 4 q 1 -3 -0.5 -4.5 M 1.5 4 q 1 -3 -0.5 -4.5"); steam.setAttribute("stroke", "#e9e9f2"); steam.setAttribute("stroke-width", "1.1"); steam.setAttribute("fill", "none"); steam.setAttribute("opacity", ".5"); cup.appendChild(steam);
-    armL.appendChild(cup);
-    sipArm = "L";
-  } else if (key === "bro") {
-    const pizza = document.createElementNS(SVGNS, "g");
-    const slice = document.createElementNS(SVGNS, "polygon"); slice.setAttribute("points", "0,3 9,15 -7,15"); slice.setAttribute("fill", "#e8a13a"); slice.setAttribute("stroke", "#c67f24"); slice.setAttribute("stroke-width", "1"); pizza.appendChild(slice);
-    const pep1 = document.createElementNS(SVGNS, "circle"); pep1.setAttribute("cx", 1); pep1.setAttribute("cy", 8); pep1.setAttribute("r", 1.6); pep1.setAttribute("fill", "#c0392b"); pizza.appendChild(pep1);
-    const pep2 = document.createElementNS(SVGNS, "circle"); pep2.setAttribute("cx", 4); pep2.setAttribute("cy", 12); pep2.setAttribute("r", 1.3); pep2.setAttribute("fill", "#c0392b"); pizza.appendChild(pep2);
-    armR.appendChild(pizza);
-    sipArm = "R";
-  }
+  // hand props — every agent carries the same kit; which items show depends on the station
+  const handProps = { L: {}, R: {} };
+  const attach = (slot, armEl, name) => {
+    const pg = document.createElementNS(SVGNS, "g");
+    pg.setAttribute("display", "none");
+    propDefs[name](pg);
+    armEl.appendChild(pg);
+    handProps[slot][name] = pg;
+  };
+  ["coffee", "mug", "notebook", "clipboard", "brush", "laptop", "pointer"].forEach(n => attach("L", armL, n));
+  ["phone", "clapper", "pizza", "popcorn", "pointer"].forEach(n => attach("R", armR, n));
 
   // name label (beneath the feet)
   const lbl = document.createElementNS(SVGNS, "text");
@@ -448,14 +462,139 @@ function makeAgent(key, meta) {
   room.appendChild(g);
   agents[key] = {
     g, bubble, btx, armL, armR, legL, legR, head, eyeL, eyeR,
-    ring, sipArm,
+    ring, handProps, headphones, sipArm: null,
+    station: meta.station,
     cur: {...STATIONS[meta.station]},
     target: {...STATIONS[meta.station]},
     moving: false,
     bubbleBox: bx,
     sipAt: undefined
   };
+  setStationProps(key, meta.station);
   updateBubble(key, meta.activity);
+}
+
+/* ---------- station props: what each character holds/wears per station ---------- */
+const mk = (tag, attrs) => {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+};
+
+const propDefs = {
+  coffee: (p) => {   // small steaming cup
+    p.appendChild(mk("rect", { x: -3, y: 6, width: 7, height: 9, rx: 1.6, fill: "#8a5a3b", stroke: "#5d3a24", "stroke-width": 1 }));
+    p.appendChild(mk("rect", { x: 3, y: 8, width: 2.6, height: 4.4, rx: 1, fill: "#8a5a3b" }));
+    p.appendChild(mk("path", { d: "M -1.5 4 q 1 -3 -0.5 -4.5 M 1.5 4 q 1 -3 -0.5 -4.5", stroke: "#e9e9f2", "stroke-width": 1.1, fill: "none", opacity: .5 }));
+  },
+  mug: (p) => {   // big white coffee mug with an orange band
+    p.appendChild(mk("rect", { x: -4, y: 5, width: 8, height: 11, rx: 2, fill: "#ece5d8", stroke: "#c9bda6", "stroke-width": 1 }));
+    p.appendChild(mk("rect", { x: -4, y: 9.2, width: 8, height: 2.6, fill: "#fb923c" }));
+    p.appendChild(mk("rect", { x: 3.6, y: 7, width: 2.4, height: 4, rx: 1, fill: "#ece5d8" }));
+  },
+  phone: (p) => {
+    p.appendChild(mk("rect", { x: -3.5, y: 10, width: 7, height: 11, rx: 1.5, fill: "#222233", stroke: "#4ade80", "stroke-width": 1 }));
+  },
+  laptop: (p) => {   // tiny open laptop
+    p.appendChild(mk("rect", { x: -4.5, y: 2, width: 9, height: 6.5, rx: 1, fill: "#1e2a4a", stroke: "#3a3a5e", "stroke-width": 1 }));
+    p.appendChild(mk("rect", { x: -5.5, y: 8.4, width: 11, height: 2.2, rx: .8, fill: "#33334f" }));
+  },
+  clapper: (p) => {   // director's clapperboard
+    p.appendChild(mk("rect", { x: -3.5, y: 7, width: 7, height: 6, rx: 1, fill: "#f2f2f2", stroke: "#b8b8c8", "stroke-width": 1 }));
+    p.appendChild(mk("rect", { x: -3.5, y: 7, width: 7, height: 2, fill: "#e74c3c" }));
+    p.appendChild(mk("rect", { x: -3.5, y: 7, width: 2.2, height: 2, fill: "#f2f2f2" }));
+    p.appendChild(mk("rect", { x: 1.3, y: 7, width: 2.2, height: 2, fill: "#f2f2f2" }));
+    p.appendChild(mk("rect", { x: -4.2, y: 12.4, width: 1.4, height: 4, rx: .6, fill: "#8a5a3b" }));
+  },
+  clipboard: (p) => {
+    p.appendChild(mk("rect", { x: -2.5, y: 3.5, width: 5, height: 8.5, rx: 1, fill: "#f2d59a", stroke: "#d9b56a", "stroke-width": 1 }));
+    p.appendChild(mk("rect", { x: -1.6, y: 2.8, width: 3.2, height: 1.6, rx: .4, fill: "#8a8a9a" }));
+    p.appendChild(mk("line", { x1: -1.5, y1: 6.5, x2: 1.5, y2: 6.5, stroke: "#c9a45a", "stroke-width": .8 }));
+    p.appendChild(mk("line", { x1: -1.5, y1: 8.5, x2: 1.5, y2: 8.5, stroke: "#c9a45a", "stroke-width": .8 }));
+    p.appendChild(mk("line", { x1: -1.5, y1: 10.5, x2: 0.5, y2: 10.5, stroke: "#c9a45a", "stroke-width": .8 }));
+  },
+  brush: (p) => {   // paintbrush with purple bristles
+    p.appendChild(mk("line", { x1: 0, y1: 3, x2: 0, y2: 11, stroke: "#c67f24", "stroke-width": 1.6 }));
+    p.appendChild(mk("rect", { x: -1, y: 11, width: 2, height: 1.6, fill: "#d9d9ee" }));
+    p.appendChild(mk("polygon", { points: "-1.6,13.2 1.6,13.2 0,15.4", fill: "#a78bfa" }));
+  },
+  notebook: (p) => {
+    p.appendChild(mk("rect", { x: -3, y: 3.5, width: 6, height: 9, rx: 1, fill: "#e9e9f2", stroke: "#b9b9cf", "stroke-width": 1 }));
+    p.appendChild(mk("line", { x1: -1.6, y1: 6.5, x2: 1.6, y2: 6.5, stroke: "#9a9ab8", "stroke-width": .8 }));
+    p.appendChild(mk("line", { x1: -1.6, y1: 8.5, x2: 1.6, y2: 8.5, stroke: "#9a9ab8", "stroke-width": .8 }));
+    p.appendChild(mk("line", { x1: -1.6, y1: 10.5, x2: 0.6, y2: 10.5, stroke: "#9a9ab8", "stroke-width": .8 }));
+  },
+  popcorn: (p) => {
+    p.appendChild(mk("rect", { x: -3.5, y: 8, width: 7, height: 5, rx: 1, fill: "#e74c3c", stroke: "#c0392b", "stroke-width": 1 }));
+    p.appendChild(mk("polygon", { points: "-2.8,8 -1.8,8 -2.3,5.6", fill: "#f5e9b8" }));
+    p.appendChild(mk("polygon", { points: "-0.4,8 0.6,8 0.1,5.2", fill: "#f5e9b8" }));
+    p.appendChild(mk("polygon", { points: "2,8 3,8 2.5,5.8", fill: "#f5e9b8" }));
+  },
+  pizza: (p) => {
+    p.appendChild(mk("polygon", { points: "0,3 9,15 -7,15", fill: "#e8a13a", stroke: "#c67f24", "stroke-width": 1 }));
+    p.appendChild(mk("circle", { cx: 1, cy: 8, r: 1.6, fill: "#c0392b" }));
+    p.appendChild(mk("circle", { cx: 4, cy: 12, r: 1.3, fill: "#c0392b" }));
+  },
+  pointer: (p) => {   // teacher's pointing stick
+    p.appendChild(mk("line", { x1: 0, y1: 14, x2: -13, y2: -11, stroke: "#d9d9ee", "stroke-width": 2 }));
+    p.appendChild(mk("circle", { cx: -13, cy: -11, r: 1.7, fill: "#e74c3c" }));
+  }
+};
+
+/* which prop goes in which hand at each station (L = left arm, R = right arm, head = headphones) */
+const STATION_PROPS = {
+  buffy: {
+    LOUNGE:          { L: "coffee",   R: null },
+    "PROJECT FOLDER": { L: "notebook", R: null },
+    COFFEE:          { L: "coffee",   R: null },
+    LAPTOP:          { L: "coffee",   R: "laptop",  head: "headphones" },
+    STUDIO:          { L: "coffee",   R: "clapper", head: "headphones" },
+    "BRO'S DESK":    { L: "coffee",   R: null },
+    "STORY WALL":    { L: "clipboard", R: null },
+    "BANNER STUDIO": { L: "brush",    R: null },
+    TEACH:           { L: "pointer",  R: null }
+  },
+  you: {
+    LOUNGE:          { L: "coffee",   R: "phone" },
+    "PROJECT FOLDER": { L: "notebook", R: "phone" },
+    COFFEE:          { L: "coffee",   R: "phone" },
+    LAPTOP:          { L: "laptop",   R: "phone" },
+    STUDIO:          { L: "coffee",   R: "phone", head: "headphones" },
+    "BRO'S DESK":    { L: "coffee",   R: "phone" },
+    "STORY WALL":    { L: "clipboard", R: "phone" },
+    "BANNER STUDIO": { L: "brush",    R: "phone" },
+    TEACH:           { L: "pointer",  R: "phone" }
+  },
+  bro: {
+    LOUNGE:          { L: null,   R: "pizza" },
+    "PROJECT FOLDER": { L: null,   R: "pizza" },
+    COFFEE:          { L: "mug",  R: null },
+    LAPTOP:          { L: null,   R: "pizza", head: "headphones" },
+    STUDIO:          { L: null,   R: "pizza", head: "headphones" },
+    "BRO'S DESK":    { L: null,   R: "pizza", head: "headphones" },
+    "STORY WALL":    { L: null,   R: "popcorn" },
+    "BANNER STUDIO": { L: "mug",  R: "pizza" },
+    TEACH:           { L: "mug",  R: "pointer" }
+  }
+};
+const DRINK = { coffee: 1, mug: 1 };
+
+function setStationProps(key, station) {
+  const a = agents[key];
+  if (!a || !a.handProps) return;
+  const agentCfg = STATION_PROPS[key] || {};
+  const cfg = agentCfg[station] || agentCfg.LOUNGE || { L: null, R: null };
+  a.station = station;
+  const wantL = cfg.L || null, wantR = cfg.R || null;
+  for (const slot of ["L", "R"]) {
+    const want = slot === "L" ? wantL : wantR;
+    for (const name of Object.keys(a.handProps[slot])) {
+      a.handProps[slot][name].setAttribute("display", name === want ? "inline" : "none");
+    }
+  }
+  if (a.headphones) a.headphones.setAttribute("display", cfg.head ? "inline" : "none");
+  // which arm gets lifted by the sip/bite animation
+  a.sipArm = DRINK[wantL] ? "L" : DRINK[wantR] ? "R" : (wantL ? "L" : wantR ? "R" : null);
 }
 
 /* shade a hex color by +/-delta (for limbs: darker sleeves/legs) */
@@ -514,6 +653,7 @@ function applyState(state) {
     const station = (meta.station || "LOUNGE").toUpperCase();
     if (!zoomOn) {   // while a station is zoomed, the teacher stays in place
       agents[key].target = STATIONS[station] || STATIONS["LOUNGE"];
+      setStationProps(key, station);
       updateBubble(key, meta.activity);
     }
     const row = document.createElement("div");
@@ -616,6 +756,7 @@ function demoLoop() {
     const [key, station, act] = DEMO_MOVES[demoI % DEMO_MOVES.length];
     demoI++;
     agents[key].target = STATIONS[station] || STATIONS.LOUNGE;
+    setStationProps(key, station);
     updateBubble(key, act);
     // keep the WHO'S DOING WHAT panel in sync with the wander
     const meta = INITIAL.agents[key];
@@ -672,6 +813,7 @@ function zoomTo(stationKey) {
   const owner = OWNERS[stationKey] || "buffy";
   const podium = screenToSvg(150, 470);
   agents[owner].target = podium;
+  setStationProps(owner, "TEACH");
   updateBubble(owner, TEACHER_LINES[stationKey] || "So — what are you thinking about?");
   if (agents[owner].ring) agents[owner].ring.setAttribute("display", "inline");
 }
@@ -720,6 +862,7 @@ function broSetStatus(on, label) {
 function broMove(station, activity) {
   // Bro visibly walks to the station and his card + bubble update
   if (agents.bro) agents.bro.target = STATIONS[station] || STATIONS["BRO'S DESK"];
+  setStationProps("bro", station);
   updateBubble("bro", activity);
   const meta = INITIAL.agents.bro;
   const row = document.createElement("div");
