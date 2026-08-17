@@ -29,12 +29,24 @@
   .log-row .t { color:#6f6f92; flex:none; }
   .log-row .who { font-weight:600; flex:none; }
   .foot { font-size:11px; color:var(--dim); margin-top:10px; line-height:1.5; }
+
+  /* ---------- day / night mode (follows UTC hours) ---------- */
+  #suncircle, body.day #mooncircle, body.day .star { display:none; }
+  body.day #suncircle { display:inline; }
+  body.day #wallGrad stop:first-child { stop-color:#3b4a6e; }
+  body.day #wallGrad stop:last-child  { stop-color:#4d5f8a; }
+  body.day #floorGrad stop:first-child { stop-color:#6a5238; }
+  body.day #floorGrad stop:last-child  { stop-color:#4a3a28; }
+  body.day .window-bg { fill:#bcd4f5; }
+  body.day .window-frame { stroke:#5a6a8a; }
+  #clock { margin-left:auto; font-size:12px; color:var(--dim); }
 </style>
 </head>
 <body>
 <header>
   <h1>🎮 Story Lab <span>Agent Room</span></h1>
   <span id="room-status">Loading…</span>
+  <span id="clock"></span>
 </header>
 <main>
   <div class="room-wrap">
@@ -49,6 +61,12 @@
         <radialGradient id="moon" cx=".4" cy=".4" r=".8">
           <stop offset="0" stop-color="#f5e9b8"/><stop offset="1" stop-color="#d9c66b"/>
         </radialGradient>
+        <radialGradient id="sun" cx=".5" cy=".5" r=".7">
+          <stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#f7b733"/>
+        </radialGradient>
+        <linearGradient id="bannerGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#7c3aed"/><stop offset="1" stop-color="#a78bfa"/>
+        </linearGradient>
       </defs>
 
       <!-- room shell -->
@@ -57,12 +75,14 @@
       <line x1="0" y1="430" x2="960" y2="430" stroke="#11111f" stroke-width="4"/>
 
       <!-- window + moon + stars -->
-      <rect x="40" y="50" width="150" height="120" rx="8" fill="#0f0f1e" stroke="#33335c" stroke-width="3"/>
+      <rect class="window-bg" x="40" y="50" width="150" height="120" rx="8" fill="#0f0f1e" stroke="#33335c" stroke-width="3"/>
+      <rect class="window-frame" x="40" y="50" width="150" height="120" rx="8" fill="none" stroke="#33335c" stroke-width="3"/>
       <line x1="115" y1="50" x2="115" y2="170" stroke="#33335c" stroke-width="3"/>
       <line x1="40" y1="110" x2="190" y2="110" stroke="#33335c" stroke-width="3"/>
-      <circle cx="75" cy="80" r="16" fill="url(#moon)"/>
-      <circle cx="150" cy="70" r="1.6" fill="#fff" opacity=".7"/><circle cx="70" cy="135" r="1.2" fill="#fff" opacity=".5"/>
-      <circle cx="165" cy="135" r="1.4" fill="#fff" opacity=".6"/><circle cx="110" cy="60" r="1" fill="#fff" opacity=".5"/>
+      <circle id="mooncircle" cx="75" cy="80" r="16" fill="url(#moon)"/>
+      <circle id="suncircle" cx="75" cy="80" r="17" fill="url(#sun)"/>
+      <circle class="star" cx="150" cy="70" r="1.6" fill="#fff" opacity=".7"/><circle class="star" cx="70" cy="135" r="1.2" fill="#fff" opacity=".5"/>
+      <circle class="star" cx="165" cy="135" r="1.4" fill="#fff" opacity=".6"/><circle class="star" cx="110" cy="60" r="1" fill="#fff" opacity=".5"/>
 
       <!-- neon sign -->
       <text x="480" y="70" text-anchor="middle" font-size="30" font-weight="800" fill="#a78bfa" opacity=".9" font-family="Segoe UI,Arial">STORY LAB HQ</text>
@@ -132,6 +152,40 @@
         <rect x="884" y="309" width="16" height="14" rx="2" fill="#e07a5f"/>
         <text x="877" y="322" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">BRO'S DESK</text>
       </g>
+
+      <!-- STORY WALL (voting board with the latest Reddit picks) -->
+      <g id="st-STORY WALL">
+        <rect x="400" y="180" width="220" height="150" rx="8" fill="#1b1b2f" stroke="#3a3a5e" stroke-width="3"/>
+        <text x="510" y="200" text-anchor="middle" font-size="11" fill="#8f8fb8" font-family="Segoe UI,Arial">STORY WALL &#183; latest picks</text>
+        <rect x="414" y="208" width="60" height="78" rx="4" fill="#26263f" stroke="#4a4a76" stroke-width="1.5"/>
+        <polygon points="432,214 444,214 444,224 448,224 436,236 424,224 428,224" fill="#fb923c"/>
+        <rect x="424" y="244" width="40" height="9" rx="4" fill="#fb923c" opacity=".85"/>
+        <rect x="424" y="258" width="40" height="9" rx="4" fill="#4ade80" opacity=".8"/>
+        <rect x="424" y="272" width="40" height="9" rx="4" fill="#a78bfa" opacity=".8"/>
+        <rect x="480" y="208" width="60" height="78" rx="4" fill="#26263f" stroke="#4a4a76" stroke-width="1.5"/>
+        <polygon points="498,214 510,214 510,224 514,224 502,236 490,224 494,224" fill="#fb923c"/>
+        <rect x="490" y="244" width="40" height="9" rx="4" fill="#4ade80" opacity=".8"/>
+        <rect x="490" y="258" width="40" height="9" rx="4" fill="#fb923c" opacity=".85"/>
+        <rect x="490" y="272" width="40" height="9" rx="4" fill="#a78bfa" opacity=".8"/>
+        <rect x="546" y="208" width="60" height="78" rx="4" fill="#26263f" stroke="#4a4a76" stroke-width="1.5"/>
+        <polygon points="564,214 576,214 576,224 580,224 568,236 556,224 560,224" fill="#fb923c"/>
+        <rect x="556" y="244" width="40" height="9" rx="4" fill="#a78bfa" opacity=".8"/>
+        <rect x="556" y="258" width="40" height="9" rx="4" fill="#4ade80" opacity=".8"/>
+        <rect x="556" y="272" width="40" height="9" rx="4" fill="#fb923c" opacity=".85"/>
+        <text x="510" y="345" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">STORY WALL</text>
+      </g>
+
+      <!-- BANNER STUDIO -->
+      <g id="st-BANNER STUDIO">
+        <rect x="610" y="250" width="150" height="9" rx="3" fill="#4a3826"/>
+        <rect x="622" y="196" width="126" height="58" rx="4" fill="url(#bannerGrad)"/>
+        <text x="685" y="220" text-anchor="middle" font-size="16" font-weight="800" fill="#fff" font-family="Segoe UI,Arial">STORY LAB</text>
+        <text x="685" y="238" text-anchor="middle" font-size="10" fill="#f5e9b8" font-family="Segoe UI,Arial">NEW STORY EVERY DAY</text>
+        <rect x="628" y="260" width="40" height="10" rx="2" fill="#e07a5f"/>
+        <rect x="676" y="260" width="30" height="10" rx="2" fill="#4ade80"/>
+        <rect x="714" y="260" width="36" height="10" rx="2" fill="#fb923c"/>
+        <text x="685" y="288" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">BANNER STUDIO</text>
+      </g>
     </svg>
   </div>
 
@@ -160,7 +214,9 @@ const STATIONS = {
   "COFFEE":         {x: 520, y: 470},
   "LAPTOP":         {x: 697, y: 470},
   "STUDIO":         {x: 875, y: 470},
-  "BRO'S DESK":     {x: 877, y: 380}
+  "BRO'S DESK":     {x: 877, y: 380},
+  "STORY WALL":     {x: 505, y: 390},
+  "BANNER STUDIO":  {x: 685, y: 380}
 };
 
 /* fallback state so the page always renders (file://, offline, etc.) */
@@ -339,7 +395,9 @@ const DEMO_MOVES = [
   ["buffy", "PROJECT FOLDER", "Editing video_compile.py"], ["you", "LAPTOP", "Watching the pipeline"],
   ["buffy", "STUDIO", "Rendering segments @ 60fps"], ["bro", "COFFEE", "Refilling his mug"],
   ["you", "COFFEE", "Getting a refill"], ["buffy", "PROJECT FOLDER", "Pushing the fix"],
-  ["bro", "STUDIO", "Monitoring the render"], ["buffy", "LOUNGE", "Done — what's next?"]
+  ["bro", "STORY WALL", "Voting on the latest picks"], ["buffy", "BANNER STUDIO", "Tweaking the banner colors"],
+  ["you", "STORY WALL", "Reading the top story"], ["bro", "STUDIO", "Monitoring the render"],
+  ["buffy", "LOUNGE", "Done — what's next?"]
 ];
 let demoI = 0, demoOn = false;
 function demoLoop() {
@@ -368,6 +426,19 @@ function demoLoop() {
 
 /* init */
 for (const [key, meta] of Object.entries(INITIAL.agents)) makeAgent(key, meta);
+
+/* ---------- day / night clock (UTC) ---------- */
+function setMode() {
+  const h = new Date().getUTCHours();
+  const day = h >= 6 && h < 18;
+  document.body.classList.toggle("day", day);
+  document.body.classList.toggle("night", !day);
+  const clk = document.getElementById("clock");
+  if (clk) clk.textContent = (day ? "☀️" : "🌙") + " " + new Date().toISOString().slice(11, 16) + " UTC · " + (day ? "day" : "night");
+}
+setMode();
+setInterval(setMode, 30000);
+
 if (new URLSearchParams(location.search).has("demo")) {
   applyState({ ...INITIAL, updated_at: "demo mode — everyone wandering" });
   demoLoop();
