@@ -173,7 +173,7 @@
       </g>
 
       <!-- neon sign (warm amber glow) -->
-      <text x="480" y="78" text-anchor="middle" font-size="30" font-weight="800" fill="#fbbf24" font-family="Segoe UI,Arial" style="filter:drop-shadow(0 0 7px rgba(251,191,36,.85))">STORY LAB HQ</text>
+      <text id="neon-sign" x="480" y="78" text-anchor="middle" font-size="30" font-weight="800" fill="#fbbf24" font-family="Segoe UI,Arial" style="filter:drop-shadow(0 0 7px rgba(251,191,36,.85))">STORY LAB HQ</text>
       <text x="480" y="100" text-anchor="middle" font-size="11" fill="#9ab5ac" font-family="Segoe UI,Arial">est. 2026 — 3 agents, 1 mission</text>
 
       <!-- potted plants in the corners -->
@@ -868,6 +868,7 @@ function frame(now) {
     if (a.eyeR) { a.eyeR.setAttribute("height", eh); a.eyeR.setAttribute("y", ey); }
   }
   botFrame(t);
+  neonFrame(t);
   requestAnimationFrame(frame);
 }
 
@@ -1100,6 +1101,36 @@ function botFrame(t) {
       b.g.setAttribute("display", "none");
       b.box.setAttribute("display", "inline");
       b.nextIn = t + 24 + Math.random() * 22;
+    }
+  }
+}
+
+/* ---------- neon sign flicker (like a real tube warming up) ---------- */
+const neon = document.getElementById("neon-sign");
+const NEON_PATTERNS = [
+  [1, .25, .8, .12, 1],
+  [1, .15, .9, .3, 1, .05, 1],
+  [1, .5, .1, .85, .2, 1]
+];
+let neonStart = -1, neonDur = 0, neonPat = NEON_PATTERNS[0];
+let neonNext = (performance.now() / 1000) + 6 + Math.random() * 8;   // first stutter soon after load
+
+function neonFrame(t) {
+  if (!neon) return;
+  if (neonStart < 0 && t > neonNext) {
+    neonPat = NEON_PATTERNS[Math.floor(Math.random() * NEON_PATTERNS.length)];
+    neonDur = 0.25 + Math.random() * 0.35;
+    neonStart = t;
+    neonNext = t + 7 + Math.random() * 14;   // next flicker in 7-21s
+  }
+  if (neonStart >= 0) {
+    const el = t - neonStart;
+    if (el < neonDur) {
+      const idx = Math.min(neonPat.length - 1, Math.floor((el / neonDur) * neonPat.length));
+      neon.setAttribute("opacity", neonPat[idx]);
+    } else {
+      neon.setAttribute("opacity", 1);
+      neonStart = -1;
     }
   }
 }
