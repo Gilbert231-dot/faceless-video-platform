@@ -32,6 +32,15 @@ FRAME_USERNAME = "StoryLab"
 # refills the bank (fetch_stories.py on the laptop, or its weekly schedule).
 STORY_REFILL_THRESHOLD = 100  # must match MIN_UNUSED in fetch_stories.py
 
+# FIXED (3.6s video bug): a near-empty Reddit post ("Being gay is very
+# frustrating. I am a gay man and And that's how it all went down.") adapted
+# into an 18-word narration and rendered a 3.6-second video. Stories whose
+# ADAPTED narration is shorter than MIN_NARRATION_CHARS are skipped and
+# another story is picked instead. Measured rate is ~22 chars/sec of speech,
+# so 1200 chars ~= 55s of video - comfortably above a watchable short.
+MIN_NARRATION_CHARS = 1200
+MAX_STORY_ATTEMPTS = 5
+
 # Initialize gender detector
 gender_detector = GenderDetector(default_voice="male")
 
@@ -346,28 +355,49 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 "detail": "No unused stories available! Run story_manager.py to add more stories."
             }
         
-        story = story_loader.get_random_story(subreddit, force_real=force_real)
+        # --- PICK A STORY LONG ENOUGH FOR A REAL VIDEO ---
+        # FIXED (3.6s video bug): retry until the ADAPTED narration is long
+        # enough to render a proper short. Skipped stories are NOT marked
+        # used, so they stay in the bank for the refill/filtering later.
+        story = None
+        for attempt in range(MAX_STORY_ATTEMPTS):
+            story = story_loader.get_random_story(subreddit, force_real=force_real)
+            if not story:
+                return {
+                    "status": "error",
+                    "detail": f"No unused stories available in {'r/' + subreddit if subreddit else 'any subreddit'}"
+                }
+            
+            title = story.get('title', 'No Title')
+            raw_text = story.get('story', '')
+            subreddit_name = story.get('subreddit', 'unknown')
+            story_id = story.get('story_id') or story.get('id', 'unknown')
+            score = story.get('score', 0)
+            author = story.get('author', 'unknown')
+            
+            # --- ADAPT REDDIT STORY (Generate Hook + Normalize Slang) ---
+            print(f"\n🪝 Generating hook and normalizing slang...")
+            adapted = adapt_reddit_story(title, raw_text, use_hook=True)
+            
+            hook = adapted.get('hook')
+            normalized_title = adapted.get('normalized_title')
+            story_text = adapted['script']
+            
+            if len(story_text) >= MIN_NARRATION_CHARS:
+                print(f"   ✅ Story narration {len(story_text)} chars (≥ {MIN_NARRATION_CHARS})")
+                break
+            
+            print(f"   ⏭️ Story too short to narrate ({len(story_text)} chars < "
+                  f"{MIN_NARRATION_CHARS}) — picking another story "
+                  f"(attempt {attempt + 2}/{MAX_STORY_ATTEMPTS})")
+            story = None
         
-        if not story:
+        if story is None:
             return {
                 "status": "error",
-                "detail": f"No unused stories available in {'r/' + subreddit if subreddit else 'any subreddit'}"
+                "detail": (f"No story long enough to narrate (min {MIN_NARRATION_CHARS} "
+                           f"chars) after {MAX_STORY_ATTEMPTS} attempts")
             }
-        
-        title = story.get('title', 'No Title')
-        story_text = story.get('story', '')
-        subreddit_name = story.get('subreddit', 'unknown')
-        story_id = story.get('story_id') or story.get('id', 'unknown')
-        score = story.get('score', 0)
-        author = story.get('author', 'unknown')
-        
-        # --- ADAPT REDDIT STORY (Generate Hook + Normalize Slang) ---
-        print(f"\n🪝 Generating hook and normalizing slang...")
-        adapted = adapt_reddit_story(title, story_text, use_hook=True)
-        
-        hook = adapted.get('hook')
-        normalized_title = adapted.get('normalized_title')
-        story_text = adapted['script']
         
         if hook:
             title = hook
