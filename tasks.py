@@ -37,8 +37,10 @@ STORY_REFILL_THRESHOLD = 100  # must match MIN_UNUSED in fetch_stories.py
 # into an 18-word narration and rendered a 3.6-second video. Stories whose
 # ADAPTED narration is shorter than MIN_NARRATION_CHARS are skipped and
 # another story is picked instead. Measured rate is ~22 chars/sec of speech,
-# so 1200 chars ~= 55s of video - comfortably above a watchable short.
-MIN_NARRATION_CHARS = 1200
+# so 600 chars ~= 27s of video - keeps short-but-watchable stories in
+# (user: "reduce that to 600 chars not 1200") while still killing the
+# near-empty 3.6s disasters.
+MIN_NARRATION_CHARS = 600
 MAX_STORY_ATTEMPTS = 5
 
 # Initialize gender detector
