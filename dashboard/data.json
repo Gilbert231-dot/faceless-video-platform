@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-16T17:32:50Z",
+  "generated_at": "2026-08-17T04:02:15Z",
   "total_stories": 355,
   "unused_stories": 350,
   "used_stories": 5,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 175,
-  "runway_date": "2027-02-07",
+  "runway_date": "2027-02-08",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 21
+    "next_index": 23
   },
   "youtube": {
     "privacy": "public",
@@ -97,11 +97,51 @@
       "20:00"
     ],
     "next_publish_utc": [
-      "2026-08-20T12:00:00Z",
-      "2026-08-20T20:00:00Z"
+      "2026-08-21T12:00:00Z",
+      "2026-08-21T20:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1786938079_captioned_1786938086.mp4",
+      "title": "[TEST] IT told me I didn't understand the systems, so I stopped fixing them. The store learned what I actually did.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1753605009267591",
+      "url": "https://www.facebook.com/1272041649331476/videos/1753605009267591",
+      "posted_at": "2026-08-17T04:02:15Z"
+    },
+    {
+      "video_file": "output_1786932984_captioned_1786932987.mp4",
+      "title": "[TEST] Boyfriend (35 year old male) left me (28 year old female) in bed after only trying to get me off for 4 minutes bc he was “frustrated”",
+      "subreddit": "relationship_advice",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122096845131447442",
+      "url": "https://www.facebook.com/reel/1792170671779162",
+      "posted_at": "2026-08-17T04:01:39Z"
+    },
+    {
+      "video_file": "output_1786938079_captioned_1786938086.mp4",
+      "title": "[TEST] IT told me I didn't understand the systems, so I stopped fixing them. The store learned what I actually did.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "I_cB-u7Ycho",
+      "url": "https://youtu.be/I_cB-u7Ycho",
+      "posted_at": "2026-08-17T04:01:08Z"
+    },
+    {
+      "video_file": "output_1786932984_captioned_1786932987.mp4",
+      "title": "[TEST] Boyfriend (35 year old male) left me (28 year old female) in bed after only trying to get me off for 4 minutes bc he was “frustrated”",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "2ACELOLQWRQ",
+      "url": "https://youtu.be/2ACELOLQWRQ",
+      "posted_at": "2026-08-17T04:00:47Z"
+    },
     {
       "video_file": "output_1786900647_captioned_1786900651.mp4",
       "title": "[TEST] I've given up on life and I wish for it to end every single day",
@@ -161,50 +201,6 @@
       "video_id": "eLYjB4EBVXk",
       "url": "https://youtu.be/eLYjB4EBVXk",
       "posted_at": "2026-08-16T14:40:23Z"
-    },
-    {
-      "video_file": "output_1786764983_captioned_1786764985.mp4",
-      "title": "\"I cooked my dad a gourmet lunch, but my 13yo half brother ATE IT ALL, leaving me with nothing.\"",
-      "subreddit": "AmItheAsshole",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122095644267447442",
-      "url": "https://www.facebook.com/reel/1112608708088288",
-      "posted_at": "2026-08-15T03:41:43Z",
-      "publish_at": "2026-08-18T20:00:00Z"
-    },
-    {
-      "video_file": "output_1786763784_captioned_1786763788.mp4",
-      "title": "\"You've been dating for a year, but is everything he told you a lie?\"",
-      "subreddit": "relationship_advice",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122095644165447442",
-      "url": "https://www.facebook.com/reel/1750701062637953",
-      "posted_at": "2026-08-15T03:41:28Z",
-      "publish_at": "2026-08-18T12:00:00Z"
-    },
-    {
-      "video_file": "output_1786764983_captioned_1786764985.mp4",
-      "title": "\"I cooked my dad a gourmet lunch, but my 13yo half brother ATE IT ALL, leaving me with nothing.\"",
-      "subreddit": "AmItheAsshole",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "HW1chrDHMhI",
-      "url": "https://youtu.be/HW1chrDHMhI",
-      "posted_at": "2026-08-15T03:41:05Z",
-      "publish_at": "2026-08-18T20:00:00Z"
-    },
-    {
-      "video_file": "output_1786763784_captioned_1786763788.mp4",
-      "title": "\"You've been dating for a year, but is everything he told you a lie?\"",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "epWtHhFHQbw",
-      "url": "https://youtu.be/epWtHhFHQbw",
-      "posted_at": "2026-08-15T03:40:59Z",
-      "publish_at": "2026-08-18T12:00:00Z"
     }
   ]
 }

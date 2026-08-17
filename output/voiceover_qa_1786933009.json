@@ -1,0 +1,14 @@
+{
+  "im_regions_checked": 13,
+  "transcribed_ale_words": [],
+  "gap_artifacts": [
+    {
+      "after": "am,",
+      "next_word": "still",
+      "gap_sec": 0.321,
+      "mute_from": 56.189,
+      "mute_to": 56.49
+    }
+  ],
+  "verdict": "FAIL"
+}
