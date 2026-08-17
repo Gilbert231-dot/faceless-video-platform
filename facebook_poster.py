@@ -29,7 +29,10 @@ Key facts (verified against Meta docs, 2026):
   - scheduled_publish_time (unix UTC) drops the video in the page's Scheduled
     queue; it goes public automatically at that time.
   - Needs the app permissions pages_show_list, pages_read_engagement,
-    pages_manage_posts (see FACEBOOK_SETUP.md).
+    pages_manage_posts (see FACEBOOK_SETUP.md). Custom thumbnails go
+    through the Video Thumbnails API and may additionally need
+    pages_manage_engagement on the token (fails SOFTLY if missing — the
+    video still posts without a custom thumb).
 """
 
 import datetime
@@ -238,6 +241,37 @@ def _upload_file(session_id, token, video_path):
     raise FacebookError("Upload finished but no file handle was returned.")
 
 
+def _set_thumbnail(video_id, token, thumbnail_path):
+    """Set a custom thumbnail on a published video via the Video Thumbnails
+    API: POST /{video_id}/thumbnails?is_preferred=true&source=@file.jpg.
+
+    Works for both Reels and regular page videos. Fails SOFTLY (logs a
+    warning) so a missing/unauthorized thumbnail never breaks the run —
+    the video still posts, just with Facebook's auto-picked cover.
+    """
+    if not thumbnail_path or not os.path.exists(thumbnail_path):
+        return False
+    try:
+        with open(thumbnail_path, "rb") as fh:
+            resp = requests.post(
+                f"{GRAPH}/{video_id}/thumbnails",
+                params={"access_token": token, "is_preferred": "true"},
+                files={"source": (os.path.basename(thumbnail_path), fh, "image/jpeg")},
+                timeout=HTTP_TIMEOUT,
+            )
+        _check(resp, "set video thumbnail")
+        logger.info("🖼️ Custom thumbnail set on video %s", video_id)
+        return True
+    except FacebookError as exc:
+        logger.warning(
+            "⚠️ Custom thumbnail skipped (%s) — video still posted with an "
+            "auto cover. If this is a permissions error, the token needs "
+            "pages_manage_engagement (re-run facebook_setup.py with that "
+            "scope and update FB_PAGE_ACCESS_TOKEN).", exc,
+        )
+        return False
+
+
 def _to_unix(scheduled):
     """Accept an ISO 8601 UTC string (or already-unix number) -> unix int."""
     if not scheduled:
@@ -348,7 +382,7 @@ def _video_duration(video_path):
 
 
 def _publish_reel(page_id, token, video_path, title, description, published,
-                  scheduled_unix):
+                  scheduled_unix, thumbnail_path=None):
     """Publish the video as a Facebook Reel via the video_reels API.
 
     Flow (per Meta's Reels Publishing docs):
@@ -430,8 +464,14 @@ def _publish_reel(page_id, token, video_path, title, description, published,
                          timeout=UPLOAD_TIMEOUT)
     payload = _check(resp, "publish reel")
     post_id = payload.get("post_id") or video_id
+
+    # Custom thumbnail (the reddit card) so FB shows the same cover as YT.
+    if thumbnail_path:
+        _set_thumbnail(video_id, token, thumbnail_path)
+
     result = {
         "id": post_id,
+        "video_id": video_id,
         "url": f"https://www.facebook.com/reel/{video_id}",
         "published": published,
         "reel": True,
@@ -461,6 +501,7 @@ def publish_to_facebook(
     description=None,
     published=True,
     scheduled_publish_time=None,
+    thumbnail_path=None,
     max_attempts=3,
 ):
     """Upload + publish one video to a Facebook Page.
@@ -503,7 +544,7 @@ def publish_to_facebook(
                 try:
                     return _publish_reel(
                         page_id, token, video_path, title, description,
-                        published, scheduled_unix,
+                        published, scheduled_unix, thumbnail_path,
                     )
                 except FacebookError as exc:
                     last_error = exc
@@ -552,6 +593,11 @@ def publish_to_facebook(
                     page_id, token, video_path, title, description,
                     published, scheduled_unix,
                 )
+
+            # Custom thumbnail (the reddit card) so FB shows the same cover
+            # as YT. The video id IS the post id on this path.
+            if post_id and thumbnail_path:
+                _set_thumbnail(post_id, token, thumbnail_path)
 
             result = {
                 "id": post_id,

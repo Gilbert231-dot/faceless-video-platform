@@ -63,6 +63,13 @@ standard-approval permissions):
 | `pages_show_list` | lets the setup script list your Pages (`/me/accounts`) |
 | `pages_read_engagement` | read access to the Page (required for publishing) |
 | `pages_manage_posts` | create/publish videos on the Page |
+| `pages_manage_engagement` | **optional but recommended** — unlocks the Video Thumbnails API so every video gets the reddit-card custom cover (same as YouTube). Without it, videos still post but use Facebook's auto-picked thumbnail |
+
+> If your token was minted before `pages_manage_engagement` was added, the
+> custom thumbnail step logs a soft warning and videos still post fine. To
+> enable thumbnails, add the permission in **App Review → Permissions and
+> Features** and re-run `facebook_setup.py` to mint a new token, then update
+> the `FB_PAGE_ACCESS_TOKEN` secret.
 
 ### 5. Authorize your Page (run the setup script)
 Run this on your own computer (not in GitHub Actions), from the repo folder:

@@ -126,7 +126,10 @@ def ensure_local_certs():
 # Permissions the pipeline needs to post videos to your page (see
 # FACEBOOK_SETUP.md). pages_show_list unlocks /me/accounts (page list),
 # pages_read_engagement + pages_manage_posts unlock publishing.
-SCOPES = "pages_show_list,pages_read_engagement,pages_manage_posts"
+# pages_manage_engagement additionally unlocks the Video Thumbnails API
+# (custom cover images on posted videos) — added so a re-auth mints a
+# token that can set the reddit-card thumbnail on every video.
+SCOPES = "pages_show_list,pages_read_engagement,pages_manage_posts,pages_manage_engagement"
 
 AUTH_URL = (
     f"{DIALOG}?client_id={{app_id}}&redirect_uri="
