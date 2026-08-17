@@ -540,6 +540,7 @@ jobs:
           path: |
             output/*.mp4
             output/*.json
+            output/*.jpg
           if-no-files-found: warn
           retention-days: 7
 
