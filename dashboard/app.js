@@ -178,6 +178,25 @@ function renderVideos(videos) {
                 month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
             })));
         }
+        // Performance metrics (filled in by performance_tracker.py for YouTube videos)
+        if (v.views !== undefined && v.views !== null) {
+            const stats = [];
+            stats.push(`${v.views.toLocaleString()} views`);
+            if (v.completion_pct !== undefined && v.completion_pct !== null) {
+                const pct = Number(v.completion_pct).toFixed(1);
+                const good = Number(v.completion_pct) >= 60;
+                const badge = el("span", good ? "perf-badge perf-good" : "perf-badge", `${pct}% completion`);
+                stats.push(badge);
+            }
+            if (v.avg_view_duration_sec !== undefined && v.avg_view_duration_sec !== null) {
+                stats.push(el("span", "run-meta", `${Number(v.avg_view_duration_sec).toFixed(1)}s avg view`));
+            }
+            if (stats.length) {
+                const wrap = el("span", "perf-stats");
+                stats.forEach(s => wrap.appendChild(typeof s === "string" ? el("span", "run-meta", s) : s));
+                meta.appendChild(wrap);
+            }
+        }
         if (v.error) meta.appendChild(el("span", "run-meta", v.error));
 
         item.append(top, meta);

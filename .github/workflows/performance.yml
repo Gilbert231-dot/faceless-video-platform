@@ -1,0 +1,69 @@
+name: Performance Tracker
+
+on:
+  schedule:
+    # Refresh YouTube performance stats once a day (after the morning
+    # generation finishes around 02:00 UTC, so new uploads are counted).
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to push the refreshed metrics back to the repo
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      # PAUSE SWITCH: same convention as generate_video.yml — an
+      # AUTOMATION_PAUSED file at the repo root skips the tracker too.
+      - name: Check automation is not paused
+        id: pause
+        run: |
+          if [ -f AUTOMATION_PAUSED ]; then
+            echo "⏸️  Automation is PAUSED — skipping performance refresh."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.pause.outputs.go == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        if: steps.pause.outputs.go == 'true'
+        run: pip install google-api-python-client google-auth-oauthlib python-dotenv
+
+      - name: Fetch performance metrics
+        if: steps.pause.outputs.go == 'true'
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: |
+          python performance_tracker.py || echo "tracker non-zero — continuing to rebuild dashboard"
+
+      - name: Rebuild dashboard data
+        if: steps.pause.outputs.go == 'true'
+        run: |
+          cd dashboard && python build_data.py && cd ..
+
+      - name: Commit refreshed metrics
+        if: steps.pause.outputs.go == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add video_history.json dashboard/data.json
+          if git diff --cached --quiet; then
+            echo "ℹ️ No metric changes — nothing to commit."
+          else
+            git commit -m "Refresh per-video performance metrics (daily tracker)"
+            git push
+          fi
