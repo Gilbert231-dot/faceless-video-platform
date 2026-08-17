@@ -27,6 +27,23 @@ DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() in ("true", "1", "yes")
 VOICE_SPEED = 1.12
 
 # ===========================
+# NARRATOR PAUSE COMPRESSION
+# ===========================
+# The narrator pauses between sentences; these knobs SHORTEN those gaps
+# slightly (user request: "speed up the narrator's pauses just a little").
+# Applied to the RAW voiceover right after TTS, so footage duration, the
+# atempo speed-up, and whisper caption timing all see the SAME compressed
+# timeline and stay in sync. Pauses shorter than PAUSE_MIN_SEC are left
+# untouched; longer ones keep PAUSE_KEEP_RATIO of their length (never less
+# than PAUSE_MIN_KEPT_SEC, so it still reads as a pause). Leading/trailing
+# silence is trimmed fully. Set PAUSE_COMPRESS=False to disable.
+PAUSE_COMPRESS = True
+PAUSE_MIN_SEC = 0.28        # only pauses longer than this are shortened
+PAUSE_KEEP_RATIO = 0.40     # a 0.8s pause -> ~0.32s kept
+PAUSE_MIN_KEPT_SEC = 0.14   # never keep less than this
+PAUSE_THRESHOLD = 0.01      # |sample| below this (of full scale) counts as silence
+
+# ===========================
 # PER-PLATFORM TAGS
 # ===========================
 
