@@ -45,6 +45,10 @@ def record_video(video_file, metadata=None, video_id=None, status="posted",
             "url": url or (f"https://youtu.be/{video_id}" if video_id else ""),
             "posted_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
+        # Hook-strength score from the pipeline's hook_checker (0-100) -
+        # carried into the dashboard so weak openers are visible at a glance.
+        if meta.get("hook_score") is not None:
+            entry["hook_score"] = meta["hook_score"]
         if error:
             entry["error"] = str(error)[:200]
         if publish_at:

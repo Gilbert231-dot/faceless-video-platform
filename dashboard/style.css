@@ -222,6 +222,12 @@ main { max-width: 1000px; margin: 0 auto; }
     border-color: rgba(46, 211, 130, 0.45);
 }
 
+.perf-badge.perf-bad {
+    background: rgba(248, 81, 73, 0.12);
+    color: #f85149;
+    border-color: rgba(248, 81, 73, 0.45);
+}
+
 .runs { list-style: none; padding: 0; margin: 0; }
 
 .run-item {

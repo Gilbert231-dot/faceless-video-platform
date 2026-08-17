@@ -178,6 +178,12 @@ function renderVideos(videos) {
                 month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
             })));
         }
+        // Hook-strength score (written by the pipeline's hook_checker.py)
+        if (v.hook_score !== undefined && v.hook_score !== null) {
+            const hs = Number(v.hook_score);
+            const hcls = hs >= 50 ? "perf-good" : (hs >= 25 ? "" : "perf-bad");
+            meta.appendChild(el("span", `perf-badge ${hcls}`, `🪝 ${Math.round(hs)} hook`));
+        }
         // Performance metrics (filled in by performance_tracker.py for YouTube videos)
         if (v.views !== undefined && v.views !== null) {
             const stats = [];

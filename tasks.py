@@ -62,7 +62,21 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown",
     # NOTE: the Kevin MacLeod CC BY attribution is intentionally NOT added
     # to the description anymore (user request). CC BY technically asks for
     # credit, so keep this in mind if you ever re-enable it.
+    # Hook-strength check: the title IS the first thing viewers hear (~2
+    # seconds), so score it against proven viral patterns (never fails).
+    hook_score = None
+    try:
+        from hook_checker import score_opening
+        hook_result = score_opening(title, verbose=False)
+        hook_score = hook_result["score"]
+    except Exception:
+        hook_score = None
     metadata = {
+        "title": title,
+        "subreddit": subreddit_name,
+        "score": score,
+        "author": author,
+        "hook_score": hook_score,
         "title": title,
         "subreddit": subreddit_name,
         "score": score,
@@ -297,6 +311,20 @@ def generate_single_video(title, script, part_label=None, topic=None,
     # and strips stray "ale" fillers; the caption step merges the whispered
     # "I am" cues back to "I'm" so on-screen captions look unchanged.
     full_script = clean_script_for_tts(full_script)
+
+    # --- HOOK-STRENGTH CHECK (first ~2 seconds of narration) ---
+    # The title is spoken FIRST, so it IS the spoken hook. Score it against
+    # proven viral opening patterns; warn but NEVER fail the run.
+    hook_score = None
+    try:
+        from hook_checker import _opening_of, score_opening
+        opening = _opening_of(full_script)
+        hook_result = score_opening(opening)
+        hook_score = hook_result["score"]
+        if hook_score < 25:
+            print("   ⚠️ Weak hook - consider a stronger title next time.")
+    except Exception as e:
+        print(f"   ⚠️ Hook check skipped: {e}")
 
     audio_path, _ = generate_voiceover(full_script, voice_id=voice_id)
     print(f"🎙️ Voiceover saved to: {audio_path}")
