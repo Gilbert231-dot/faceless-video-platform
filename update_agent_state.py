@@ -1,11 +1,16 @@
 """
 update_agent_state.py — move an agent around the Story Lab agent room.
 
-The room (dashboard/agent_room.html) is a live animated view of who is
-doing what. This script is the single source of truth for an agent's
-station, activity, and the activity log. The pipeline calls it at
-milestones (generate_video.yml), and it can be run by hand whenever
-Buffy / You / Bro do something outside a run.
+The room (dashboard/agent_room.html) is a personal FUN SIDE PROJECT
+visualization (animated characters in a mock HQ). It is NOT part of the
+main product (the Reddit-story -> narrated short-video -> YouTube/TikTok/
+Facebook publishing pipeline). The room page carries a visible disclosure
+banner saying exactly that, and so does the landing page (index.html).
+
+This script is the single source of truth for an agent's station, activity,
+and the activity log. The pipeline calls it at milestones
+(generate_video.yml), and it can be run by hand whenever Buffy / You / Bro
+do something outside a run.
 
 Usage:
   python update_agent_state.py buffy "PROJECT FOLDER" "Fixing the caption size"

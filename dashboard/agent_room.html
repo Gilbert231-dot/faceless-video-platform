@@ -74,6 +74,14 @@
     box-shadow:0 4px 12px rgba(0,0,0,.5);
   }
   #zoom-btn:hover { background:#fcab63; }
+  #agent-room-disclosure {
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    background:#fef3c7; color:#7c2d12; border-bottom:2px solid #f59e0b;
+    font-size:12.5px; line-height:1.45; padding:6px 14px;
+    font-family:'Segoe UI', system-ui, sans-serif;
+  }
+  #agent-room-disclosure strong { color:#9a3412; }
+  body.has-disclosure { padding-top:56px; }
   .teacher-ring { animation:ringPulse 1.6s ease-in-out infinite; }
   @keyframes ringPulse {
     0%,100% { stroke-opacity:.0; stroke-width:2; }
@@ -81,7 +89,22 @@
   }
 </style>
 </head>
-<body>
+<body class="has-disclosure">
+<!-- DISCLOSURE: This Agent Room is a personal fun side-project visualization
+     ("characters" walking around a mock HQ). It is NOT part of the main product:
+     the Faceless Video Creator Poster pipeline is the Reddit-story -> narrated,
+     captioned short-video -> YouTube/TikTok/Facebook publishing automation.
+     This page is under active development and is not intended to represent any
+     real people, bots, or product behaviour. See the banner below, which is also
+     shown to visitors. -->
+<div id="agent-room-disclosure" role="note" aria-label="About this page">
+  ⚠️ <strong>Work in progress — side project, not the main product.</strong>
+  This "Agent Room" is a fun, personal visualization of a mock story-studio HQ
+  (the animated characters are decorative and represent no real people or bots).
+  The actual product is the <strong>Faceless Video Creator Poster</strong>:
+  automatic Reddit-story → narrated short-video → YouTube / TikTok / Facebook
+  publishing. This page is being actively developed and may change.
+</div>
 <header>
   <h1>🎮 Story Lab <span>Agent Room</span></h1>
   <span id="room-status">Loading…</span>

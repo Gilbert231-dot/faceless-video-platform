@@ -42,6 +42,25 @@
         .brand span { color: var(--accent-2); }
         .nav-links a { margin-left: 22px; color: var(--muted); font-size: 0.95rem; }
         .nav-links a:hover { color: var(--text); }
+        .wip-tag {
+            display: inline-block; font-size: 0.62rem; font-weight: 700;
+            color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.5);
+            border-radius: 999px; padding: 1px 7px; margin-left: 7px;
+            vertical-align: middle; letter-spacing: 0.03em;
+        }
+        .disclosure {
+            max-width: 1080px; margin: 0 auto; padding: 12px 5% 0;
+        }
+        .disclosure .box {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.35);
+            border-radius: var(--radius);
+            padding: 12px 18px;
+            color: #f0d9a8;
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+        .disclosure .box strong { color: #fbbf24; }
 
         header.hero {
             text-align: center;
@@ -170,11 +189,22 @@
         <a class="brand" href="/faceless-video-platform/">Faceless<span>Video</span>Creator Poster</a>
         <div class="nav-links">
             <a href="/faceless-video-platform/dashboard/">Dashboard</a>
-            <a href="/faceless-video-platform/dashboard/agent_room.html">Agent Room</a>
+            <a href="/faceless-video-platform/dashboard/agent_room.html">Agent Room<span class="wip-tag">WIP · side project</span></a>
             <a href="/faceless-video-platform/privacy.html">Privacy</a>
             <a href="/faceless-video-platform/terms.html">Terms</a>
         </div>
     </nav>
+
+    <div class="disclosure">
+        <div class="box">
+            ⚠️ <strong>Note:</strong> the <em>Agent Room</em> page is a fun, personal
+            work-in-progress visualization of a mock story-studio HQ — its animated
+            characters are decorative and represent no real people or bots. It is
+            <strong>not</strong> part of the main product. The product is this:
+            automatic Reddit-story → narrated short-video → YouTube / TikTok / Facebook
+            publishing. The Agent Room is under active development and may change.
+        </div>
+    </div>
 
     <header class="hero">
         <h1>Stories become <em>viral videos</em> — automatically.</h1>

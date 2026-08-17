@@ -1,15 +1,21 @@
 """
 bro_bridge.py — a tiny local server that lets the Agent Room page summon Bro.
 
-The Agent Room (dashboard/agent_room.html) is hosted on GitHub Pages, but Bro
-runs on THIS laptop (opencode + your global AGENTS.md brain). This bridge is
-the connector: it runs locally on 127.0.0.1 and answers small HTTP calls from
-the room page so you can ask Bro things right from the room.
+The Agent Room (dashboard/agent_room.html) is a personal FUN SIDE PROJECT
+visualization (animated characters in a mock HQ). It is NOT part of the main
+product (the Reddit-story -> narrated short-video -> YouTube/TikTok/Facebook
+publishing pipeline). The room page itself carries a visible disclosure
+banner saying exactly that, and so does the landing page (index.html).
+
+Bro runs on THIS laptop. This bridge is the connector: it runs locally on
+127.0.0.1 and answers small HTTP calls from the room page so you can ask Bro
+things right from the room. Bro's brain calls the Groq API directly with a
+compact persona prompt + safe read-only terminal tools (see SAFE_TOOLS).
 
 Endpoints:
   GET  /api/status            -> {"ok": true, "bro": true|false, "key": true|false, ...}
-  POST /api/ask   {"prompt"}  -> runs: opencode run --format json "<prompt>"
-                                 returns Bro's plain-text answer (or an error)
+  POST /api/ask   {"prompt"}  -> calls Groq directly, returns Bro's plain-text
+                                 answer (or an error)
   GET  /api/task?kind=disk|files|whoami&path=...   -> instant laptop tasks (no AI needed)
 
 Usage:
