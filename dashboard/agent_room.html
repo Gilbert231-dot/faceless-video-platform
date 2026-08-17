@@ -90,7 +90,7 @@
 <main>
   <div class="room-wrap">
     <button id="zoom-btn" title="Zoom back out">✕ Back to HQ</button>
-    <svg id="room" viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg">
+    <svg id="room" viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color="#1b2f35"/><stop offset="1" stop-color="#253d44"/>
@@ -115,18 +115,17 @@
       <!-- room shell: teal-slate walls + warm wood floor + plank lines + center rug -->
       <rect x="0" y="0" width="960" height="430" fill="url(#wallGrad)"/>
       <rect x="0" y="414" width="960" height="16" fill="#101418" opacity=".55"/>
-      <rect x="0" y="430" width="960" height="190" fill="url(#floorGrad)"/>
+      <rect x="0" y="430" width="960" height="110" fill="url(#floorGrad)"/>
       <g stroke="#2b2218" stroke-width="1.4" opacity=".5">
-        <line x1="0" y1="452" x2="960" y2="452"/><line x1="0" y1="474" x2="960" y2="474"/>
-        <line x1="0" y1="496" x2="960" y2="496"/><line x1="0" y1="518" x2="960" y2="518"/>
-        <line x1="0" y1="540" x2="960" y2="540"/><line x1="0" y1="562" x2="960" y2="562"/>
-        <line x1="0" y1="584" x2="960" y2="584"/><line x1="0" y1="606" x2="960" y2="606"/>
+        <line x1="0" y1="452" x2="960" y2="452"/><line x1="0" y1="470" x2="960" y2="470"/>
+        <line x1="0" y1="488" x2="960" y2="488"/><line x1="0" y1="506" x2="960" y2="506"/>
+        <line x1="0" y1="524" x2="960" y2="524"/>
       </g>
       <line x1="0" y1="430" x2="960" y2="430" stroke="#111418" stroke-width="4"/>
       <!-- center rug (warm terracotta) -->
-      <ellipse cx="480" cy="552" rx="225" ry="36" fill="#7c4638" opacity=".4"/>
-      <ellipse cx="480" cy="552" rx="205" ry="30" fill="#8a5242" opacity=".45"/>
-      <ellipse cx="480" cy="552" rx="150" ry="18" fill="#9a5f4c" opacity=".3"/>
+      <ellipse cx="480" cy="486" rx="210" ry="26" fill="#7c4638" opacity=".4"/>
+      <ellipse cx="480" cy="486" rx="190" ry="22" fill="#8a5242" opacity=".45"/>
+      <ellipse cx="480" cy="486" rx="135" ry="14" fill="#9a5f4c" opacity=".3"/>
 
       <!-- string lights along the top wall -->
       <g id="lights">
@@ -177,19 +176,19 @@
       <text x="480" y="100" text-anchor="middle" font-size="11" fill="#9ab5ac" font-family="Segoe UI,Arial">est. 2026 — 3 agents, 1 mission</text>
 
       <!-- potted plants in the corners -->
-      <g id="plant-l" transform="translate(44, 428)">
+      <g id="plant-l" transform="translate(16, 428)">
         <rect x="-9" y="-2" width="18" height="13" rx="3" fill="#c67f4a"/>
         <path d="M -10 -2 q -2 -16 0 -22 q 8 2 6 14 q 2 -10 8 -12 q 6 8 0 20 q -6 4 -14 0 z" fill="#2f8f5b"/>
         <path d="M 0 -4 q -4 -14 2 -24 q 8 4 4 16" fill="#3aa869"/>
       </g>
-      <g id="plant-r" transform="translate(916, 428)">
+      <g id="plant-r" transform="translate(930, 492)">
         <rect x="-9" y="-2" width="18" height="13" rx="3" fill="#c67f4a"/>
         <path d="M -10 -2 q -2 -16 0 -22 q 8 2 6 14 q 2 -10 8 -12 q 6 8 0 20 q -6 4 -14 0 z" fill="#2f8f5b"/>
         <path d="M 0 -4 q -4 -14 2 -24 q 8 4 4 16" fill="#3aa869"/>
       </g>
 
       <!-- December: decorated tree in the corner (hidden until winter) -->
-      <g id="season-tree" display="none" transform="translate(42, 436)">
+      <g id="season-tree" display="none" transform="translate(18, 436)">
         <rect x="-10" y="34" width="20" height="10" rx="2" fill="#c67f4a"/>
         <rect x="-2.5" y="27" width="5" height="9" fill="#7c4a2a"/>
         <polygon points="0,-36 -15,0 15,0" fill="#1f7a4d"/>
@@ -207,7 +206,7 @@
 
       <!-- ============ STATIONS ============ -->
       <!-- LOUNGE (couch, rug, glowing side-table lamp) -->
-      <g id="st-LOUNGE">
+      <g id="st-LOUNGE" transform="translate(-19.5, -70.5) scale(1.15)">
         <ellipse cx="130" cy="468" rx="108" ry="22" fill="#8a5242" opacity=".3"/>
         <ellipse cx="130" cy="468" rx="92" ry="17" fill="#9a5f4c" opacity=".35"/>
         <rect x="56" y="400" width="148" height="36" rx="13" fill="#6d5a83"/>
@@ -227,7 +226,7 @@
       </g>
 
       <!-- PROJECT FOLDER (desk, monitor, keyboard, folder stack, bin) -->
-      <g id="st-PROJECT FOLDER">
+      <g id="st-PROJECT FOLDER" transform="translate(-37.5, -70.5) scale(1.15)">
         <rect x="164" y="428" width="172" height="8" rx="2" fill="#5d4730"/>
         <rect x="170" y="436" width="9" height="14" fill="#4a3826"/>
         <rect x="322" y="436" width="9" height="14" fill="#4a3826"/>
@@ -250,7 +249,7 @@
       </g>
 
       <!-- COFFEE (espresso bar with steam, cups, beans) -->
-      <g id="st-COFFEE">
+      <g id="st-COFFEE" transform="translate(-78, -70.5) scale(1.15)">
         <rect x="476" y="398" width="88" height="52" rx="6" fill="#3a2c1c"/>
         <rect x="480" y="394" width="80" height="8" rx="3" fill="#4a3826"/>
         <rect x="488" y="350" width="44" height="46" rx="5" fill="#262c38" stroke="#3f5d66" stroke-width="2"/>
@@ -269,7 +268,7 @@
       </g>
 
       <!-- LAPTOP (desk, chair, laptop, mug, papers) -->
-      <g id="st-LAPTOP">
+      <g id="st-LAPTOP" transform="translate(-104.55, -70.5) scale(1.15)">
         <rect x="618" y="426" width="158" height="9" rx="2" fill="#5d4730"/>
         <rect x="624" y="435" width="9" height="15" fill="#4a3826"/>
         <rect x="762" y="435" width="9" height="15" fill="#4a3826"/>
@@ -287,7 +286,7 @@
       </g>
 
       <!-- STUDIO (edit suite: big monitor with timeline, fader deck, headphones stand) -->
-      <g id="st-STUDIO">
+      <g id="st-STUDIO" transform="translate(-131.25, -70.5) scale(1.15)">
         <rect x="790" y="424" width="170" height="9" rx="2" fill="#5d4730"/>
         <rect x="796" y="433" width="10" height="15" fill="#4a3826"/>
         <rect x="944" y="433" width="10" height="15" fill="#4a3826"/>
@@ -311,7 +310,7 @@
       </g>
 
       <!-- BRO'S DESK (terminal, sticky notes, lamp, plant) -->
-      <g id="st-BRO'S DESK">
+      <g id="st-BRO'S DESK" transform="translate(-70.16, -30.4) scale(1.08)">
         <rect x="812" y="250" width="17" height="15" rx="1.5" fill="#fbbf24" transform="rotate(-7 820 257)"/>
         <rect x="838" y="246" width="17" height="15" rx="1.5" fill="#4ade80" transform="rotate(5 846 253)"/>
         <rect x="864" y="252" width="17" height="15" rx="1.5" fill="#a78bfa" transform="rotate(-3 872 259)"/>
@@ -332,7 +331,7 @@
       </g>
 
       <!-- STORY WALL (corkboard with wood frame, bunting, pinned cards) -->
-      <g id="st-STORY WALL">
+      <g id="st-STORY WALL" transform="translate(-40.4, -31.2) scale(1.08)">
         <rect x="390" y="164" width="230" height="168" rx="6" fill="#6b4a2b"/>
         <rect x="396" y="170" width="218" height="156" rx="3" fill="#8a5a34"/>
         <rect x="400" y="174" width="210" height="148" rx="2" fill="#a06a3e"/>
@@ -366,7 +365,7 @@
       </g>
 
       <!-- BANNER STUDIO (easel with the banner, paint cans, brush cup) -->
-      <g id="st-BANNER STUDIO">
+      <g id="st-BANNER STUDIO" transform="translate(-54.8, -30.4) scale(1.08)">
         <line x1="638" y1="294" x2="732" y2="294" stroke="#4a3826" stroke-width="4"/>
         <line x1="646" y1="294" x2="624" y2="196" stroke="#4a3826" stroke-width="3"/>
         <line x1="724" y1="294" x2="748" y2="196" stroke="#4a3826" stroke-width="3"/>
@@ -454,7 +453,7 @@ const SAMPLE_STORIES = INITIAL.stories;
 const SVGNS = "http://www.w3.org/2000/svg";
 const room = document.getElementById("room");
 const agents = {};   // key -> {g, bubble, cur:{x,y}, target:{x,y}, moving}
-const AGENT_SCALE = 1.4;   // characters are ~40% bigger now
+const AGENT_SCALE = 1.7;   // characters are ~70% bigger now
 
 /* ---------- character factory (Minecraft-style: head + face, torso, arms, legs) ---------- */
 function makeAgent(key, meta) {
@@ -962,7 +961,7 @@ function screenToSvg(sx, sy) {
 
 function zoomTo(stationKey) {
   const st = STATIONS[stationKey] || STATIONS.LOUNGE;
-  const s = 2.6, tx = 480 - st.x * s, ty = 310 - st.y * s;
+  const s = 2.6, tx = 480 - st.x * s, ty = 270 - st.y * s;
   zoom = { s, tx, ty };
   zoomOn = true;
   zoomgroup.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${s})`;
@@ -1052,8 +1051,8 @@ function makeBot() {
   };
 }
 
-const COFFEE_HOVER = { x: 520, y: 330 };
-const COFFEE_DROP  = { x: 520, y: 408 };
+const COFFEE_HOVER = { x: 520, y: 296 };
+const COFFEE_DROP  = { x: 520, y: 318 };
 const BOT_IN  = { x: 1010, y: 90 };
 const BOT_OUT = { x: -70, y: 110 };
 let droppedBox = null;
@@ -1065,7 +1064,7 @@ function dropSnackBox() {
   g.appendChild(mk("rect", { x: -9, y: 0, width: 18, height: 3, fill: "#d98c2b" }));
   g.appendChild(mk("rect", { x: -9, y: 2.8, width: 3.4, height: 1.4, fill: "#fff", opacity: .5 }));
   g.appendChild(mk("rect", { x: 5.6, y: 2.8, width: 3.4, height: 1.4, fill: "#fff", opacity: .5 }));
-  g.setAttribute("transform", "translate(544, 474)");   // beside the machine, clear of where agents stand
+  g.setAttribute("transform", "translate(546, 478)");   // beside the machine, clear of where agents stand
   g.setAttribute("opacity", "0");
   zoomgroup.appendChild(g);
   droppedBox = g;
@@ -1091,7 +1090,7 @@ function botFrame(t) {
     return;
   }
   const el = t - b.t0;
-  const SCALE = 1.35;
+  const SCALE = 1.5;
   if (b.state === "in") {
     const k = Math.min(1, el / 2.4);
     const sy = BOT_IN.y + (COFFEE_HOVER.y - BOT_IN.y) * k + Math.sin(el * 6) * 5;
