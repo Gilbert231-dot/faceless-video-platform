@@ -29,12 +29,14 @@ import shutil
 import subprocess
 import sys
 import urllib.parse
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PORT = 8766
-OPENCODE = os.path.join(os.environ.get("APPDATA", r"C:\Users\HP\AppData\Roaming"), "npm", "opencode.cmd")
 KEY_FILE = r"D:\Desktop\bro\.env"
 ALLOWED_TASKS = ("disk", "files", "whoami", "uptime")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+BRO_MODEL = "openai/gpt-oss-120b"  # free tier, small prompts only (8K TPM)
 
 # ---------- key loading ----------
 
@@ -130,67 +132,166 @@ def run_task(kind, path):
         return task_uptime()
     return f"Unknown task '{kind}'. Known: {', '.join(ALLOWED_TASKS)}"
 
-# ---------- Bro (opencode) ----------
+# ---------- Bro's brain (direct Groq, compact prompt + safe terminal tools) ----------
+#
+# Why not opencode? opencode's own system prompt is ~8,312 tokens, which exceeds
+# Groq's free-tier 8K TPM cap for every chat model (gpt-oss-120b/20b). Groq's
+# compound models have 70K TPM but only accept the Responses API, which opencode
+# does not use for Groq. So Bro calls Groq directly with a COMPACT persona prompt
+# (well under the cap) plus a small set of SAFE terminal tools he can run.
+
+BRO_SYSTEM = (
+    "You are Bro, Gilbert's personal terminal AI agent on his Windows 10 laptop. "
+    "Talk warm and plain-English like a close friend who knows his stuff. Keep answers concise. "
+    "You can run SAFE read-only terminal commands via the run_terminal tool to check real facts "
+    "(disk space, file listings, whoami, git status, etc.). NEVER run anything destructive "
+    "(delete/rm/format/shutdown/install). NEVER reveal API keys or secrets. "
+    "Laptop: Intel i3 dual-core, ~6 GB RAM, C: ~15 GB free, D: ~678 GB free. "
+    "Projects: faceless-video-platform (Reddit stories -> narrated videos, GitHub Actions), "
+    "cartoon-clipper, Get_stories, Get_video_link."
+)
+
+BRO_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "run_terminal",
+            "description": "Run a SAFE read-only terminal command (dir, type, cd+pwd, where, git status/log/diff, wmic, tasklist, ipconfig, ping). Refuse anything that could change or destroy data.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": {"type": "string", "description": "The command to run, e.g. 'dir C:\\Users\\HP'"}
+                },
+                "required": ["command"]
+            }
+        }
+    }
+]
+
+# Executables Bro may never run (checked against the FIRST token of the command).
+FORBIDDEN_EXES = {
+    "del", "rm", "rmdir", "rd", "format", "shutdown", "restart", "reg",
+    "taskkill", "net", "diskpart", "erase", "move", "ren", "mkdir", "md",
+    "copy", "xcopy", "robocopy", "mklink", "sc", "attrib", "cipher",
+    "icacls", "takeown", "setx", "powershell", "pwsh", "wsl", "cmd",
+    "msiexec", "dism", "sfc", "bcdedit", "fsutil", "mountvol", "subst",
+    "diskpart", "regsvr32", "wmic", "certutil", "bitsadmin", "schtasks",
+    "nltest", "gpupdate", "auditpol", "wevtutil", "vssadmin", "wusa",
+}
+
+# Git subcommands that change the repo (checked when the first token is git).
+FORBIDDEN_GIT = {
+    "push", "reset", "checkout", "clean", "rebase", "merge", "commit", "cherry-pick",
+    "revert", "stash", "branch", "tag", "remote", "submodule", "apply", "am",
+}
+
+
+def safe_run_command(command):
+    """Run a command ONLY if it's clearly read-only. Returns (ok, text)."""
+    cmd = (command or "").strip()
+    if not cmd:
+        return False, "Empty command."
+    low = cmd.lower()
+    # Reject any command with & | ; (chaining / redirects).
+    for bad in ["&", "|", ";", ">", "<"]:
+        if bad in low:
+            return False, f"Refused: command chaining/pipe/redirect '{bad}' is not allowed."
+    # Check the executable (first token) - allow paths with separators but
+    # still look at the bare name, so "type README.md" is fine but "rm -rf" isn't.
+    first = low.split()[0] if low.split() else ""
+    exe = first.split("\\")[-1].split("/")[-1].strip('"')
+    if exe in FORBIDDEN_EXES:
+        return False, f"Refused: '{exe}' could change data - not allowed."
+    if exe == "git":
+        sub = low.split()[1] if len(low.split()) > 1 else ""
+        if sub in FORBIDDEN_GIT:
+            return False, f"Refused: 'git {sub}' could change data - not allowed."
+    try:
+        proc = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, timeout=25,
+            creationflags=0x08000000 if os.name == "nt" else 0,
+        )
+        out = (proc.stdout or "").strip()
+        err = (proc.stderr or "").strip()
+        text = out if out else err
+        if not text:
+            text = f"(exit {proc.returncode}, no output)"
+        return True, text[:3000]
+    except subprocess.TimeoutExpired:
+        return False, "Command timed out after 25s."
+    except Exception as e:
+        return False, f"Could not run command: {e}"
+
+
+def groq_chat(messages, key, max_tokens=2048):
+    """One Groq chat completion call. Returns (text, error)."""
+    body = json.dumps({
+        "model": BRO_MODEL,
+        "messages": messages,
+        "tools": BRO_TOOLS,
+        "tool_choice": "auto",
+        "max_tokens": max_tokens,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        GROQ_URL, data=body,
+        headers={
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+            # Cloudflare (in front of Groq) returns 1010 to Python's default UA
+            "User-Agent": "bro-bridge/1.0 (local laptop agent)",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=90) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")[:400]
+        return None, f"Groq API {e.code}: {detail}"
+    except Exception as e:
+        return None, f"Could not reach Groq: {e}"
+    try:
+        msg = data["choices"][0]["message"]
+    except (KeyError, IndexError):
+        return None, f"Unexpected Groq response: {str(data)[:300]}"
+    return msg, None
+
 
 def run_bro(prompt):
-    """Run opencode with the prompt, return (text, error)."""
+    """Bro answers with tool use via Groq directly. Returns (text, error)."""
     key = load_key()
     if not key:
         return None, ("Bro has no Groq key. Add one to D:\\Desktop\\bro\\.env as "
                       "GROQ_API_KEY=gsk_... (or set the GROQ_API_KEY env var), "
                       "then restart this bridge.")
-    if not os.path.exists(OPENCODE):
-        return None, f"opencode not found at {OPENCODE}. Run setup_bro.bat first."
-    env = dict(os.environ)
-    env["GROQ_API_KEY"] = key
-    # --format json prints one JSON event per line; parse the assistant text.
-    cmd = [OPENCODE, "run", "--format", "json", prompt]
-    try:
-        proc = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=300, env=env,
-            cwd=r"D:\Desktop\faceless_project\faceless-video-platform",
-            creationflags=0x08000000 if os.name == "nt" else 0,  # no console window
-        )
-    except subprocess.TimeoutExpired:
-        return None, "Bro took too long (>5 min) and the bridge gave up. Try a shorter question."
-    except Exception as e:
-        return None, f"Could not launch opencode: {e}"
-
-    parts = []
-    error = None
-    for raw in proc.stdout.splitlines():
-        raw = raw.strip()
-        if not raw:
-            continue
-        try:
-            ev = json.loads(raw)
-        except json.JSONDecodeError:
-            continue
-        t = ev.get("type")
-        if t == "message":
-            msg = ev.get("message") or {}
-            role = msg.get("role")
-            content = msg.get("content") or []
-            if role == "assistant":
-                for c in content:
-                    if isinstance(c, dict) and c.get("type") == "text" and c.get("text"):
-                        parts.append(c["text"])
-        elif t == "error":
-            err = ev.get("error") or {}
-            if isinstance(err, dict):
-                data = err.get("data") or {}
-                error = data.get("message") or err.get("message") or "unknown error"
+    messages = [{"role": "system", "content": BRO_SYSTEM},
+                {"role": "user", "content": prompt}]
+    steps = 0
+    while steps < 5:
+        steps += 1
+        msg, error = groq_chat(messages, key)
+        if error:
+            return None, error
+        tool_calls = msg.get("tool_calls") or []
+        if not tool_calls:
+            text = (msg.get("content") or "").strip()
+            return (text or "Bro answered nothing. Try rephrasing."), None
+        messages.append(msg)
+        for call in tool_calls:
+            fn = call.get("function") or {}
+            name = fn.get("name") or ""
+            args = (fn.get("arguments") or "{}")
+            try:
+                parsed = json.loads(args) if isinstance(args, str) else (args or {})
+            except json.JSONDecodeError:
+                parsed = {}
+            if name == "run_terminal":
+                ok, text = safe_run_command(parsed.get("command", ""))
+                result = text if ok else f"Refused: {text}"
             else:
-                error = str(err)
-    text = "".join(parts).strip()
-    if text:
-        return text, None
-    if error:
-        return None, f"Bro hit an error: {error}"
-    if proc.returncode != 0:
-        tail = (proc.stderr or "").strip().splitlines()
-        return None, f"opencode exited {proc.returncode}: {tail[-1] if tail else 'no output'}"
-    return None, "Bro returned an empty answer. Try rephrasing."
+                result = f"Unknown tool {name}"
+            messages.append({"role": "tool", "tool_call_id": call.get("id"), "content": result})
+    return None, "Bro kept using tools without finishing. Try a simpler question."
 
 # ---------- HTTP server ----------
 
@@ -214,10 +315,11 @@ class Handler(BaseHTTPRequestHandler):
         if url.path == "/api/status":
             self._send(200, {
                 "ok": True,
-                "bro": os.path.exists(OPENCODE),
+                "bro": bool(load_key()),
                 "key": bool(load_key()),
                 "port": PORT,
                 "tasks": list(ALLOWED_TASKS),
+                "model": BRO_MODEL,
             })
             return
         if url.path == "/api/task":

@@ -13,6 +13,7 @@ Usage:
   python update_agent_state.py bro   "BRO'S DESK"     "Standing by, ready to help"
 """
 
+import glob
 import json
 import os
 import sys
@@ -21,6 +22,12 @@ import time
 STATE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "dashboard", "agent_state.json"
 )
+
+# Top N stories to surface on the room's STORY WALL (by score).
+STORY_WALL_COUNT = 3
+STORY_DIRS = [
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "reddit_stories"),
+]
 
 AGENTS = {
     "buffy": {"name": "Buffy", "color": "#a78bfa", "default": "PROJECT FOLDER"},
@@ -41,6 +48,41 @@ def save(state):
     state["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     with open(STATE_PATH, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
+
+
+def top_stories(count=STORY_WALL_COUNT):
+    """Pull the highest-scoring usable stories from the story bank for the wall."""
+    picks = []
+    for base in STORY_DIRS:
+        for path in sorted(glob.glob(os.path.join(base, "*", "stories_with_comments_*.json"))):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception:
+                continue
+            if not isinstance(data, list):
+                continue
+            sub = os.path.basename(os.path.dirname(path))
+            for s in data:
+                if not isinstance(s, dict):
+                    continue
+                title = (s.get("title") or "").strip()
+                body = (s.get("story") or s.get("selftext") or "").strip()
+                if not title or len(body) < 300:
+                    continue  # too short to be a real story
+                try:
+                    score = int(s.get("score") or 0)
+                except (TypeError, ValueError):
+                    score = 0
+                picks.append({
+                    "subreddit": sub,
+                    "title": title[:90],
+                    "score": score,
+                    "comments": s.get("num_comments") or 0,
+                    "url": s.get("url") or "",
+                })
+    picks.sort(key=lambda p: p["score"], reverse=True)
+    return picks[:count]
 
 
 def main():
@@ -68,6 +110,9 @@ def main():
         "activity": activity,
     })
     state["log"] = state["log"][:30]
+
+    # Refresh the STORY WALL with the current top picks every time state changes.
+    state["stories"] = top_stories()
 
     save(state)
     # ASCII-safe (Windows cp1252 consoles choke on emoji)

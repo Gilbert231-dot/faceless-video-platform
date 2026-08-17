@@ -176,21 +176,21 @@
       <g id="st-STORY WALL">
         <rect x="400" y="180" width="220" height="150" rx="8" fill="#1b1b2f" stroke="#3a3a5e" stroke-width="3"/>
         <text x="510" y="200" text-anchor="middle" font-size="11" fill="#8f8fb8" font-family="Segoe UI,Arial">STORY WALL &#183; latest picks</text>
+        <!-- card 1 -->
         <rect x="414" y="208" width="60" height="78" rx="4" fill="#26263f" stroke="#4a4a76" stroke-width="1.5"/>
         <polygon points="432,214 444,214 444,224 448,224 436,236 424,224 428,224" fill="#fb923c"/>
-        <rect x="424" y="244" width="40" height="9" rx="4" fill="#fb923c" opacity=".85"/>
-        <rect x="424" y="258" width="40" height="9" rx="4" fill="#4ade80" opacity=".8"/>
-        <rect x="424" y="272" width="40" height="9" rx="4" fill="#a78bfa" opacity=".8"/>
+        <text id="sw-s0" x="436" y="248" text-anchor="middle" font-size="9" font-weight="700" fill="#fb923c" font-family="Segoe UI,Arial"></text>
+        <text id="sw-t0" x="444" y="262" text-anchor="middle" font-size="7" fill="#cfcfe8" font-family="Segoe UI,Arial"></text>
+        <!-- card 2 -->
         <rect x="480" y="208" width="60" height="78" rx="4" fill="#26263f" stroke="#4a4a76" stroke-width="1.5"/>
         <polygon points="498,214 510,214 510,224 514,224 502,236 490,224 494,224" fill="#fb923c"/>
-        <rect x="490" y="244" width="40" height="9" rx="4" fill="#4ade80" opacity=".8"/>
-        <rect x="490" y="258" width="40" height="9" rx="4" fill="#fb923c" opacity=".85"/>
-        <rect x="490" y="272" width="40" height="9" rx="4" fill="#a78bfa" opacity=".8"/>
+        <text id="sw-s1" x="510" y="248" text-anchor="middle" font-size="9" font-weight="700" fill="#fb923c" font-family="Segoe UI,Arial"></text>
+        <text id="sw-t1" x="518" y="262" text-anchor="middle" font-size="7" fill="#cfcfe8" font-family="Segoe UI,Arial"></text>
+        <!-- card 3 -->
         <rect x="546" y="208" width="60" height="78" rx="4" fill="#26263f" stroke="#4a4a76" stroke-width="1.5"/>
         <polygon points="564,214 576,214 576,224 580,224 568,236 556,224 560,224" fill="#fb923c"/>
-        <rect x="556" y="244" width="40" height="9" rx="4" fill="#a78bfa" opacity=".8"/>
-        <rect x="556" y="258" width="40" height="9" rx="4" fill="#4ade80" opacity=".8"/>
-        <rect x="556" y="272" width="40" height="9" rx="4" fill="#fb923c" opacity=".85"/>
+        <text id="sw-s2" x="576" y="248" text-anchor="middle" font-size="9" font-weight="700" fill="#fb923c" font-family="Segoe UI,Arial"></text>
+        <text id="sw-t2" x="584" y="262" text-anchor="middle" font-size="7" fill="#cfcfe8" font-family="Segoe UI,Arial"></text>
         <text x="510" y="345" text-anchor="middle" font-size="12" fill="#8f8fb8" font-family="Segoe UI,Arial">STORY WALL</text>
       </g>
 
@@ -260,8 +260,16 @@ const INITIAL = {
     you:   { name: "You",   color: "#4ade80", station: "LOUNGE",         activity: "Watching the room come alive" },
     bro:   { name: "Bro",   color: "#fb923c", station: "BRO'S DESK",     activity: "Standing by, ready to help" }
   },
-  log: []
+  log: [],
+  stories: [
+    { subreddit: "ProRevenge", title: "My ex-MIL sent her Church friends to harass my daughter...", score: 16709 },
+    { subreddit: "AITAH", title: "AITAH for refusing to give my concert ticket to my sister after she...", score: 1847 },
+    { subreddit: "EntitledPeople", title: "That's My Table!", score: 3491 }
+  ]
 };
+
+/* fallback picks for demo/offline mode (no reddit_stories on hand) */
+const SAMPLE_STORIES = INITIAL.stories;
 
 const SVGNS = "http://www.w3.org/2000/svg";
 const room = document.getElementById("room");
@@ -358,9 +366,29 @@ function updateBubble(key, text) {
   a.bubble.setAttribute("display", t ? "inline" : "none");
 }
 
+function fmtScore(n) {
+  n = Number(n) || 0;
+  return n >= 1000 ? (n / 1000).toFixed(1) + "k" : String(n);
+}
+
+function renderStoryWall(stories) {
+  const list = (stories && stories.length ? stories : SAMPLE_STORIES).slice(0, 3);
+  for (let i = 0; i < 3; i++) {
+    const s = list[i] || { subreddit: "—", title: "No stories yet", score: 0 };
+    const sub = document.getElementById("sw-s" + i);
+    const ttl = document.getElementById("sw-t" + i);
+    if (sub) sub.textContent = fmtScore(s.score) + " · r/" + (s.subreddit || "?");
+    if (ttl) {
+      const t = (s.title || "").replace(/&amp;#x200B;|\n/g, " ").trim();
+      ttl.textContent = t.length > 52 ? t.slice(0, 49) + "…" : t;
+    }
+  }
+}
+
 function applyState(state) {
   document.getElementById("room-status").textContent =
     (state.room || "Story Lab HQ") + " — updated " + (state.updated_at || "");
+  renderStoryWall(state.stories);
   const cards = document.getElementById("agent-cards");
   cards.innerHTML = "";
   for (const key of ["buffy", "you", "bro"]) {
