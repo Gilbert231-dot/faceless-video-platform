@@ -462,7 +462,7 @@ function makeAgent(key, meta) {
   room.appendChild(g);
   agents[key] = {
     g, bubble, btx, armL, armR, legL, legR, head, eyeL, eyeR,
-    ring, handProps, headphones, sipArm: null,
+    ring, handProps, headphones, sipArm: null, lbl, face: 1,
     station: meta.station,
     cur: {...STATIONS[meta.station]},
     target: {...STATIONS[meta.station]},
@@ -695,10 +695,15 @@ function frame(now) {
     a.cur.x += dx * step;
     a.cur.y += dy * step;
 
+    // face the direction of travel (hysteresis: don't jitter when nearly arrived)
+    if (Math.abs(dx) > 1) a.face = dx < 0 ? -1 : 1;
+    const sx = a.face || 1;
     // body bob: bouncy step while walking, gentle breathing while idle
     const bob = a.moving ? Math.abs(Math.sin(t * 10)) * -4 : Math.sin(t * 2.2) * 1.4;
-    a.g.setAttribute("transform", `translate(${a.cur.x.toFixed(1)}, ${(a.cur.y + bob).toFixed(1)}) scale(${AGENT_SCALE})`);
-    a.bubble.setAttribute("transform", `translate(0, ${(bob - 4).toFixed(1)})`);
+    a.g.setAttribute("transform", `translate(${a.cur.x.toFixed(1)}, ${(a.cur.y + bob).toFixed(1)}) scale(${(sx * AGENT_SCALE).toFixed(2)}, ${AGENT_SCALE})`);
+    // counter-flip the bubble + name label so their text always reads normally
+    a.bubble.setAttribute("transform", `translate(0, ${(bob - 4).toFixed(1)}) scale(${sx}, 1)`);
+    if (a.lbl) a.lbl.setAttribute("transform", `scale(${sx}, 1)`);
     a.bubble.setAttribute("opacity", a.moving ? 0.45 : 1);
 
     // limb swing: fast big swings while walking, slow gentle sway while idle
