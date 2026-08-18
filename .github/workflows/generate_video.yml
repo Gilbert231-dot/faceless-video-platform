@@ -133,13 +133,16 @@ jobs:
           # slower encode are fine.
           echo "VIDEO_CRF=15" >> $GITHUB_ENV
           echo "VIDEO_PRESET=veryslow" >> $GITHUB_ENV
-          # Windscribe VPN credentials (GitHub Secrets). Only set if the
-          # secrets exist — otherwise the empty value breaks GITHUB_ENV.
-          if [ -n "${{ secrets.WINDSCRIBE_USERNAME }}" ]; then
-            echo "WINDSCRIBE_USERNAME=${{ secrets.WINDSCRIBE_USERNAME }}" >> $GITHUB_ENV
-            echo "WINDSCRIBE_PASSWORD=${{ secrets.WINDSCRIBE_PASSWORD }}" >> $GITHUB_ENV
-            echo "WINDSCRIBE_LOCATION=${{ secrets.WINDSCRIBE_LOCATION || 'UK-London' }}" >> $GITHUB_ENV
-            echo "✅ Windscribe secrets loaded"
+          # Windscribe VPN credentials (GitHub Secrets). Strip newlines
+          # — secrets with trailing whitespace break GITHUB_ENV format.
+          WS_USER=$(echo "${{ secrets.WINDSCRIBE_USERNAME }}" | tr -d '\r\n' | xargs)
+          WS_PASS=$(echo "${{ secrets.WINDSCRIBE_PASSWORD }}" | tr -d '\r\n' | xargs)
+          WS_LOC=$(echo "${{ secrets.WINDSCRIBE_LOCATION || 'UK-London' }}" | tr -d '\r\n' | xargs)
+          if [ -n "$WS_USER" ]; then
+            echo "WINDSCRIBE_USERNAME=$WS_USER" >> $GITHUB_ENV
+            echo "WINDSCRIBE_PASSWORD=$WS_PASS" >> $GITHUB_ENV
+            echo "WINDSCRIBE_LOCATION=$WS_LOC" >> $GITHUB_ENV
+            echo "✅ Windscribe secrets loaded (location: $WS_LOC)"
           else
             echo "⚠️  Windscribe secrets not set — VPN will be skipped"
           fi
