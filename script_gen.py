@@ -85,7 +85,7 @@ def generate_hook(story_text, title, subreddit=None):
 def get_gen_z_style(include_hook=True):
     """Returns Gen Z "bestie" style instructions."""
     base_style = """
-    NARRATION STYLE: Gen Z Bestie Mode
+    NARRATION STYLE: Gen Z Bestie Mode (Kallaway Story Ladder Level 4)
     
     SPEAK LIKE:
     - A confident friend telling tea to their bestie
@@ -101,6 +101,33 @@ def get_gen_z_style(include_hook=True):
     - Add commentary: "(I know, right?)", "(literally insane)"
     - Use rhetorical questions
     - Maintain "I'm better than them" energy
+    
+    STORY LADDER TECHNIQUES (Kallaway Framework — bake these into EVERY story):
+    
+    LEVEL 2 — MICRO-HOOKS (pattern interrupts every 2-3 sentences):
+    - Insert "but here's the thing..." before a twist
+    - Use "what I didn't know was..." to create curiosity gaps
+    - Add "however..." or "until..." to subvert expectations
+    - Every paragraph should end with a mini-hook that pulls into the next
+    - Example: "I thought it was over. It wasn't."
+    
+    LEVEL 3 — STAKES (make the audience CARE):
+    - Highlight what's at stake: "If this didn't work, I'd lose everything"
+    - Connect to relatable pain: "Imagine your own family doing this to you"
+    - Show emotional cost: "I couldn't eat. I couldn't sleep."
+    - Make the viewer feel the weight: "This wasn't just about money anymore"
+    
+    LEVEL 4 — OPEN LOOPS & TENSION WAVES:
+    - Open a loop early: "Little did I know, this was just the beginning"
+    - Create tension waves: build up, release, build up BIGGER
+    - Use "and that's when everything changed..." at key turning points
+    - Add mini-cliffhangers at natural breaks: "But what happened next? That's the part nobody saw coming."
+    - Vary pacing: short punchy lines during tension, longer during reflection
+    
+    LEVEL 5 — CLARITY & METAPHORS:
+    - Use vivid comparisons: "It was like watching a car crash in slow motion"
+    - Make abstract feelings concrete: "My stomach dropped to the floor"
+    - Every line must DRIVE THE STORY FORWARD — no filler sentences
     
     RULES:
     - Keep the core story accurate
@@ -236,6 +263,9 @@ IMPORTANT RULES:
 - **DO NOT include "Part 1", "Part 2", or any part labels in the spoken script.**
 - **Part 1 must START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.**
 - **In Part 2, start with a smooth transition like "So here's what happened next..." or "Continuing the story..."**
+- **INSERT MICRO-HOOKS every 2-3 sentences: "but here's the thing...", "what I didn't know was...", "and that's when everything changed..."**
+- **BUILD TENSION WAVES: short punchy lines during drama, longer during reflection. End each paragraph with a mini-hook that pulls into the next.**
+- **HIGHLIGHT STAKES: show what's at risk — "If this didn't work, I'd lose everything", "This wasn't just about money anymore"**
 
 OUTPUT FORMAT:
 Part 1: [script text for part 1]
@@ -259,6 +289,9 @@ IMPORTANT RULES:
 - **If the story doesn't have a natural ending, create a satisfying conclusion.**
 - **DO NOT include the title in the narration—it will be spoken separately.**
 - **DO NOT include "Part 1" or any part labels in the spoken script.**
+- **INSERT MICRO-HOOKS every 2-3 sentences: "but here's the thing...", "what I didn't know was...", "and that's when everything changed..."**
+- **BUILD TENSION WAVES: short punchy lines during drama, longer during reflection. End each paragraph with a mini-hook.**
+- **HIGHLIGHT STAKES: show what's at risk — "If this didn't work, I'd lose everything", "This wasn't just about money anymore"**
 
 The goal is to make the story feel fresh, personal, and engaging."""
 

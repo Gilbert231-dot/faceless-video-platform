@@ -91,9 +91,10 @@ jobs:
       # each upload uses ~10-50 MB (just the API call), so this is plenty.
       - name: Install Windscribe VPN CLI
         run: |
-          curl -fsSL https://windscribe.com/install.sh | sh
+          curl -L https://windscribe.com/install/desktop/linux_deb_x64_cli -o ~/windscribe.deb
+          sudo apt install -y ~/windscribe.deb
           echo "✅ Windscribe installed"
-          windscribe --version
+          windscribe-cli --version
 
       - name: Set up environment variables
         run: |
@@ -293,11 +294,11 @@ jobs:
         if: env.WINDSCRIBE_USERNAME != ''
         run: |
           echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-UK-London})..."
-          windscribe login $WINDSCRIBE_USERNAME $WINDSCRIBE_PASSWORD
-          windscribe connect ${WINDSCRIBE_LOCATION:-UK-London}
+          echo "$WINDSCRIBE_PASSWORD" | windscribe-cli login $WINDSCRIBE_USERNAME
+          windscribe-cli connect ${WINDSCRIBE_LOCATION:-UK-London}
           sleep 5
           # Verify the VPN is active and show our apparent location
-          windscribe status
+          windscribe-cli status
           curl -s --max-time 10 https://ipinfo.io/json | python -c "import json,sys; d=json.load(sys.stdin); print(f'🌍 Apparent location: {d.get("city")}, {d.get("country")} (IP: {d.get("ip")})')" || echo "⚠️ Could not verify VPN location"
 
       - name: Upload videos to YouTube
@@ -523,7 +524,7 @@ jobs:
       - name: Disconnect Windscribe VPN
         if: always() && env.WINDSCRIBE_USERNAME != ''
         run: |
-          windscribe disconnect
+          windscribe-cli disconnect
           echo "🔓 Windscribe disconnected"
 
       # Agent room: move Buffy to LAPTOP now that uploads are done.
