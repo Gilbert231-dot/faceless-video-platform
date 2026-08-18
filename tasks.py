@@ -162,9 +162,9 @@ TIKTOK_SCHEDULE_STATE = "tiktok_schedule_state.json"
 def _tiktok_slot_times():
     """The two post slots per day (UTC). Override with TIKTOK_SCHEDULE_TIMES,
     e.g. "10:00,20:00" in the workflow env."""
-    raw = os.environ.get("TIKTOK_SCHEDULE_TIMES", "12:00,18:00")
+    raw = os.environ.get("TIKTOK_SCHEDULE_TIMES", "13:00,19:00")
     slots = [t.strip() for t in raw.split(",") if t.strip()]
-    return slots or ["12:00", "18:00"]
+    return slots or ["13:00", "19:00"]
 
 
 def _next_tiktok_slot():

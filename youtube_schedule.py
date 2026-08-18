@@ -27,9 +27,9 @@ MIN_AHEAD = datetime.timedelta(hours=1)
 def slot_times():
     """The daily publish slots (UTC), e.g. '10:00,22:00'. Override with
     YOUTUBE_SCHEDULE_TIMES in the workflow env (e.g. '12:00,18:00')."""
-    raw = os.environ.get("YOUTUBE_SCHEDULE_TIMES", "12:00,20:00")
+    raw = os.environ.get("YOUTUBE_SCHEDULE_TIMES", "12:00,18:00")
     slots = [t.strip() for t in raw.split(",") if t.strip()]
-    return slots or ["12:00", "20:00"]
+    return slots or ["12:00", "18:00"]
 
 
 def _read_index():

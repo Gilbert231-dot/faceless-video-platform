@@ -30,10 +30,10 @@ YT_PRIVACY_FILE = os.path.join(REPO, "YOUTUBE_PRIVACY")
 VIDEO_HISTORY_FILE = os.path.join(REPO, "video_history.json")
 OUT = os.path.join(REPO, "dashboard", "data.json")
 THRESHOLD = 100  # must match MIN_UNUSED in fetch_stories.py (the refill point)
-VIDEOS_PER_DAY = 2  # daily cadence (2 AM UTC run makes 2 videos)
+VIDEOS_PER_DAY = 2  # daily cadence (midnight UTC run makes 2 videos)
 
 # Default YouTube publish slots (must match youtube_schedule.py)
-DEFAULT_YT_SLOTS = ["12:00", "20:00"]
+DEFAULT_YT_SLOTS = ["12:00", "18:00"]
 
 
 def load_used_ids():
