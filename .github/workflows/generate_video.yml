@@ -133,12 +133,16 @@ jobs:
           # slower encode are fine.
           echo "VIDEO_CRF=15" >> $GITHUB_ENV
           echo "VIDEO_PRESET=veryslow" >> $GITHUB_ENV
-          # Windscribe VPN credentials (GitHub Secrets). The pipeline
-          # connects to a US/UK server before YouTube/Facebook uploads so
-          # the platforms see a high-CPM geo. TikTok is excluded (manual).
-          echo "WINDSCRIBE_USERNAME=${{ secrets.WINDSCRIBE_USERNAME }}" >> $GITHUB_ENV
-          echo "WINDSCRIBE_PASSWORD=${{ secrets.WINDSCRIBE_PASSWORD }}" >> $GITHUB_ENV
-          echo "WINDSCRIBE_LOCATION=${{ secrets.WINDSCRIBE_LOCATION || 'UK-London' }}" >> $GITHUB_ENV
+          # Windscribe VPN credentials (GitHub Secrets). Only set if the
+          # secrets exist — otherwise the empty value breaks GITHUB_ENV.
+          if [ -n "${{ secrets.WINDSCRIBE_USERNAME }}" ]; then
+            echo "WINDSCRIBE_USERNAME=${{ secrets.WINDSCRIBE_USERNAME }}" >> $GITHUB_ENV
+            echo "WINDSCRIBE_PASSWORD=${{ secrets.WINDSCRIBE_PASSWORD }}" >> $GITHUB_ENV
+            echo "WINDSCRIBE_LOCATION=${{ secrets.WINDSCRIBE_LOCATION || 'UK-London' }}" >> $GITHUB_ENV
+            echo "✅ Windscribe secrets loaded"
+          else
+            echo "⚠️  Windscribe secrets not set — VPN will be skipped"
+          fi
           # CAPTION burn quality (caption_utils.py) is SEPARATE and cheaper:
           # FIXED — burning at veryslow + CRF 15 timed out on every 30s
           # segment of a 2-core runner (>600s each), silently fell back to
