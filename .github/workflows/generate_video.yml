@@ -137,7 +137,7 @@ jobs:
           # the platforms see a high-CPM geo. TikTok is excluded (manual).
           echo "WINDSCRIBE_USERNAME=${{ secrets.WINDSCRIBE_USERNAME }}" >> $GITHUB_ENV
           echo "WINDSCRIBE_PASSWORD=${{ secrets.WINDSCRIBE_PASSWORD }}" >> $GITHUB_ENV
-          echo "WINDSCRIBE_LOCATION=${{ secrets.WINDSCRIBE_LOCATION || 'US-East' }}" >> $GITHUB_ENV
+          echo "WINDSCRIBE_LOCATION=${{ secrets.WINDSCRIBE_LOCATION || 'UK-London' }}" >> $GITHUB_ENV
           # CAPTION burn quality (caption_utils.py) is SEPARATE and cheaper:
           # FIXED — burning at veryslow + CRF 15 timed out on every 30s
           # segment of a 2-core runner (>600s each), silently fell back to
@@ -294,7 +294,7 @@ jobs:
         run: |
           echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-US-East})..."
           windscribe login $WINDSCRIBE_USERNAME $WINDSCRIBE_PASSWORD
-          windscribe connect ${WINDSCRIBE_LOCATION:-US-East}
+          windscribe connect ${WINDSCRIBE_LOCATION:-UK-London}
           sleep 5
           # Verify the VPN is active and show our apparent location
           windscribe status
