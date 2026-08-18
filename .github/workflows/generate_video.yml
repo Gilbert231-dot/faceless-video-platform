@@ -292,7 +292,7 @@ jobs:
       - name: Connect Windscribe VPN (US/UK for YouTube + Facebook)
         if: env.WINDSCRIBE_USERNAME != ''
         run: |
-          echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-US-East})..."
+          echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-UK-London})..."
           windscribe login $WINDSCRIBE_USERNAME $WINDSCRIBE_PASSWORD
           windscribe connect ${WINDSCRIBE_LOCATION:-UK-London}
           sleep 5
