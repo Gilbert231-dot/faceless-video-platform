@@ -344,7 +344,8 @@ def generate_single_video(title, script, part_label=None, topic=None,
         subtitle_path=None,
         intro_frame=intro_frame,
         title=title,
-        part_label=part_label
+        part_label=part_label,
+        voice_id=voice_id
     )
     
     # Returns (video, raw_voiceover, final_audio_track). The final audio is
