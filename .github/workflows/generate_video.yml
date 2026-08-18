@@ -84,6 +84,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Windscribe VPN: route YouTube/Facebook uploads through a US/UK IP
+      # so the platforms treat the account as a US/UK creator (higher RPM,
+      # better algorithmic push). TikTok is excluded — it's posted manually
+      # with Windscribe on the user's laptop. Free tier = 10 GB/month;
+      # each upload uses ~10-50 MB (just the API call), so this is plenty.
+      - name: Install Windscribe VPN CLI
+        run: |
+          curl -fsSL https://windscribe.com/install.sh | sh
+          echo "✅ Windscribe installed"
+          windscribe --version
+
       - name: Set up environment variables
         run: |
           echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
@@ -121,6 +132,12 @@ jobs:
           # slower encode are fine.
           echo "VIDEO_CRF=15" >> $GITHUB_ENV
           echo "VIDEO_PRESET=veryslow" >> $GITHUB_ENV
+          # Windscribe VPN credentials (GitHub Secrets). The pipeline
+          # connects to a US/UK server before YouTube/Facebook uploads so
+          # the platforms see a high-CPM geo. TikTok is excluded (manual).
+          echo "WINDSCRIBE_USERNAME=${{ secrets.WINDSCRIBE_USERNAME }}" >> $GITHUB_ENV
+          echo "WINDSCRIBE_PASSWORD=${{ secrets.WINDSCRIBE_PASSWORD }}" >> $GITHUB_ENV
+          echo "WINDSCRIBE_LOCATION=${{ secrets.WINDSCRIBE_LOCATION || 'US-East' }}" >> $GITHUB_ENV
           # CAPTION burn quality (caption_utils.py) is SEPARATE and cheaper:
           # FIXED — burning at veryslow + CRF 15 timed out on every 30s
           # segment of a 2-core runner (>600s each), silently fell back to
@@ -270,6 +287,18 @@ jobs:
       - name: Verify videos are YouTube-compatible
         run: |
           python verify_youtube_compat.py
+
+      # --- VPN: connect before YouTube + Facebook uploads ---
+      - name: Connect Windscribe VPN (US/UK for YouTube + Facebook)
+        if: env.WINDSCRIBE_USERNAME != ''
+        run: |
+          echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-US-East})..."
+          windscribe login $WINDSCRIBE_USERNAME $WINDSCRIBE_PASSWORD
+          windscribe connect ${WINDSCRIBE_LOCATION:-US-East}
+          sleep 5
+          # Verify the VPN is active and show our apparent location
+          windscribe status
+          curl -s --max-time 10 https://ipinfo.io/json | python -c "import json,sys; d=json.load(sys.stdin); print(f'🌍 Apparent location: {d.get("city")}, {d.get("country")} (IP: {d.get("ip")})')" || echo "⚠️ Could not verify VPN location"
 
       - name: Upload videos to YouTube
         env:
@@ -489,6 +518,13 @@ jobs:
               else:
                   print(f"✅ Facebook post -> {result.get('url')}")
           PY
+
+      # --- VPN: disconnect after all uploads are done ---
+      - name: Disconnect Windscribe VPN
+        if: always() && env.WINDSCRIBE_USERNAME != ''
+        run: |
+          windscribe disconnect
+          echo "🔓 Windscribe disconnected"
 
       # Agent room: move Buffy to LAPTOP now that uploads are done.
       - name: Agent room — uploading
