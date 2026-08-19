@@ -325,6 +325,8 @@ jobs:
             sleep 3
           done
           sleep 5
+          # Turn off Windscribe firewall so YouTube/Facebook API calls work
+          windscribe-cli firewall off || true
           # Verify the VPN is active and show our apparent location
           windscribe-cli status
           echo "VPN status shown above"
