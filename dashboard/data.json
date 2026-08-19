@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-17T23:00:50Z",
+  "generated_at": "2026-08-19T02:42:57Z",
   "total_stories": 366,
   "unused_stories": 350,
   "used_stories": 16,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 175,
-  "runway_date": "2027-02-08",
+  "runway_date": "2027-02-10",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -88,20 +88,64 @@
     }
   ],
   "schedule": {
-    "next_index": 27
+    "next_index": 29
   },
   "youtube": {
     "privacy": "public",
     "slots": [
       "12:00",
-      "20:00"
+      "18:00"
     ],
     "next_publish_utc": [
-      "2026-08-21T12:00:00Z",
-      "2026-08-21T20:00:00Z"
+      "2026-08-23T12:00:00Z",
+      "2026-08-23T18:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1787106916_captioned_1787106918.mp4",
+      "title": "[TEST] Nobody wants a \"silly one\" when it comes to group photos",
+      "subreddit": "unpopularopinion",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122098162095447442",
+      "url": "https://www.facebook.com/reel/1620983262885176",
+      "posted_at": "2026-08-19T02:42:57Z",
+      "hook_score": 0
+    },
+    {
+      "video_file": "output_1787104435_captioned_1787104439.mp4",
+      "title": "[TEST] My (23 year old male) girlfriend (20 year old female) gave me an ultimatum between her and my parents. I made a choice, now how do I fix things?",
+      "subreddit": "relationship_advice",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1776146166909207",
+      "url": "https://www.facebook.com/1272041649331476/videos/1776146166909207",
+      "posted_at": "2026-08-19T02:42:40Z",
+      "hook_score": 60
+    },
+    {
+      "video_file": "output_1787106916_captioned_1787106918.mp4",
+      "title": "[TEST] Nobody wants a \"silly one\" when it comes to group photos",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "sjLlDTn1SEQ",
+      "url": "https://youtu.be/sjLlDTn1SEQ",
+      "posted_at": "2026-08-19T02:42:17Z",
+      "hook_score": 0
+    },
+    {
+      "video_file": "output_1787104435_captioned_1787104439.mp4",
+      "title": "[TEST] My (23 year old male) girlfriend (20 year old female) gave me an ultimatum between her and my parents. I made a choice, now how do I fix things?",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Alrg69mjyMg",
+      "url": "https://youtu.be/Alrg69mjyMg",
+      "posted_at": "2026-08-19T02:42:10Z",
+      "hook_score": 60
+    },
     {
       "video_file": "output_1787006710_captioned_1787006714.mp4",
       "title": "[TEST] Today I messed up by hitting my bf in the balls",
@@ -161,46 +205,6 @@
       "video_id": "122097327249447442",
       "url": "https://www.facebook.com/reel/1074538488253704",
       "posted_at": "2026-08-17T19:08:25Z"
-    },
-    {
-      "video_file": "output_1786992967_captioned_1786992970.mp4",
-      "title": "[TEST] I feel like no one would miss me and that hurts",
-      "subreddit": "TrueOffMyChest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "3Bu6khVl02Y",
-      "url": "https://youtu.be/3Bu6khVl02Y",
-      "posted_at": "2026-08-17T19:08:01Z"
-    },
-    {
-      "video_file": "output_1786990469_captioned_1786990470.mp4",
-      "title": "[TEST] Being gay is very frustrating",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "9hE2SGwer9Y",
-      "url": "https://youtu.be/9hE2SGwer9Y",
-      "posted_at": "2026-08-17T19:07:49Z"
-    },
-    {
-      "video_file": "output_1786938079_captioned_1786938086.mp4",
-      "title": "[TEST] IT told me I didn't understand the systems, so I stopped fixing them. The store learned what I actually did.",
-      "subreddit": "MaliciousCompliance",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1753605009267591",
-      "url": "https://www.facebook.com/1272041649331476/videos/1753605009267591",
-      "posted_at": "2026-08-17T04:02:15Z"
-    },
-    {
-      "video_file": "output_1786932984_captioned_1786932987.mp4",
-      "title": "[TEST] Boyfriend (35 year old male) left me (28 year old female) in bed after only trying to get me off for 4 minutes bc he was “frustrated”",
-      "subreddit": "relationship_advice",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122096845131447442",
-      "url": "https://www.facebook.com/reel/1792170671779162",
-      "posted_at": "2026-08-17T04:01:39Z"
     }
   ]
 }
