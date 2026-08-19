@@ -35,7 +35,7 @@ import subprocess
 import sys
 
 THUMB_W, THUMB_H = 2160, 3840        # 4K 9:16 — YouTube's recommended Shorts size
-PRE_CARD_T = 0.15                     # frame grabbed BEFORE the card fades in (0.35s)
+PRE_CARD_T = 15.0                    # frame grabbed AFTER the card fades out (~12s+0.45s fade)
 CARD_TOP_RATIO = 0.14                 # card top edge sits at 14% of height (matches the intro)
 
 
@@ -123,6 +123,9 @@ def _make_thumbnail(video_path, card_path, out_path):
     #    clean — the card is re-added from its native PNG in step 2.
     bg_path = out_path + ".bg.png"
     have_bg = _extract_frame(video_path, PRE_CARD_T, bg_path)
+    if not have_bg:
+        # Fallback: try a later frame if the video is shorter than expected
+        have_bg = _extract_frame(video_path, 5.0, bg_path)
 
     canvas = Image.new("RGB", (THUMB_W, THUMB_H), (18, 18, 26))
     if have_bg:

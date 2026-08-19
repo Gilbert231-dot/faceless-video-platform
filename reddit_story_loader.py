@@ -300,11 +300,14 @@ class RedditStoryLoader:
         
         print(f"   📊 Found {len(unused)} unused stories out of {len(all_stories)} total")
         
-        # FIXED (old-first): shuffle within same-age groups so stories added
-        # by a refill (added_at set by fetch_stories.py) are only picked after
-        # every older story is used. Stories without added_at sort first
-        # ('' < any date), so the pre-refill bank always drains first.
-        unused.sort(key=lambda s: ((s.get('added_at') or ''), random.random()))
+        # Prioritize HIGH-SCORING stories for better engagement.
+        # Sort by score descending so the most upvoted stories are picked first.
+        # Within the same score tier, prefer older stories (drain old bank first).
+        unused.sort(key=lambda s: (
+            -(s.get('score') or 0),   # highest score first
+            (s.get('added_at') or ''), # oldest first within same score
+            random.random()            # random tiebreaker
+        ))
         return unused[:limit]
     
     def get_random_story(self, subreddit=None, force_real=False):

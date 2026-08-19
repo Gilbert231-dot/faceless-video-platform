@@ -314,9 +314,7 @@ The goal is to make the story feel fresh, personal, and engaging."""
     # --- FORCE COMPLETE ENDING ---
     script_text = normalize_slang(script_text)
     
-    # Check if script ends with a period, question mark, or exclamation
-    if script_text and not script_text.strip().endswith(('.', '!', '?')):
-        script_text = script_text.strip() + " And that's how it all went down."
+    # No forced ending — let the narrator stop naturally
 
     # Parse parts
     if split_required:
@@ -326,9 +324,7 @@ The goal is to make the story feel fresh, personal, and engaging."""
             part1_script = part1_match.group(1).strip()
             part2_script = part2_match.group(1).strip()
             
-            # --- FORCE COMPLETE ENDING FOR PART 2 ---
-            if part2_script and not part2_script.strip().endswith(('.', '!', '?')):
-                part2_script = part2_script.strip() + " And that's the end of the story."
+            # No forced ending for Part 2 — let the narrator stop naturally
             
             part1_script = normalize_slang(part1_script)
             part2_script = normalize_slang(part2_script)
