@@ -476,6 +476,15 @@ jobs:
               print(f"✅ TikTok publish complete: {result}")
           PY
 
+      # Disconnect Windscribe before Facebook upload — the VPN's WireGuard
+      # tunnel drops connections to graph.facebook.com even with the firewall
+      # off. YouTube already uploaded successfully through the UK IP.
+      - name: Disconnect Windscribe VPN (before Facebook)
+        run: |
+          echo "🔓 Disconnecting Windscribe before Facebook upload..."
+          windscribe-cli disconnect || true
+          echo "✅ VPN disconnected — Facebook upload will use runner's IP"
+
       # Facebook posting via the official Graph API Video API. Gated by the
       # FACEBOOK_ENABLED repo file (flip to 'true' after the manual setup in
       # FACEBOOK_SETUP.md). Test runs post DRAFTS (admin-only — the FB
