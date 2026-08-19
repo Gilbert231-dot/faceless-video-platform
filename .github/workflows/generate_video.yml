@@ -150,7 +150,7 @@ jobs:
           # — secrets with trailing whitespace break GITHUB_ENV format.
           WS_USER=$(echo "${{ secrets.WINDSCRIBE_USERNAME }}" | tr -d '\r\n' | xargs)
           WS_PASS=$(echo "${{ secrets.WINDSCRIBE_PASSWORD }}" | tr -d '\r\n' | xargs)
-          WS_LOC=$(echo "${{ secrets.WINDSCRIBE_LOCATION || 'UK-London' }}" | tr -d '\r\n' | xargs)
+          WS_LOC=$(echo "${{ secrets.WINDSCRIBE_LOCATION || 'United Kingdom' }}" | tr -d '\r\n' | xargs)
           if [ -n "$WS_USER" ]; then
             echo "WINDSCRIBE_USERNAME=$WS_USER" >> $GITHUB_ENV
             echo "WINDSCRIBE_PASSWORD=$WS_PASS" >> $GITHUB_ENV
@@ -313,21 +313,21 @@ jobs:
       - name: Connect Windscribe VPN (US/UK for YouTube + Facebook)
         if: env.WINDSCRIBE_USERNAME != ''
         run: |
-          echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-UK-London})..."
+          echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-United Kingdom})..."
           # Login with direct args (piped stdin doesn't work with the daemon)
           windscribe-cli login "$WINDSCRIBE_USERNAME" "$WINDSCRIBE_PASSWORD" || true
           sleep 2
           # Connect with retry (daemon may need a moment)
           for attempt in 1 2 3; do
             echo "   Connection attempt $attempt..."
-            windscribe-cli connect "${WINDSCRIBE_LOCATION:-UK-London}" && break
+            windscribe-cli connect "${WINDSCRIBE_LOCATION:-United Kingdom}" && break
             echo "   ⚠️ Attempt $attempt failed, retrying in 3s..."
             sleep 3
           done
           sleep 5
           # Verify the VPN is active and show our apparent location
           windscribe-cli status
-          curl -s --max-time 10 https://ipinfo.io/json | python -c "import json,sys; d=json.load(sys.stdin); print(f'🌍 Apparent location: {d.get("city")}, {d.get("country")} (IP: {d.get("ip")})')" || echo "⚠️ Could not verify VPN location"
+          echo "VPN status shown above"
 
       - name: Upload videos to YouTube
         env:
