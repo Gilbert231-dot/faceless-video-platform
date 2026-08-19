@@ -93,8 +93,21 @@ jobs:
         run: |
           curl -L https://windscribe.com/install/desktop/linux_deb_x64_cli -o ~/windscribe.deb
           sudo apt install -y ~/windscribe.deb
-          echo "✅ Windscribe installed"
+          echo "✅ Windscribe CLI installed"
           windscribe-cli --version
+          # Start the daemon (CLI-only build needs manual daemon start)
+          sudo systemctl start windscribe || windscribe-cli start || true
+          sleep 3
+          echo "🔌 Daemon started, waiting for readiness..."
+          for i in 1 2 3 4 5; do
+            if windscribe-cli status 2>&1 | grep -qi "internet connectivity"; then
+              echo "✅ Windscribe daemon ready"
+              break
+            fi
+            echo "   Waiting for daemon... ($i/5)"
+            sleep 2
+          done
+          windscribe-cli status
 
       - name: Set up environment variables
         run: |
@@ -301,8 +314,16 @@ jobs:
         if: env.WINDSCRIBE_USERNAME != ''
         run: |
           echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-UK-London})..."
-          echo "$WINDSCRIBE_PASSWORD" | windscribe-cli login $WINDSCRIBE_USERNAME
-          windscribe-cli connect ${WINDSCRIBE_LOCATION:-UK-London}
+          # Login with direct args (piped stdin doesn't work with the daemon)
+          windscribe-cli login "$WINDSCRIBE_USERNAME" "$WINDSCRIBE_PASSWORD" || true
+          sleep 2
+          # Connect with retry (daemon may need a moment)
+          for attempt in 1 2 3; do
+            echo "   Connection attempt $attempt..."
+            windscribe-cli connect "${WINDSCRIBE_LOCATION:-UK-London}" && break
+            echo "   ⚠️ Attempt $attempt failed, retrying in 3s..."
+            sleep 3
+          done
           sleep 5
           # Verify the VPN is active and show our apparent location
           windscribe-cli status
