@@ -24,7 +24,7 @@ DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() in ("true", "1", "yes")
 # 1.08 at the first "tiny bit" request; 1.12 now at the user's "a bit" bump.
 # Captions are timed to this exact value (whisper timestamps are divided by
 # it) so they stay in sync no matter the value.
-VOICE_SPEED = 1.12
+VOICE_SPEED = 1.15
 
 # ===========================
 # NARRATOR PAUSE COMPRESSION
@@ -39,8 +39,8 @@ VOICE_SPEED = 1.12
 # silence is trimmed fully. Set PAUSE_COMPRESS=False to disable.
 PAUSE_COMPRESS = True
 PAUSE_MIN_SEC = 0.28        # only pauses longer than this are shortened
-PAUSE_KEEP_RATIO = 0.40     # a 0.8s pause -> ~0.32s kept
-PAUSE_MIN_KEPT_SEC = 0.14   # never keep less than this
+PAUSE_KEEP_RATIO = 0.30     # a 0.8s pause -> ~0.24s kept
+PAUSE_MIN_KEPT_SEC = 0.10   # never keep less than this
 PAUSE_THRESHOLD = 0.01      # |sample| below this (of full scale) counts as silence
 
 # ===========================

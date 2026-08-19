@@ -198,7 +198,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                          "http://creativecommons.org/licenses/by/4.0/")
     # ~13-14 dB below the -16 LUFS narration: clearly audible but secondary,
     # so the narrator leads the mix like the viral reference.
-    MUSIC_VOLUME = 0.30
+    MUSIC_VOLUME = 0.20
     
     music_available = os.path.exists(MUSIC_PATH)
     if music_available:
