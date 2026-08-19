@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Favicon (same icon used in TikTok App Review) -->
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+    <meta name="theme-color" content="#7c3aed">
+    <link rel="manifest" href="../site.webmanifest">
+    <meta property="og:title" content="Faceless Video Creator Poster">
+    <meta property="og:description" content="AI-powered Reddit story video generator">
+    <meta property="og:image" content="../icon-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta name="twitter:card" content="summary">
+<meta charset="utf-8">
+<title>StoryLab Banners</title>
+<style>
+  :root {
+    --accent: #ff4500;          /* solid accent (YouTube red) */
+    --accentSoft: #ffb199;      /* soft accent text/gradient (YouTube peach) */
+  }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #0d0d14; }
+  svg { display: block; width: 100%; height: 100%; }
+  #fbIcon { display: none; }
+</style>
+</head>
+<body>
+<!--
+  One design family, rendered per platform:
+    ?title=StoryLab                -> YouTube (red accent, play icon)
+    ?title=Story%20Lab&theme=fb    -> Facebook (blue accent, chat-bubble icon)
+  preserveAspectRatio="xMidYMid slice": 2560x1440 = full YT banner,
+  851x315 = center-cropped FB cover.
+-->
+<svg viewBox="0 0 2560 1440" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c0c13"/>
+      <stop offset="0.55" stop-color="#15151f"/>
+      <stop offset="1" stop-color="#0d0d16"/>
+    </linearGradient>
+    <radialGradient id="glowAccent" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="var(--accent)" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowBlue" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#4d7cff" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#4d7cff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.6" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="var(--accentSoft)"/>
+    </linearGradient>
+    <pattern id="dots" width="46" height="46" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#ffffff" opacity="0.045"/>
+    </pattern>
+  </defs>
+
+  <!-- background -->
+  <rect width="2560" height="1440" fill="url(#bg)"/>
+  <rect width="2560" height="1440" fill="url(#dots)"/>
+
+  <!-- corner glows -->
+  <ellipse cx="2100" cy="150" rx="900" ry="700" fill="url(#glowAccent)"/>
+  <ellipse cx="420" cy="1250" rx="900" ry="700" fill="url(#glowBlue)"/>
+
+  <!-- diagonal light streaks -->
+  <g stroke="#ffffff" stroke-opacity="0.05" stroke-width="3">
+    <line x1="120" y1="1440" x2="820" y2="0"/>
+    <line x1="420" y1="1440" x2="1120" y2="0"/>
+    <line x1="720" y1="1440" x2="1420" y2="0"/>
+    <line x1="1840" y1="1440" x2="2440" y2="0"/>
+  </g>
+
+  <!-- center content (safe for both platforms) -->
+  <g text-anchor="middle">
+
+    <!-- icon: YouTube play bubble (red theme) -->
+    <g id="ytIcon" transform="translate(1280, 470)">
+      <rect x="-62" y="-42" width="124" height="84" rx="26" fill="var(--accent)"/>
+      <path d="M 96 -42 L 124 -42 L 124 42 L 96 42 Z" fill="var(--accent)"/>
+      <polygon points="-22,-24 -22,24 30,0" fill="#ffffff"/>
+    </g>
+
+    <!-- icon: Facebook chat bubble with heart (blue theme) -->
+    <g id="fbIcon" transform="translate(1280, 470)">
+      <rect x="-62" y="-42" width="124" height="84" rx="26" fill="var(--accent)"/>
+      <path d="M 96 -42 L 124 -42 L 124 42 L 96 42 Z" fill="var(--accent)"/>
+      <path d="M 0 -6 C -4 -10 -11 -6 -11 0 C -11 7 -4 11 0 15 C 4 11 11 7 11 0 C 11 -6 4 -10 0 -6 Z"
+            fill="#ffffff" transform="translate(0,-1)"/>
+    </g>
+
+    <!-- badge -->
+    <g transform="translate(1280, 585)">
+      <rect x="-310" y="-30" width="620" height="60" rx="30"
+            fill="var(--accent)" fill-opacity="0.10" stroke="var(--accent)" stroke-opacity="0.65" stroke-width="3"/>
+      <circle cx="-248" cy="0" r="9" fill="var(--accent)">
+        <animate attributeName="opacity" values="1;0.25;1" dur="2.4s" repeatCount="indefinite"/>
+      </circle>
+      <text y="11" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700"
+            letter-spacing="6" fill="var(--accentSoft)">NEW STORY EVERY DAY</text>
+    </g>
+
+    <!-- title -->
+    <text id="title" x="1280" y="770" font-family="Arial, Helvetica, sans-serif" font-size="230" font-weight="900"
+          letter-spacing="10" fill="url(#titleGrad)">StoryLab</text>
+
+    <!-- accent bar -->
+    <rect x="1080" y="820" width="400" height="14" rx="7" fill="var(--accent)"/>
+
+    <!-- tagline -->
+    <text id="tagline" x="1280" y="925" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="600"
+          letter-spacing="14" fill="#c6c6d4">REDDIT STORIES &bull; REIMAGINED</text>
+
+  </g>
+</svg>
+<script>
+  // Per-platform customization: ?title=..., ?tag=..., ?theme=fb
+  (function () {
+    var p = new URLSearchParams(location.search);
+    var t = p.get('title');
+    if (t) document.getElementById('title').textContent = t;
+    var tag = p.get('tag');
+    if (tag) document.getElementById('tagline').textContent = tag;
+    if (p.get('theme') === 'fb') {
+      var r = document.documentElement.style;
+      r.setProperty('--accent', '#1877F2');
+      r.setProperty('--accentSoft', '#9fc3ff');
+      document.getElementById('ytIcon').style.display = 'none';
+      document.getElementById('fbIcon').style.display = 'block';
+    }
+  })();
+</script>
+</body>
+</html>
