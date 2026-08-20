@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "03:26:02 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "03:26:02 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "00:39:04 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "00:39:04 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "00:39:04 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "00:39:04 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "13:15:51 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -142,28 +178,28 @@
       "activity": "Building the agent room"
     }
   ],
-  "updated_at": "2026-08-19T13:15:51Z",
+  "updated_at": "2026-08-20T03:26:02Z",
   "stories": [
-    {
-      "subreddit": "ProRevenge",
-      "title": "My ex-MIL sent her Church friends to harass my daughters and I. I have now exposed her fam",
-      "score": 16709,
-      "comments": 0,
-      "url": "https://reddit.com/r/ProRevenge/comments/1jcw2ll/my_exmil_sent_her_church_friends_to_harass_my/"
-    },
-    {
-      "subreddit": "ProRevenge",
-      "title": "Neighbor was stealing water from my supply, so I ruined him.",
-      "score": 15911,
-      "comments": 0,
-      "url": "https://reddit.com/r/ProRevenge/comments/1gm2riq/neighbor_was_stealing_water_from_my_supply_so_i/"
-    },
     {
       "subreddit": "ProRevenge",
       "title": "Cheat on your wife with mine? I will burn your life to the ground.",
       "score": 12679,
       "comments": 0,
       "url": "https://reddit.com/r/ProRevenge/comments/1gtlcm5/cheat_on_your_wife_with_mine_i_will_burn_your/"
+    },
+    {
+      "subreddit": "ProRevenge",
+      "title": "Fired from my job, but received a years worth of pay and got my Boss fired.",
+      "score": 11902,
+      "comments": 0,
+      "url": "https://reddit.com/r/ProRevenge/comments/1d8rrg6/fired_from_my_job_but_received_a_years_worth_of/"
+    },
+    {
+      "subreddit": "MaliciousCompliance",
+      "title": "Boss chastised me for a late lunch during a \"mission critical outage\", so I clocked out wh",
+      "score": 11806,
+      "comments": 0,
+      "url": "https://reddit.com/r/MaliciousCompliance/comments/1uho7se/boss_chastised_me_for_a_late_lunch_during_a/"
     }
   ]
 }
