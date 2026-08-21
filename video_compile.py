@@ -50,7 +50,7 @@ EXTRACT_FACTOR = round((SPEED_FACTOR / VOICE_SPEED) * 1.1, 3)
 # quieter subjectively, so she gets a small extra boost ON TOP of the
 # normalization. Tune with FEMALE_VOICE_BOOST_DB (env override).
 FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"      # Sarah (see tasks.py)
-FEMALE_VOICE_BOOST_DB = float(os.environ.get("FEMALE_VOICE_BOOST_DB", "4.0"))
+FEMALE_VOICE_BOOST_DB = float(os.environ.get("FEMALE_VOICE_BOOST_DB", "6.5"))
 
 # --- ANIMATED TITLE FRAME (burned into segment 0's filter chain) ---
 # The narrator speaks the story TITLE at the very start of the voiceover
