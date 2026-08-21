@@ -32,18 +32,32 @@ def slot_times():
     return slots or ["12:00", "18:00"]
 
 
-def _read_index():
+def _read_state():
+    """Read the schedule state: next_index + reference_date.
+
+    The reference_date is the fixed anchor from which day-offsets are
+    calculated.  Older state files only had next_index — those are
+    handled by defaulting reference_date to today.
+    """
     try:
         with open(STATE_FILE, encoding="utf-8") as f:
-            return int(json.load(f).get("next_index", 0))
+            data = json.load(f)
+            idx = int(data.get("next_index", 0))
+            ref_str = data.get("reference_date")
+            if ref_str:
+                ref_date = datetime.date.fromisoformat(ref_str)
+            else:
+                ref_date = datetime.date.today()
+            return idx, ref_date
     except Exception:
-        return 0
+        return 0, datetime.date.today()
 
 
-def _write_index(idx):
+def _write_state(idx, ref_date):
     try:
         with open(STATE_FILE, "w", encoding="utf-8") as f:
-            json.dump({"next_index": idx}, f)
+            json.dump({"next_index": idx,
+                       "reference_date": ref_date.isoformat()}, f)
     except Exception:
         pass
 
@@ -55,10 +69,35 @@ def next_publish_times(count):
     Each slot is the next one that is > 1 hour away, so a run that uploads
     late just pushes both videos to the following slots — they always stay
     MIN_AHEAD or more apart and never collide with earlier runs.
+
+    FIXED: the old code used ``now.date() + idx // slots`` as the day,
+    which compounded across consecutive daily runs — each run's "today"
+    was one day later AND the index had advanced, so videos drifted
+    further into the future every day.  The fix anchors day-offsets to a
+    FIXED reference_date stored in the state file (the date of the first
+    real upload), so ``idx // slots`` always maps to the same absolute
+    day regardless of when the run fires.
     """
     slots = slot_times()
-    idx = _read_index()
+    idx, ref_date = _read_state()
     now = datetime.datetime.now(datetime.timezone.utc)
+
+    # If the reference date is stale (older than today and all its slots
+    # are in the past), reset to today so we don't skip empty days.
+    if ref_date < now.date():
+        # Check if the NEXT slot from ref_date is still in the future.
+        test_slot = slots[0]
+        hh, mm = test_slot.split(":")
+        earliest_from_ref = datetime.datetime(
+            ref_date.year, ref_date.month, ref_date.day,
+            int(hh), int(mm), tzinfo=datetime.timezone.utc)
+        # If even the LAST slot of ref_date is in the past, the reference
+        # is stale — but we still use it because idx determines the day
+        # offset.  Only reset if idx == 0 (fresh start) and ref_date is
+        # old (the state was never properly initialized).
+        if idx == 0 and earliest_from_ref < now:
+            ref_date = now.date()
+
     times = []
     idx0 = idx
     guard = idx0 + 120  # hard cap: 120 slots ahead is ~2 months of runway
@@ -66,7 +105,8 @@ def next_publish_times(count):
         slot = slots[idx % len(slots)]
         try:
             hh, mm = slot.split(":")
-            day = now.date() + datetime.timedelta(days=idx // len(slots))
+            # FIXED: use ref_date (fixed anchor) instead of now.date()
+            day = ref_date + datetime.timedelta(days=idx // len(slots))
             t = datetime.datetime(day.year, day.month, day.day,
                                   int(hh), int(mm), tzinfo=datetime.timezone.utc)
         except ValueError:
@@ -76,5 +116,5 @@ def next_publish_times(count):
         idx += 1
     if not times:  # pathological: slots far past; just push 12h out
         times = [now + datetime.timedelta(hours=12)]
-    _write_index(idx)
+    _write_state(idx, ref_date)
     return [t.strftime("%Y-%m-%dT%H:%M:%SZ") for t in times]
