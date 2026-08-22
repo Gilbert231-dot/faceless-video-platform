@@ -61,7 +61,7 @@ FEMALE_VOICE_BOOST_DB = float(os.environ.get("FEMALE_VOICE_BOOST_DB", "6.5"))
 # shows the card), holds while the title is narrated, then fades out while
 # sliding LEFT and away (like the TikTok reference). Pure overlay inside
 # segment 0's existing encode - no extra pass, negligible CPU on the Actions runner.
-TITLE_FADE_SEC = 0.30    # slide-OUT duration — fast swipe LEFT (no fade, just motion)
+TITLE_FADE_SEC = 0.25    # slide-OUT duration — fast swipe LEFT (no fade, just motion)
 TITLE_HOLD_SEC = 1.0     # extra time the card stays FULLY visible after the title is narrated
 TITLE_MIN_SEC = 1.8      # never shorter than this (tiny titles still readable)
 TITLE_MAX_SEC = 12.0     # never longer than this (covers the longest hooks)
@@ -255,7 +255,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             # while sliding LEFT and away (like the TikTok reference).
             frame_top = round(0.14 * OUTPUT_H)
             # Slide LEFT on exit — fast swipe, NO fade out (card stays opaque)
-            slide_x = round(0.5 * OUTPUT_W)  # slide 50% of width to the left (off-screen)
+            slide_x = OUTPUT_W + 100  # slide FULL width + margin to go completely off-screen LEFT
             slide_duration = TITLE_FADE_SEC   # how long the slide takes (fast)
             x_expr = f"(W-w)/2-{slide_x}*clip((t-{t3:.3f})/{slide_duration:.3f},0,1)"
             overlay_filter = (
@@ -565,9 +565,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 # Create a complex filter to add both sound effects
                 # ding at 0:00, whoosh at t3
                 filter_complex = (
-                    f"[0:a]volume=1.0[voice];"
+                    f"[0:a]volume=1.0,adelay=500|500[voice];"  # delay narration 0.5s so ding plays first
                     f"[1:a]volume=0.8,adelay=0|0[d];"  # ding at 0:00
-                    f"[2:a]volume=0.7,adelay={int(t3*1000)}|{int(t3*1000)}[w];"  # whoosh at t3
+                    f"[2:a]volume=0.7,adelay={int((t3+0.5)*1000)}|{int((t3+0.5)*1000)}[w];"  # whoosh shifted 0.5s to match card slide
                     f"[voice][d][w]amix=inputs=3:duration=first:normalize=0"
                 )
                 
