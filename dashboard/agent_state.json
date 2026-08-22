@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "00:05:27 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "00:05:27 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "22:25:24 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "22:25:23 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "22:25:23 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "22:25:23 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "03:41:55 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -164,66 +200,30 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "13:16:46 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Wiring the story wall to live picks"
-    },
-    {
-      "t": "13:16:25 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Wiring the story wall to live picks"
-    },
-    {
-      "t": "12:48:19 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "12:48:19 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Wiring the agent room into the pipeline"
-    },
-    {
-      "t": "12:47:00 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "12:47:00 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
     }
   ],
-  "updated_at": "2026-08-21T03:41:55Z",
+  "updated_at": "2026-08-22T00:05:27Z",
   "stories": [
-    {
-      "subreddit": "MaliciousCompliance",
-      "title": "Boss chastised me for a late lunch during a \"mission critical outage\", so I clocked out wh",
-      "score": 11806,
-      "comments": 0,
-      "url": "https://reddit.com/r/MaliciousCompliance/comments/1uho7se/boss_chastised_me_for_a_late_lunch_during_a/"
-    },
-    {
-      "subreddit": "pettyrevenge",
-      "title": "[Short] Called my bank, was told they couldn’t do anything, emailed every important-soundi",
-      "score": 10778,
-      "comments": 0,
-      "url": "https://reddit.com/r/pettyrevenge/comments/1uqwwpf/short_called_my_bank_was_told_they_couldnt_do/"
-    },
     {
       "subreddit": "ProRevenge",
       "title": "The HOA President's Long Goodbye",
       "score": 10630,
       "comments": 0,
       "url": "https://reddit.com/r/ProRevenge/comments/1hp67gl/the_hoa_presidents_long_goodbye/"
+    },
+    {
+      "subreddit": "pettyrevenge",
+      "title": "Sorry, I'm just a typical woman",
+      "score": 10445,
+      "comments": 0,
+      "url": "https://reddit.com/r/pettyrevenge/comments/1uvt2m5/sorry_im_just_a_typical_woman/"
+    },
+    {
+      "subreddit": "ProRevenge",
+      "title": "We reverse gazumped a greedy landlord and it was glorious.",
+      "score": 9833,
+      "comments": 0,
+      "url": "https://reddit.com/r/ProRevenge/comments/1efqmr8/we_reverse_gazumped_a_greedy_landlord_and_it_was/"
     }
   ]
 }

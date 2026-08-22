@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-08-21T04:07:53Z",
+  "generated_at": "2026-08-22T00:05:27Z",
   "total_stories": 366,
-  "unused_stories": 346,
-  "used_stories": 20,
+  "unused_stories": 344,
+  "used_stories": 22,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 173,
+  "days_of_stories": 172,
   "runway_date": "2027-02-10",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -47,22 +47,22 @@
       "unused": 24
     },
     {
-      "name": "pettyrevenge",
-      "total": 25,
-      "unused": 24
-    },
-    {
-      "name": "MaliciousCompliance",
-      "total": 23,
-      "unused": 23
-    },
-    {
       "name": "unpopularopinion",
       "total": 25,
       "unused": 23
     },
     {
+      "name": "pettyrevenge",
+      "total": 24,
+      "unused": 23
+    },
+    {
       "name": "relationship_advice",
+      "total": 22,
+      "unused": 22
+    },
+    {
+      "name": "MaliciousCompliance",
       "total": 22,
       "unused": 22
     },
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 34
+    "next_index": 36
   },
   "youtube": {
     "privacy": "public",
@@ -102,6 +102,54 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1787356717_captioned_1787356720.mp4",
+      "title": "[Short] Called my bank, was told they couldn’t do anything, emailed every important-sounding staff on their website, problem fixed in less than 10 minutes",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122100891603447442",
+      "url": "https://www.facebook.com/reel/1810938973255732",
+      "posted_at": "2026-08-22T00:05:27Z",
+      "hook_score": 34,
+      "publish_at": "2026-08-24T18:00:00Z"
+    },
+    {
+      "video_file": "output_1787354633_captioned_1787354639.mp4",
+      "title": "Boss chastised me for a late lunch during a \"mission critical outage\", so I clocked out when the whole network went down!",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "2297533464408654",
+      "url": "https://www.facebook.com/1272041649331476/videos/2297533464408654",
+      "posted_at": "2026-08-22T00:05:05Z",
+      "hook_score": 21,
+      "publish_at": "2026-08-24T12:00:00Z"
+    },
+    {
+      "video_file": "output_1787356717_captioned_1787356720.mp4",
+      "title": "[Short] Called my bank, was told they couldn’t do anything, emailed every important-sounding staff on their website, problem fixed in less than 10 minutes",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Gt-75zmupac",
+      "url": "https://youtu.be/Gt-75zmupac",
+      "posted_at": "2026-08-22T00:04:39Z",
+      "hook_score": 34,
+      "publish_at": "2026-08-24T18:00:00Z"
+    },
+    {
+      "video_file": "output_1787354633_captioned_1787354639.mp4",
+      "title": "Boss chastised me for a late lunch during a \"mission critical outage\", so I clocked out when the whole network went down!",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Sc6rBxTJsAE",
+      "url": "https://youtu.be/Sc6rBxTJsAE",
+      "posted_at": "2026-08-22T00:04:33Z",
+      "hook_score": 21,
+      "publish_at": "2026-08-24T12:00:00Z"
+    },
     {
       "video_file": "output_1787282546_captioned_1787282554.mp4",
       "title": "Fired from my job, but received a years worth of pay and got my Boss fired.",
@@ -173,52 +221,6 @@
       "posted_at": "2026-08-20T03:25:31Z",
       "hook_score": 47,
       "publish_at": "2026-08-24T12:00:00Z"
-    },
-    {
-      "video_file": "output_1787195107_captioned_1787195115.mp4",
-      "title": "Neighbor was stealing water from my supply, so I ruined him.",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "QVNBbPqMTFE",
-      "url": "https://youtu.be/QVNBbPqMTFE",
-      "posted_at": "2026-08-20T03:25:04Z",
-      "hook_score": 39,
-      "publish_at": "2026-08-24T18:00:00Z"
-    },
-    {
-      "video_file": "output_1787189311_captioned_1787189315.mp4",
-      "title": "My ex-MIL sent her Church friends to harass my daughters and I. I have now exposed her family to her church community and she's getting shamed and shunned at Church.",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "2afr2e15T9g",
-      "url": "https://youtu.be/2afr2e15T9g",
-      "posted_at": "2026-08-20T03:24:40Z",
-      "hook_score": 47,
-      "publish_at": "2026-08-24T12:00:00Z"
-    },
-    {
-      "video_file": "output_1787144510_captioned_1787144515.mp4",
-      "title": "[TEST] My neighbor's kid uses a whistle outside every day and it has been ongoing for years.",
-      "subreddit": "offmychest",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1375176700726993",
-      "url": "https://www.facebook.com/1272041649331476/videos/1375176700726993",
-      "posted_at": "2026-08-19T13:15:51Z",
-      "hook_score": 21
-    },
-    {
-      "video_file": "output_1787144510_captioned_1787144515.mp4",
-      "title": "[TEST] My neighbor's kid uses a whistle outside every day and it has been ongoing for years.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "idPmurslAbs",
-      "url": "https://youtu.be/idPmurslAbs",
-      "posted_at": "2026-08-19T13:15:18Z",
-      "hook_score": 21
     }
   ]
 }
