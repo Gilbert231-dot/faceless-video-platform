@@ -61,7 +61,7 @@ FEMALE_VOICE_BOOST_DB = float(os.environ.get("FEMALE_VOICE_BOOST_DB", "6.5"))
 # shows the card), holds while the title is narrated, then fades out while
 # sliding LEFT and away (like the TikTok reference). Pure overlay inside
 # segment 0's existing encode - no extra pass, negligible CPU on the Actions runner.
-TITLE_FADE_SEC = 0.45    # fade-OUT duration when the title is done (no fade-in: card is on from 0:00)
+TITLE_FADE_SEC = 0.30    # slide-OUT duration — fast swipe LEFT (no fade, just motion)
 TITLE_HOLD_SEC = 1.0     # extra time the card stays FULLY visible after the title is narrated
 TITLE_MIN_SEC = 1.8      # never shorter than this (tiny titles still readable)
 TITLE_MAX_SEC = 12.0     # never longer than this (covers the longest hooks)
@@ -254,12 +254,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             # its resting spot from the first frame. On exit it fades out
             # while sliding LEFT and away (like the TikTok reference).
             frame_top = round(0.14 * OUTPUT_H)
-            # Slide LEFT on exit (x goes from center to off-screen left)
-            slide_x = round(0.4 * OUTPUT_W)  # slide 40% of width to the left
-            x_expr = f"(W-w)/2-{slide_x}*clip((t-{t3:.3f})/{t4 - t3:.3f},0,1)"
+            # Slide LEFT on exit — fast swipe, NO fade out (card stays opaque)
+            slide_x = round(0.5 * OUTPUT_W)  # slide 50% of width to the left (off-screen)
+            slide_duration = TITLE_FADE_SEC   # how long the slide takes (fast)
+            x_expr = f"(W-w)/2-{slide_x}*clip((t-{t3:.3f})/{slide_duration:.3f},0,1)"
             overlay_filter = (
-                f"[1:v]scale={OUTPUT_W}:-1:flags=lanczos,"
-                f"fade=t=out:st={t3:.3f}:d={TITLE_FADE_SEC:.3f}:alpha=1[card];"
+                f"[1:v]scale={OUTPUT_W}:-1:flags=lanczos[card];"
                 f"[bg][card]overlay=x='{x_expr}':y={frame_top}:eval=frame"
             )
             frame_input = intro_frame
