@@ -59,14 +59,20 @@ FEMALE_VOICE_BOOST_DB = float(os.environ.get("FEMALE_VOICE_BOOST_DB", "6.5"))
 # on screen while it's being said. The card is FULLY visible from the very
 # first frame (no fade-in — so YouTube's auto-picked Shorts thumbnail usually
 # shows the card), holds while the title is narrated, then fades out while
-# sliding UP and away. Pure overlay inside segment 0's existing encode - no
-# extra pass, negligible CPU on the Actions runner.
+# sliding LEFT and away (like the TikTok reference). Pure overlay inside
+# segment 0's existing encode - no extra pass, negligible CPU on the Actions runner.
 TITLE_FADE_SEC = 0.45    # fade-OUT duration when the title is done (no fade-in: card is on from 0:00)
 TITLE_HOLD_SEC = 1.0     # extra time the card stays FULLY visible after the title is narrated
 TITLE_MIN_SEC = 1.8      # never shorter than this (tiny titles still readable)
 TITLE_MAX_SEC = 12.0     # never longer than this (covers the longest hooks)
 # Set TITLE_INTRO=false in the workflow env to disable the intro entirely.
 TITLE_INTRO = os.environ.get("TITLE_INTRO", "true").lower() != "false"
+
+# --- SOUND EFFECTS ---
+# Ding sound when the reddit card appears (0:00)
+DING_SOUND_PATH = "assets/sound_effects/ding.mp3"
+# Whoosh sound when the card exits (slides LEFT)
+WHOOSH_SOUND_PATH = "assets/sound_effects/whoosh.mp3"
 
 # Helper: Measure integrated loudness (LUFS) and true peak (dBFS) via EBU R128.
 def measure_loudness(media_path: str):
@@ -246,13 +252,15 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             # matching the darkflow001 TikTok style) with the story footage
             # and captions below it. NO entry animation: the card is pinned at
             # its resting spot from the first frame. On exit it fades out
-            # while sliding up and away.
+            # while sliding LEFT and away (like the TikTok reference).
             frame_top = round(0.14 * OUTPUT_H)
-            y_expr = f"{frame_top}-{slide}*clip((t-{t3:.3f})/{t4 - t3:.3f},0,1)"
+            # Slide LEFT on exit (x goes from center to off-screen left)
+            slide_x = round(0.4 * OUTPUT_W)  # slide 40% of width to the left
+            x_expr = f"(W-w)/2-{slide_x}*clip((t-{t3:.3f})/{t4 - t3:.3f},0,1)"
             overlay_filter = (
                 f"[1:v]scale={OUTPUT_W}:-1:flags=lanczos,"
                 f"fade=t=out:st={t3:.3f}:d={TITLE_FADE_SEC:.3f}:alpha=1[card];"
-                f"[bg][card]overlay=x=(W-w)/2:y='{y_expr}':eval=frame"
+                f"[bg][card]overlay=x='{x_expr}':y={frame_top}:eval=frame"
             )
             frame_input = intro_frame
             print(f"   ✨ Reddit frame intro: {os.path.basename(intro_frame)} "
@@ -532,6 +540,65 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         except Exception as e:
             print(f"   ⚠️ Music mixing failed: {e}")
             print("   Continuing without music...")
+    
+    # --- SOUND EFFECTS (ding at start, whoosh on card exit) ---
+    # Add the ding sound at 0:00 when the card appears
+    # Add the whoosh sound when the card exits (at t3)
+    if TITLE_INTRO and os.path.exists(DING_SOUND_PATH) and os.path.exists(WHOOSH_SOUND_PATH):
+        print("🔊 Adding sound effects (ding + whoosh)...")
+        audio_with_sfx = os.path.join(output_dir, f"audio_with_sfx_{int(time.time())}.mp3")
+        
+        # Get the timing for the whoosh sound (card exit time)
+        # t3 is when the card starts fading out and sliding left
+        if intro_frame and os.path.exists(intro_frame):
+            # Calculate t3 from the overlay timing (same logic as in the overlay filter)
+            total_words = len((script or "").split())
+            title_words = len(title.split()) if title else 0
+            if total_words and title_words:
+                title_secs = (audio_duration * title_words / total_words) / VOICE_SPEED
+                title_secs = title_secs + TITLE_HOLD_SEC
+                final_dur = audio_duration / VOICE_SPEED
+                title_secs = min(max(title_secs, TITLE_MIN_SEC), TITLE_MAX_SEC, max(final_dur - 0.5, 1.0))
+                t4 = title_secs
+                t3 = max(t4 - TITLE_FADE_SEC, 0.0)
+                
+                # Create a complex filter to add both sound effects
+                # ding at 0:00, whoosh at t3
+                filter_complex = (
+                    f"[0:a]volume=1.0[voice];"
+                    f"[1:a]volume=0.8,adelay=0|0[d];"  # ding at 0:00
+                    f"[2:a]volume=0.7,adelay={int(t3*1000)}|{int(t3*1000)}[w];"  # whoosh at t3
+                    f"[voice][d][w]amix=inputs=3:duration=first:normalize=0"
+                )
+                
+                cmd_sfx = [
+                    'ffmpeg', '-y',
+                    '-i', final_audio,
+                    '-i', DING_SOUND_PATH,
+                    '-i', WHOOSH_SOUND_PATH,
+                    '-filter_complex', filter_complex,
+                    '-t', str(get_duration(final_audio)),
+                    '-ac', '2',
+                    '-acodec', 'mp3',
+                    '-b:a', '192k',
+                    audio_with_sfx
+                ]
+                
+                try:
+                    subprocess.run(cmd_sfx, check=True, capture_output=True, timeout=120)
+                    print(f"   ✅ Sound effects added (ding at 0:00, whoosh at {t3:.1f}s)")
+                    if final_audio != audio_path and os.path.exists(final_audio):
+                        os.unlink(final_audio)
+                    final_audio = audio_with_sfx
+                except Exception as e:
+                    print(f"   ⚠️ Sound effects failed: {e}")
+                    print("   Continuing without sound effects...")
+            else:
+                print("   ⚠️ Sound effects skipped (empty title or script)")
+        else:
+            print("   ⚠️ Sound effects skipped (no intro frame)")
+    else:
+        print("   ⚠️ Sound effects skipped (missing files or TITLE_INTRO disabled)")
     
     # --- FINAL VIDEO COMPILATION (YouTube-Compatible) ---
     print("⚡ Adding audio to video...")
