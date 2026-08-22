@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-22T00:05:27Z",
+  "generated_at": "2026-08-22T02:19:48Z",
   "total_stories": 366,
   "unused_stories": 344,
   "used_stories": 22,
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 36
+    "next_index": 37
   },
   "youtube": {
     "privacy": "public",
@@ -102,6 +102,28 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1787364645_captioned_1787364648.mp4",
+      "title": "[TEST] Am I the jerk for taking my brother off my insurance after warning him three times?",
+      "subreddit": "AmItheAsshole",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122100934695447442",
+      "url": "https://www.facebook.com/reel/1789915349089669",
+      "posted_at": "2026-08-22T02:19:48Z",
+      "hook_score": 34
+    },
+    {
+      "video_file": "output_1787364645_captioned_1787364648.mp4",
+      "title": "[TEST] Am I the jerk for taking my brother off my insurance after warning him three times?",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "1brpu94zJFw",
+      "url": "https://youtu.be/1brpu94zJFw",
+      "posted_at": "2026-08-22T02:19:25Z",
+      "hook_score": 34
+    },
     {
       "video_file": "output_1787356717_captioned_1787356720.mp4",
       "title": "[Short] Called my bank, was told they couldn’t do anything, emailed every important-sounding staff on their website, problem fixed in less than 10 minutes",
@@ -197,30 +219,6 @@
       "posted_at": "2026-08-21T03:40:48Z",
       "hook_score": 39,
       "publish_at": "2026-08-26T12:00:00Z"
-    },
-    {
-      "video_file": "output_1787195107_captioned_1787195115.mp4",
-      "title": "Neighbor was stealing water from my supply, so I ruined him.",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1072973488571106",
-      "url": "https://www.facebook.com/1272041649331476/videos/1072973488571106",
-      "posted_at": "2026-08-20T03:26:02Z",
-      "hook_score": 39,
-      "publish_at": "2026-08-24T18:00:00Z"
-    },
-    {
-      "video_file": "output_1787189311_captioned_1787189315.mp4",
-      "title": "My ex-MIL sent her Church friends to harass my daughters and I. I have now exposed her family to her church community and she's getting shamed and shunned at Church.",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1416711247009942",
-      "url": "https://www.facebook.com/1272041649331476/videos/1416711247009942",
-      "posted_at": "2026-08-20T03:25:31Z",
-      "hook_score": 47,
-      "publish_at": "2026-08-24T12:00:00Z"
     }
   ]
 }
