@@ -563,11 +563,14 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 t3 = max(t4 - TITLE_FADE_SEC, 0.0)
                 
                 # Create a complex filter to add both sound effects
-                # ding at 0:00, whoosh at t3
+                # ding at 0:00 (soft, attention-grab), whoosh at t3 (card slide start)
+                # NOTE: no narration delay — captions are timed to the original audio,
+                # so shifting the voice would desync them. The ding is short enough
+                # to coexist with the first word of narration.
                 filter_complex = (
-                    f"[0:a]volume=1.0,adelay=500|500[voice];"  # delay narration 0.5s so ding plays first
-                    f"[1:a]volume=0.8,adelay=0|0[d];"  # ding at 0:00
-                    f"[2:a]volume=0.7,adelay={int((t3+0.5)*1000)}|{int((t3+0.5)*1000)}[w];"  # whoosh shifted 0.5s to match card slide
+                    f"[0:a]volume=1.0[voice];"
+                    f"[1:a]volume=0.45,adelay=0|0[d];"  # ding at 0:00, soft (0.45) so it doesn't overpower narration
+                    f"[2:a]silenceremove=start_periods=1:start_threshold=-40dB:start_silence=0,volume=0.7,adelay={int(t3*1000)}|{int(t3*1000)}[w];"  # whoosh: strip leading silence, play at t3
                     f"[voice][d][w]amix=inputs=3:duration=first:normalize=0"
                 )
                 
