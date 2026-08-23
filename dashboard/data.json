@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-23T04:07:20Z",
+  "generated_at": "2026-08-23T14:38:05Z",
   "total_stories": 366,
   "unused_stories": 342,
   "used_stories": 24,
@@ -88,7 +88,7 @@
     }
   ],
   "schedule": {
-    "next_index": 40
+    "next_index": 41
   },
   "youtube": {
     "privacy": "public",
@@ -102,6 +102,28 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1787495452_captioned_1787495455.mp4",
+      "title": "[TEST] The 25,000 Pounds of Thrust Wake Up Call",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122102314299447442",
+      "url": "https://www.facebook.com/reel/2128972221163301",
+      "posted_at": "2026-08-23T14:38:05Z",
+      "hook_score": 14
+    },
+    {
+      "video_file": "output_1787495452_captioned_1787495455.mp4",
+      "title": "[TEST] The 25,000 Pounds of Thrust Wake Up Call",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "kekfn9s81TE",
+      "url": "https://youtu.be/kekfn9s81TE",
+      "posted_at": "2026-08-23T14:37:46Z",
+      "hook_score": 14
+    },
     {
       "video_file": "output_1787445649_captioned_1787445651.mp4",
       "title": "Sorry, I'male just a typical woman",
@@ -193,30 +215,6 @@
       "url": "https://youtu.be/1brpu94zJFw",
       "posted_at": "2026-08-22T02:19:25Z",
       "hook_score": 34
-    },
-    {
-      "video_file": "output_1787356717_captioned_1787356720.mp4",
-      "title": "[Short] Called my bank, was told they couldn’t do anything, emailed every important-sounding staff on their website, problem fixed in less than 10 minutes",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122100891603447442",
-      "url": "https://www.facebook.com/reel/1810938973255732",
-      "posted_at": "2026-08-22T00:05:27Z",
-      "hook_score": 34,
-      "publish_at": "2026-08-24T18:00:00Z"
-    },
-    {
-      "video_file": "output_1787354633_captioned_1787354639.mp4",
-      "title": "Boss chastised me for a late lunch during a \"mission critical outage\", so I clocked out when the whole network went down!",
-      "subreddit": "MaliciousCompliance",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "2297533464408654",
-      "url": "https://www.facebook.com/1272041649331476/videos/2297533464408654",
-      "posted_at": "2026-08-22T00:05:05Z",
-      "hook_score": 21,
-      "publish_at": "2026-08-24T12:00:00Z"
     }
   ]
 }
