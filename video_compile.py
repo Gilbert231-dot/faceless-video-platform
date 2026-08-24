@@ -294,6 +294,28 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
     
+    # DISK FIX: delete the cached source video immediately after extraction.
+    # The 483 MB+ source sits on disk while segments render — on the GitHub
+    # runner that eats headroom and triggers ffmpeg exit-234 (I/O write failure)
+    # before the first segment even starts encoding. We only need the extracted
+    # segment from here on, so the source is safe to discard.
+    try:
+        src_size = os.path.getsize(source_video) / (1024 * 1024)
+        os.unlink(source_video)
+        print(f"   🧹 Deleted source video ({src_size:.0f} MB freed)")
+    except Exception:
+        pass  # non-critical — log but don't abort
+    
+    # DISK CHECK: log free space so exit-234 errors can be correlated.
+    try:
+        disk = shutil.disk_usage(output_dir)
+        free_gb = disk.free / (1024 ** 3)
+        print(f"   💾 Disk free: {free_gb:.1f} GB")
+        if free_gb < 3.0:
+            print(f"   ⚠️ Low disk space ({free_gb:.1f} GB) — segment rendering may fail")
+    except Exception:
+        pass
+    
     video_duration = get_duration(gameplay_segment)
     print(f"   📊 Video duration: {video_duration:.2f}s")
     
@@ -420,7 +442,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     segment_files = [None] * len(jobs)
     pbar = tqdm(total=len(jobs), desc="🎬 Rendering segments", unit="segment")
-    with ThreadPoolExecutor(max_workers=2) as ex:
+    with ThreadPoolExecutor(max_workers=1) as ex:
         futures = {ex.submit(_run_segment, job): job[0] for job in jobs}
         for fut in as_completed(futures):
             i, out, used_fallback = fut.result()
@@ -686,6 +708,111 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         except Exception as e:
             print(f"   ⚠️ Failed to add part number overlay: {e}")
     
+    # --- SUBSCRIBE / LIKE ENDING OVERLAY ---
+    # Animated subscribe button + like button appear at the end of the video.
+    # Assets are pre-processed by prepare_animations.py (green screen removed).
+    OVERLAY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "overlays")
+    SUBSCRIBE_FINAL = os.path.join(OVERLAY_DIR, "subscribe_final.mp4")
+    LIKE_FINAL = os.path.join(OVERLAY_DIR, "like_final.mp4")
+    SHADOW_MOV = os.path.join(OVERLAY_DIR, "shadow_transparent.mov")
+
+    if os.path.exists(SUBSCRIBE_FINAL) and os.path.exists(LIKE_FINAL):
+        print("\n🔔 Adding subscribe/like ending overlay...")
+        ending_output = final_output.replace(".mp4", "_ending.mp4")
+
+        # Timing: subscribe plays 6s, like plays 2.74s — both end at video's last frame
+        subscribe_dur = 6.0
+        like_dur = 2.74
+        subscribe_start = max(final_duration - subscribe_dur, 0)
+        like_start = max(final_duration - like_dur, 0)
+
+        # Positions scaled for 1440x2560 (from original 1080x1920 reference)
+        # Subscribe button: centered, upper-third of ending area
+        sub_x = round(470 * OUTPUT_W / 1080)   # ~627
+        sub_y = round(677 * OUTPUT_H / 1920)   # ~903
+        # Shadow: just below subscribe button
+        shadow_x = sub_x
+        shadow_y = round(1005 * OUTPUT_H / 1920)  # ~1340
+        # Like button: below and right of subscribe
+        like_x = round(620 * OUTPUT_W / 1080)  # ~827
+        like_y = round(1060 * OUTPUT_H / 1920) # ~1413
+
+        # Build filter_complex: overlay background → shadow → subscribe → like
+        # Each uses -itsoffset to delay appearance
+        has_shadow = os.path.exists(SHADOW_MOV)
+        if has_shadow:
+            filter_script = (
+                f"[0:v]format=rgba[bg];"
+                f"[1:v]format=auto,fade=in:st={subscribe_start}:d=0.3,fade=out:st={subscribe_start + subscribe_dur - 0.3}:d=0.3[shadow];"
+                f"[bg][shadow]overlay=x={shadow_x}:y={shadow_y}:enable='between(t,{subscribe_start},{subscribe_start + subscribe_dur})'[v1];"
+                f"[2:v]format=auto,fade=in:st={subscribe_start}:d=0.3,fade=out:st={subscribe_start + subscribe_dur - 0.3}:d=0.3[sub];"
+                f"[v1][sub]overlay=x={sub_x}:y={sub_y}:enable='between(t,{subscribe_start},{subscribe_start + subscribe_dur})'[v2];"
+                f"[3:v]format=auto,fade=in:st={like_start}:d=0.2,fade=out:st={like_start + like_dur - 0.2}:d=0.2[like];"
+                f"[v2][like]overlay=x={like_x}:y={like_y}:enable='between(t,{like_start},{like_start + like_dur})'"
+            )
+            inputs = [
+                '-i', final_output,
+                '-i', SHADOW_MOV,
+                '-i', SUBSCRIBE_FINAL,
+                '-i', LIKE_FINAL,
+            ]
+        else:
+            filter_script = (
+                f"[0:v]format=rgba[bg];"
+                f"[1:v]format=auto,fade=in:st={subscribe_start}:d=0.3,fade=out:st={subscribe_start + subscribe_dur - 0.3}:d=0.3[sub];"
+                f"[bg][sub]overlay=x={sub_x}:y={sub_y}:enable='between(t,{subscribe_start},{subscribe_start + subscribe_dur})'[v1];"
+                f"[2:v]format=auto,fade=in:st={like_start}:d=0.2,fade=out:st={like_start + like_dur - 0.2}:d=0.2[like];"
+                f"[v1][like]overlay=x={like_x}:y={like_y}:enable='between(t,{like_start},{like_start + like_dur})'"
+            )
+            inputs = [
+                '-i', final_output,
+                '-i', SUBSCRIBE_FINAL,
+                '-i', LIKE_FINAL,
+            ]
+
+        # Audio: mix subscribe sound at subscribe_start, like sound at like_start
+        sub_audio_delay_ms = int(subscribe_start * 1000)
+        like_audio_delay_ms = int(like_start * 1000)
+        audio_filter = (
+            f"[0:a]volume=1.0[main];"
+            f"[1:a]volume=0.5,adelay={sub_audio_delay_ms}|{sub_audio_delay_ms}[sa];"
+            f"[2:a]volume=0.5,adelay={like_audio_delay_ms}|{like_audio_delay_ms}[la];"
+            f"[main][sa][la]amix=inputs=3:duration=first:normalize=0"
+        ) if has_shadow else (
+            f"[0:a]volume=1.0[main];"
+            f"[1:a]volume=0.5,adelay={sub_audio_delay_ms}|{sub_audio_delay_ms}[sa];"
+            f"[2:a]volume=0.5,adelay={like_audio_delay_ms}|{like_audio_delay_ms}[la];"
+            f"[main][sa][la]amix=inputs=3:duration=first:normalize=0"
+        )
+
+        cmd_ending = [
+            'ffmpeg', '-y',
+            *inputs,
+            '-filter_complex', f"{filter_script};{audio_filter}",
+            '-map', '[0:v]',  # not used — filter_complex outputs are mapped by position
+            '-c:v', 'libx264',
+            '-preset', PRESET,
+            '-crf', str(CRF_VALUE),
+            '-profile:v', 'high',
+            '-level', '5.1',
+            '-pix_fmt', 'yuv420p',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-movflags', '+faststart',
+            ending_output
+        ]
+
+        try:
+            run_ffmpeg(cmd_ending, timeout=300, label="subscribe/like overlay")
+            os.unlink(final_output)
+            final_output = ending_output
+            print(f"   ✅ Subscribe/Like overlay added (subscribe@{subscribe_start:.1f}s, like@{like_start:.1f}s)")
+        except Exception as e:
+            print(f"   ⚠️ Subscribe/Like overlay failed: {e}")
+            print("   Continuing without ending overlay...")
+    elif not os.path.exists(SUBSCRIBE_FINAL):
+        print("   ⚠️ Subscribe animation not found — run prepare_animations.py first")
+
     # --- CLEANUP ---
     print("   🗑️ Cleaning up temporary files...")
     temp_files = []
