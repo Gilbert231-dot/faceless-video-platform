@@ -709,109 +709,131 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             print(f"   ⚠️ Failed to add part number overlay: {e}")
     
     # --- SUBSCRIBE / LIKE ENDING OVERLAY ---
-    # Animated subscribe button + like button appear at the end of the video.
-    # Assets are pre-processed by prepare_animations.py (green screen removed).
+    # Uses apply_ending_overlay.py logic: -itsoffset for video, separate audio mix.
     OVERLAY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "overlays")
-    SUBSCRIBE_FINAL = os.path.join(OVERLAY_DIR, "subscribe_final.mp4")
-    LIKE_FINAL = os.path.join(OVERLAY_DIR, "like_final.mp4")
-    SHADOW_MOV = os.path.join(OVERLAY_DIR, "shadow_transparent.mov")
+    ANIM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "animations")
 
-    if os.path.exists(SUBSCRIBE_FINAL) and os.path.exists(LIKE_FINAL):
+    # Find best subscribe animation (capcut > with_shadow > chroma)
+    SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_capcut.mov")
+    if not os.path.exists(SUBSCRIBE_MOV):
+        SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_with_shadow.mov")
+    if not os.path.exists(SUBSCRIBE_MOV):
+        SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_chroma.mov")
+    LIKE_MOV = os.path.join(OVERLAY_DIR, "like_with_shadow.mov")
+    if not os.path.exists(LIKE_MOV):
+        LIKE_MOV = os.path.join(OVERLAY_DIR, "like_chroma.mov")
+
+    if os.path.exists(SUBSCRIBE_MOV) and os.path.exists(LIKE_MOV):
         print("\n🔔 Adding subscribe/like ending overlay...")
-        ending_output = final_output.replace(".mp4", "_ending.mp4")
 
-        # Timing: subscribe plays 6s, like plays 2.74s — both end at video's last frame
+        # Timing: subscribe starts 10s before end (6s duration), like starts after subscribe
         subscribe_dur = 6.0
         like_dur = 2.74
-        subscribe_start = max(final_duration - subscribe_dur, 0)
-        like_start = max(final_duration - like_dur, 0)
+        subscribe_start = max(final_duration - 10.0, 0)
+        like_start = subscribe_start + subscribe_dur
 
-        # Positions scaled for 1440x2560 (from original 1080x1920 reference)
-        # Subscribe button: centered, upper-third of ending area
-        sub_x = round(470 * OUTPUT_W / 1080)   # ~627
-        sub_y = round(677 * OUTPUT_H / 1920)   # ~903
-        # Shadow: just below subscribe button
-        shadow_x = sub_x
-        shadow_y = round(1005 * OUTPUT_H / 1920)  # ~1340
-        # Like button: below and right of subscribe
-        like_x = round(620 * OUTPUT_W / 1080)  # ~827
-        like_y = round(1060 * OUTPUT_H / 1920) # ~1413
+        print(f"   Subscribe@{subscribe_start:.1f}s, Like@{like_start:.1f}s")
 
-        # Build filter_complex: overlay background → shadow → subscribe → like
-        # Each uses -itsoffset to delay appearance
-        has_shadow = os.path.exists(SHADOW_MOV)
-        if has_shadow:
-            filter_script = (
-                f"[0:v]format=rgba[bg];"
-                f"[1:v]format=auto,fade=in:st={subscribe_start}:d=0.3,fade=out:st={subscribe_start + subscribe_dur - 0.3}:d=0.3[shadow];"
-                f"[bg][shadow]overlay=x={shadow_x}:y={shadow_y}:enable='between(t,{subscribe_start},{subscribe_start + subscribe_dur})'[v1];"
-                f"[2:v]format=auto,fade=in:st={subscribe_start}:d=0.3,fade=out:st={subscribe_start + subscribe_dur - 0.3}:d=0.3[sub];"
-                f"[v1][sub]overlay=x={sub_x}:y={sub_y}:enable='between(t,{subscribe_start},{subscribe_start + subscribe_dur})'[v2];"
-                f"[3:v]format=auto,fade=in:st={like_start}:d=0.2,fade=out:st={like_start + like_dur - 0.2}:d=0.2[like];"
-                f"[v2][like]overlay=x={like_x}:y={like_y}:enable='between(t,{like_start},{like_start + like_dur})'"
-            )
-            inputs = [
-                '-i', final_output,
-                '-i', SHADOW_MOV,
-                '-i', SUBSCRIBE_FINAL,
-                '-i', LIKE_FINAL,
-            ]
-        else:
-            filter_script = (
-                f"[0:v]format=rgba[bg];"
-                f"[1:v]format=auto,fade=in:st={subscribe_start}:d=0.3,fade=out:st={subscribe_start + subscribe_dur - 0.3}:d=0.3[sub];"
-                f"[bg][sub]overlay=x={sub_x}:y={sub_y}:enable='between(t,{subscribe_start},{subscribe_start + subscribe_dur})'[v1];"
-                f"[2:v]format=auto,fade=in:st={like_start}:d=0.2,fade=out:st={like_start + like_dur - 0.2}:d=0.2[like];"
-                f"[v1][like]overlay=x={like_x}:y={like_y}:enable='between(t,{like_start},{like_start + like_dur})'"
-            )
-            inputs = [
-                '-i', final_output,
-                '-i', SUBSCRIBE_FINAL,
-                '-i', LIKE_FINAL,
-            ]
+        # Positions for 1440x2560 (from CapCut reverse-engineering)
+        sub_w, sub_h = 400, 404  # capcut is 614x620, scale proportionally
+        sub_x, sub_y = 520, 580
+        like_w, like_h = 175, 163
+        like_x, like_y = 634, 738
 
-        # Audio: mix subscribe sound at subscribe_start, like sound at like_start
-        sub_audio_delay_ms = int(subscribe_start * 1000)
-        like_audio_delay_ms = int(like_start * 1000)
-        audio_filter = (
-            f"[0:a]volume=1.0[main];"
-            f"[1:a]volume=0.5,adelay={sub_audio_delay_ms}|{sub_audio_delay_ms}[sa];"
-            f"[2:a]volume=0.5,adelay={like_audio_delay_ms}|{like_audio_delay_ms}[la];"
-            f"[main][sa][la]amix=inputs=3:duration=first:normalize=0"
-        ) if has_shadow else (
-            f"[0:a]volume=1.0[main];"
-            f"[1:a]volume=0.5,adelay={sub_audio_delay_ms}|{sub_audio_delay_ms}[sa];"
-            f"[2:a]volume=0.5,adelay={like_audio_delay_ms}|{like_audio_delay_ms}[la];"
-            f"[main][sa][la]amix=inputs=3:duration=first:normalize=0"
+        # STEP 1: Video overlay using -itsoffset (proven working method)
+        ending_output = final_output.replace(".mp4", "_ending.mp4")
+        filter_script = (
+            f"[1:v]scale={sub_w}:{sub_h},format=rgba[sb];"
+            f"[0:v][sb]overlay=x={sub_x}:y={sub_y}:format=auto[v1];"
+            f"[2:v]scale={like_w}:{like_h},format=rgba[lk];"
+            f"[v1][lk]overlay=x={like_x}:y={like_y}:format=auto[vout];"
+            f"[0:a]acopy[aout]"
         )
-
+        inputs = [
+            '-i', final_output,
+            '-itsoffset', str(subscribe_start), '-i', SUBSCRIBE_MOV,
+            '-itsoffset', str(like_start), '-i', LIKE_MOV,
+        ]
         cmd_ending = [
-            'ffmpeg', '-y',
-            *inputs,
-            '-filter_complex', f"{filter_script};{audio_filter}",
-            '-map', '[0:v]',  # not used — filter_complex outputs are mapped by position
-            '-c:v', 'libx264',
-            '-preset', PRESET,
-            '-crf', str(CRF_VALUE),
-            '-profile:v', 'high',
-            '-level', '5.1',
+            'ffmpeg', '-y', *inputs,
+            '-filter_complex', filter_script,
+            '-map', '[vout]', '-map', '[aout]',
+            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
             '-pix_fmt', 'yuv420p',
-            '-c:a', 'aac',
-            '-b:a', '192k',
+            '-c:a', 'aac', '-b:a', '128k',
             '-movflags', '+faststart',
             ending_output
         ]
-
         try:
-            run_ffmpeg(cmd_ending, timeout=300, label="subscribe/like overlay")
+            run_ffmpeg(cmd_ending, timeout=600, label="ending video overlay")
+        except Exception as e:
+            print(f"   ⚠️ Ending overlay failed: {e}")
+            print("   Continuing without ending overlay...")
+            ending_output = None
+
+        # STEP 2: Audio mix (separate pass — amix filter is unreliable in complex chains)
+        if ending_output and os.path.exists(ending_output):
+            has_sub_audio = os.path.exists(os.path.join(ANIM_DIR, "subscribe_green.weba")) or \
+                           os.path.exists(os.path.join(OVERLAY_DIR, "subscribe_audio.wav"))
+            has_like_audio = os.path.exists(os.path.join(ANIM_DIR, "like_green.m4a")) or \
+                            os.path.exists(os.path.join(OVERLAY_DIR, "like_audio.wav"))
+            if has_sub_audio or has_like_audio:
+                print("   🔊 Mixing animation audio...")
+                # Extract audio to wav
+                sub_wav = os.path.join(tempfile.gettempdir(), "sub_audio_pipe.wav")
+                like_wav = os.path.join(tempfile.gettempdir(), "like_audio_pipe.wav")
+                sub_src = os.path.join(OVERLAY_DIR, "subscribe_audio.wav")
+                if not os.path.exists(sub_src):
+                    sub_src = os.path.join(ANIM_DIR, "subscribe_green.weba")
+                like_src = os.path.join(OVERLAY_DIR, "like_audio.wav")
+                if not os.path.exists(like_src):
+                    like_src = os.path.join(ANIM_DIR, "like_green.m4a")
+                if has_sub_audio:
+                    subprocess.run(['ffmpeg', '-y', '-i', sub_src, '-acodec', 'pcm_s16le', '-ar', '48000', sub_wav],
+                                   check=True, capture_output=True, timeout=30)
+                if has_like_audio:
+                    subprocess.run(['ffmpeg', '-y', '-i', like_src, '-acodec', 'pcm_s16le', '-ar', '48000', like_wav],
+                                   check=True, capture_output=True, timeout=30)
+                # Build audio filter
+                audio_filters = []
+                mix_inputs = "[0:a]"
+                n_mix = 1
+                if has_sub_audio:
+                    audio_filters.append(f"[1:a]volume=3.0,adelay={int(subscribe_start*1000)}|{int(subscribe_start*1000)}[sa]")
+                    mix_inputs += "[sa]"
+                    n_mix += 1
+                if has_like_audio:
+                    idx = 2 if has_sub_audio else 1
+                    audio_filters.append(f"[{idx}:a]volume=3.0,adelay={int(like_start*1000)}|{int(like_start*1000)}[la]")
+                    mix_inputs += "[la]"
+                    n_mix += 1
+                audio_filters.append(f"{mix_inputs}amix=inputs={n_mix}:duration=first:dropout_transition=0[aout]")
+                audio_fc = ";".join(audio_filters)
+                audio_inputs = ['-i', ending_output]
+                if has_sub_audio:
+                    audio_inputs += ['-i', sub_wav]
+                if has_like_audio:
+                    audio_inputs += ['-i', like_wav]
+                cmd_audio = [
+                    'ffmpeg', '-y', *audio_inputs,
+                    '-filter_complex', audio_fc,
+                    '-map', '0:v', '-map', '[aout]',
+                    '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                    '-movflags', '+faststart', ending_output
+                ]
+                try:
+                    run_ffmpeg(cmd_audio, timeout=300, label="ending audio mix")
+                except Exception as e:
+                    print(f"   ⚠️ Audio mix failed: {e}")
+
+        if ending_output and os.path.exists(ending_output):
             os.unlink(final_output)
             final_output = ending_output
-            print(f"   ✅ Subscribe/Like overlay added (subscribe@{subscribe_start:.1f}s, like@{like_start:.1f}s)")
-        except Exception as e:
-            print(f"   ⚠️ Subscribe/Like overlay failed: {e}")
-            print("   Continuing without ending overlay...")
-    elif not os.path.exists(SUBSCRIBE_FINAL):
-        print("   ⚠️ Subscribe animation not found — run prepare_animations.py first")
+            print(f"   ✅ Ending overlay added")
+        else:
+            print("   ⚠️ Ending overlay skipped")
+    else:
+        print(f"   ⚠️ Subscribe animation not found — run prepare_animations.py first")
 
     # --- CLEANUP ---
     print("   🗑️ Cleaning up temporary files...")
