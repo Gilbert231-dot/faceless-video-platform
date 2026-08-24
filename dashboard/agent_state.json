@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "16:03:27 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "16:03:27 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "15:18:17 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "15:18:16 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "15:18:16 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "15:18:16 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "09:11:18 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -164,45 +200,9 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "02:19:48 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
-    },
-    {
-      "t": "02:19:48 UTC",
-      "who": "Buffy",
-      "station": "LAPTOP",
-      "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "01:34:33 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "01:34:32 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "01:34:32 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "01:34:32 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-08-24T09:11:18Z",
+  "updated_at": "2026-08-24T16:03:27Z",
   "stories": [
     {
       "subreddit": "ProRevenge",
