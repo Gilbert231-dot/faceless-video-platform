@@ -726,10 +726,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if os.path.exists(SUBSCRIBE_MOV) and os.path.exists(LIKE_MOV):
         print("\n🔔 Adding subscribe/like ending overlay...")
 
-        # Timing: subscribe starts 10s before end (6s duration), like starts after subscribe
+        # Timing: subscribe starts 20s before end (6s duration), like starts after subscribe
         subscribe_dur = 6.0
         like_dur = 2.74
-        subscribe_start = max(final_duration - 10.0, 0)
+        subscribe_start = max(final_duration - 20.0, 0)
         like_start = subscribe_start + subscribe_dur
 
         print(f"   Subscribe@{subscribe_start:.1f}s, Like@{like_start:.1f}s")
@@ -807,7 +807,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                     audio_filters.append(f"[{idx}:a]volume=3.0,adelay={int(like_start*1000)}|{int(like_start*1000)}[la]")
                     mix_inputs += "[la]"
                     n_mix += 1
-                audio_filters.append(f"{mix_inputs}amix=inputs={n_mix}:duration=first:dropout_transition=0[aout]")
+                audio_filters.append(f"{mix_inputs}amix=inputs={n_mix}:duration=first:dropout_transition=0:normalize=0[aout]")
                 audio_fc = ";".join(audio_filters)
                 audio_inputs = ['-i', ending_output]
                 if has_sub_audio:

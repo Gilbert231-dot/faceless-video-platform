@@ -65,8 +65,8 @@ def main():
     video_duration = get_duration(video_path)
     print(f"[INFO] Duration: {video_duration:.1f}s")
 
-    # Timing
-    sub_start = max(video_duration - 10.0, 0)
+    # Timing — subscribe starts 20s before end
+    sub_start = max(video_duration - 20.0, 0)
     sub_end = sub_start + 6.0
     like_start = sub_end
     like_end = like_start + 2.74
@@ -181,16 +181,15 @@ def main():
         print(f"   Video overlay done: {os.path.getsize(output_path) / (1024*1024):.1f} MB")
     except Exception as e:
         print(f"\n[FAIL] {e}")
-        sys.exit(1)
-
-    # ================================================================
+        sys.exit(1)    # ================================================================
     # STEP 2: Mix SFX audio onto the rendered video (separate pass)
     # ================================================================
     if has_sub_audio or has_like_audio:
         print("\n[STEP] Mixing SFX audio...")
         final_path = video_path.replace(".mp4", "_final.mp4")
 
-        # Build audio-only filter: delay each SFX, then mix with original
+        # Build audio-only filter using adelay + amix with normalize=0
+        # normalize=0 prevents amix from dividing volume by number of inputs
         audio_filters = []
         mix_inputs = "[0:a]"  # original audio always present
         n_mix = 1
@@ -210,8 +209,9 @@ def main():
             mix_inputs += "[la]"
             n_mix += 1
 
+        # normalize=0 keeps original volume — amix won't divide by n_mix
         audio_filters.append(
-            f"{mix_inputs}amix=inputs={n_mix}:duration=first:dropout_transition=0[aout]"
+            f"{mix_inputs}amix=inputs={n_mix}:duration=first:dropout_transition=0:normalize=0[aout]"
         )
         audio_fc = ";".join(audio_filters)
 
@@ -228,8 +228,7 @@ def main():
             '-filter_complex', audio_fc,
             '-map', '0:v', '-map', '[aout]',
             '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-            '-movflags', '+faststart',
-            final_path
+            '-movflags', '+faststart', final_path
         ]
 
         try:
