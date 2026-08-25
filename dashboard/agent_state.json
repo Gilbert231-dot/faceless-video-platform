@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "00:55:14 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "00:55:14 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "22:26:30 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "22:26:30 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "22:26:30 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "22:26:30 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "16:03:27 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -164,66 +200,30 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "15:53:37 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
-    },
-    {
-      "t": "15:53:37 UTC",
-      "who": "Buffy",
-      "station": "LAPTOP",
-      "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "14:48:14 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "14:48:13 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "14:48:13 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "14:48:13 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-08-24T16:03:27Z",
+  "updated_at": "2026-08-25T00:55:14Z",
   "stories": [
-    {
-      "subreddit": "ProRevenge",
-      "title": "We reverse gazumped a greedy landlord and it was glorious.",
-      "score": 9833,
-      "comments": 0,
-      "url": "https://reddit.com/r/ProRevenge/comments/1efqmr8/we_reverse_gazumped_a_greedy_landlord_and_it_was/"
-    },
-    {
-      "subreddit": "ProRevenge",
-      "title": "Landlord put me through 3 years of hell.",
-      "score": 9763,
-      "comments": 0,
-      "url": "https://reddit.com/r/ProRevenge/comments/1cjl5hn/landlord_put_me_through_3_years_of_hell/"
-    },
     {
       "subreddit": "MaliciousCompliance",
       "title": "Emergency clothing cannot be put through expenses.",
       "score": 9736,
       "comments": 0,
       "url": "https://reddit.com/r/MaliciousCompliance/comments/1uywi0h/emergency_clothing_cannot_be_put_through_expenses/"
+    },
+    {
+      "subreddit": "ProRevenge",
+      "title": "If you're gonna steal the catalytics off my truck you should've checked if they were actua",
+      "score": 9492,
+      "comments": 0,
+      "url": "https://reddit.com/r/ProRevenge/comments/1g13tpw/if_youre_gonna_steal_the_catalytics_off_my_truck/"
+    },
+    {
+      "subreddit": "ProRevenge",
+      "title": "Tricking My Slacker Coworker into Sabotaging Himself",
+      "score": 9362,
+      "comments": 0,
+      "url": "https://reddit.com/r/ProRevenge/comments/1fova4p/tricking_my_slacker_coworker_into_sabotaging/"
     }
   ]
 }
