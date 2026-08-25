@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-25T04:06:29Z",
+  "generated_at": "2026-08-25T16:51:09Z",
   "total_stories": 366,
   "unused_stories": 340,
   "used_stories": 26,
@@ -88,20 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 45
+    "next_index": 46
   },
   "youtube": {
     "privacy": "public",
     "slots": [
       "12:00",
-      "18:00"
+      "17:00",
+      "22:00"
     ],
     "next_publish_utc": [
-      "2026-09-01T12:00:00Z",
-      "2026-09-01T18:00:00Z"
+      "2026-08-29T22:00:00Z",
+      "2026-08-30T12:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1787675598_ending_captioned_1787675773.mp4",
+      "title": "[TEST] Posting Podcasts, Surveys, or your college homework will get you banned.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "27906590382285494",
+      "url": "https://www.facebook.com/1272041649331476/videos/27906590382285494",
+      "posted_at": "2026-08-25T16:51:09Z",
+      "hook_score": 1
+    },
+    {
+      "video_file": "output_1787675598_ending_captioned_1787675773.mp4",
+      "title": "[TEST] Posting Podcasts, Surveys, or your college homework will get you banned.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "FrDHr3FMzhc",
+      "url": "https://youtu.be/FrDHr3FMzhc",
+      "posted_at": "2026-08-25T16:50:28Z",
+      "hook_score": 1
+    },
     {
       "video_file": "output_1787618674_ending_captioned_1787618758.mp4",
       "title": "Landlord put me through 3 years of hell. ",
@@ -193,28 +216,6 @@
       "url": "https://youtu.be/zZbeWVwcOfY",
       "posted_at": "2026-08-24T09:10:50Z",
       "hook_score": 26
-    },
-    {
-      "video_file": "output_1787495452_captioned_1787495455.mp4",
-      "title": "[TEST] The 25,000 Pounds of Thrust Wake Up Call",
-      "subreddit": "MaliciousCompliance",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122102314299447442",
-      "url": "https://www.facebook.com/reel/2128972221163301",
-      "posted_at": "2026-08-23T14:38:05Z",
-      "hook_score": 14
-    },
-    {
-      "video_file": "output_1787495452_captioned_1787495455.mp4",
-      "title": "[TEST] The 25,000 Pounds of Thrust Wake Up Call",
-      "subreddit": "MaliciousCompliance",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "kekfn9s81TE",
-      "url": "https://youtu.be/kekfn9s81TE",
-      "posted_at": "2026-08-23T14:37:46Z",
-      "hook_score": 14
     }
   ]
 }
