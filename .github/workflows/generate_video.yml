@@ -11,7 +11,7 @@ on:
       count:
         description: 'Number of videos to generate'
         required: true
-        default: '2'
+        default: '3'
         type: string
       test_mode:
         description: 'Test mode (does NOT mark stories as used)'
@@ -172,6 +172,8 @@ jobs:
           # Without it, videos land in the repo root and every output/* glob
           # (upload step, cleanup) silently misses them.
           echo "OUTPUT_DIR=output" >> $GITHUB_ENV
+          # 3 videos/day: 12:00 (lunch), 17:00 (evening), 22:00 (late night) — all UK-friendly
+          echo "YOUTUBE_SCHEDULE_TIMES=12:00,17:00,22:00" >> $GITHUB_ENV
 
       # The story bank now lives directly in the repo as reddit_stories/ (the
       # old reddit_stories.zip was 146 MB unpacked, mostly raw comment dumps
@@ -225,7 +227,7 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             COUNT="${{ inputs.count }}"
           else
-            COUNT="2"
+            COUNT="3"
           fi
           echo "📹 Generating $COUNT videos..."
           echo "🔬 DEBUG_MODE is set to: ${{ env.DEBUG_MODE }}"
