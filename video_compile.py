@@ -829,6 +829,25 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         if ending_output and os.path.exists(ending_output):
             os.unlink(final_output)
             final_output = ending_output
+            # BUG FIX: extract audio from the ending video so the caption step
+            # gets the version WITH subscribe/like sounds. Previously, final_audio
+            # was the pre-overlay audio (no subscribe sound), and the caption step
+            # muxed THAT back in, stripping the subscribe audio we just mixed.
+            try:
+                ending_audio = final_output.replace(".mp4", "_audio.wav")
+                subprocess.run([
+                    'ffmpeg', '-y', '-i', final_output,
+                    '-vn', '-acodec', 'pcm_s16le', '-ar', '48000', ending_audio
+                ], check=True, capture_output=True, timeout=60)
+                if os.path.exists(final_audio) and final_audio != ending_audio:
+                    try:
+                        os.unlink(final_audio)
+                    except OSError:
+                        pass
+                final_audio = ending_audio
+                print(f"   🔊 Updated return audio to include subscribe/like sounds")
+            except Exception as e:
+                print(f"   ⚠️ Could not extract ending audio: {e}")
             print(f"   ✅ Ending overlay added")
         else:
             print("   ⚠️ Ending overlay skipped")
