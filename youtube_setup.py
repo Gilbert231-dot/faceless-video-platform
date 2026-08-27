@@ -72,15 +72,10 @@ load_dotenv()
 #   - youtube.force-ssl: REQUIRED for videos().update — editing an existing
 #     video's title/privacy (schedule_public.py). Without it, update calls
 #     fail with "insufficient authentication scopes".
-#   - youtubeAnalytics.readonly: REQUIRED for per-video performance tracking
-#     (performance_tracker.py: average view duration + completion %). Tokens
-#     minted before this scope was added won't have it — if you run the
-#     tracker and it prints the analytics hint, re-run this setup once.
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
     "https://www.googleapis.com/auth/youtube.force-ssl",
-    "https://www.googleapis.com/auth/youtubeAnalytics.readonly",
 ]
 
 
