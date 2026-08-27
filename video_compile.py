@@ -434,9 +434,19 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             # fallback duplicated the primary exactly (same preset, same
             # copy-cut input), so it could never recover anything — it just
             # re-failed identically (as it did with the exit-234 crash).
+            # FALLBACK: go one preset faster than the primary.
+            # Preset ladder: verlow > slow > medium > fast > ultrafast
+            PRESET_LADDER = ['veryslow', 'slow', 'medium', 'fast', 'ultrafast']
             cmd_fallback = list(cmd_process)
-            cmd_fallback[cmd_fallback.index('-preset') + 1] = 'slow'
+            primary_preset = segment_preset
+            try:
+                idx = PRESET_LADDER.index(primary_preset)
+                fallback_preset = PRESET_LADDER[min(idx + 1, len(PRESET_LADDER) - 1)]
+            except ValueError:
+                fallback_preset = 'medium'
+            cmd_fallback[cmd_fallback.index('-preset') + 1] = fallback_preset
             cmd_fallback[cmd_fallback.index('-crf') + 1] = str(CRF_VALUE)
+            print(f"   ⚡ Fallback preset: {fallback_preset} (from {primary_preset})")
             run_ffmpeg(cmd_fallback, timeout=1500, label=f"segment {i+1} fallback")
             return i, segment_output, True
     
