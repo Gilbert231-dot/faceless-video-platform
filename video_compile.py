@@ -134,7 +134,17 @@ def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
         if result.returncode != 0:
             err = (result.stderr or b"").decode("utf-8", errors="replace")
             tail = "\n".join(err.splitlines()[-50:]) if err.strip() else "(no stderr captured)"
-            print(f"   ❌ {label} FAILED (exit {result.returncode}). ffmpeg stderr:\n{tail}", flush=True)
+            msg = f"   FAILED {label} (exit {result.returncode}). ffmpeg stderr:\n{tail}\n"
+            print(msg, flush=True)
+            # Write to file AND stderr so it survives buffering
+            import sys
+            sys.stderr.write(msg)
+            sys.stderr.flush()
+            try:
+                with open(f"/tmp/{label.replace(' ', '_')}_error.log", "w") as f:
+                    f.write(f"exit code: {result.returncode}\n{err}\n")
+            except Exception:
+                pass
             raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
         return None
     except subprocess.TimeoutExpired:
@@ -401,6 +411,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-crf', str(segment_crf),
             '-profile:v', 'high',
             '-level', '5.1',
+            '-threads', '1',
             '-an',
             '-movflags', '+faststart',
             segment_output
