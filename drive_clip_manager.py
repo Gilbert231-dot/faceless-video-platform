@@ -1,6 +1,8 @@
 import os
 import json
 import requests
+import shutil
+import tempfile
 import subprocess
 from pathlib import Path
 
@@ -221,30 +223,68 @@ def get_next_segment(duration_needed):
             offset = 0.0
             continue
 
-        # Determine how much we can take from this video
-        remaining = duration - offset
-        take = min(duration_needed, remaining)
+        # Extract in 60-second batches to avoid timeout on large files.
+        # Each batch re-encodes with ultrafast — fast per batch, no fixed
+        # timeout risk regardless of file size.
+        BATCH_SIZE = 60  # seconds per batch
+        temp_dir = tempfile.mkdtemp(prefix="drive_seg_")
+        batch_files = []
+        taken = 0
 
-        # FIXED (exit-234 crash): -c copy preserves the source's original
-        # codec (VP9, AV1, etc.) and container metadata. When the source
-        # has sparse keyframes or a non-H.264 codec (common with Google
-        # Drive's re-encoded uploads), the copy-cut produces a file that
-        # passes ffprobe but fails when ffmpeg decodes frames. Re-encoding
-        # with ultrafast normalizes to clean H.264 yuv420p.
-        output_segment = f"/tmp/segment_{current_pos}_{int(offset)}_{int(offset+take)}.mp4"
-        cmd = [
-            'ffmpeg', '-y',
-            '-ss', str(offset),
-            '-i', cache_path,
-            '-t', str(take),
-            '-c:v', 'libx264',
-            '-preset', 'ultrafast',
-            '-crf', '18',
-            '-pix_fmt', 'yuv420p',
-            '-an',
-            output_segment
-        ]
-        subprocess.run(cmd, check=True, capture_output=True, timeout=900)
+        while taken < duration_needed:
+            batch_remaining_in_file = duration - offset
+            if batch_remaining_in_file <= 0:
+                current_pos = (current_pos + 1) % len(files)
+                offset = 0.0
+                file_id = files[current_pos]["id"]
+                cache_path = os.path.join(CACHE_DIR, f"video_{file_id}.mp4")
+                if not os.path.exists(cache_path):
+                    download_file(file_id, cache_path)
+                duration = get_video_duration(cache_path)
+                continue
+
+            batch_take = min(BATCH_SIZE, duration_needed - taken, batch_remaining_in_file)
+            batch_path = os.path.join(temp_dir, f"batch_{len(batch_files)}.mp4")
+            cmd = [
+                'ffmpeg', '-y',
+                '-ss', str(offset),
+                '-i', cache_path,
+                '-t', str(batch_take),
+                '-c:v', 'libx264',
+                '-preset', 'ultrafast',
+                '-crf', '18',
+                '-pix_fmt', 'yuv420p',
+                '-an',
+                batch_path
+            ]
+            subprocess.run(cmd, check=True, capture_output=True, timeout=120)
+
+            if not os.path.exists(batch_path) or os.path.getsize(batch_path) < 1024:
+                raise RuntimeError(f"Batch extraction failed for {cache_path} at offset {offset}")
+
+            batch_files.append(batch_path)
+            offset += batch_take
+            taken += batch_take
+
+            if offset >= duration - 0.1:
+                current_pos = (current_pos + 1) % len(files)
+                offset = 0.0
+
+        # Concatenate all batches into one segment
+        output_segment = f"/tmp/segment_{current_pos}_{int(offset)}_{int(offset+taken)}.mp4"
+        if len(batch_files) == 1:
+            os.rename(batch_files[0], output_segment)
+        else:
+            concat_file = os.path.join(temp_dir, "concat.txt")
+            with open(concat_file, "w") as cf:
+                for bf in batch_files:
+                    cf.write(f"file '{bf}'\n")
+            subprocess.run([
+                'ffmpeg', '-y', '-f', 'concat', '-safe', '0',
+                '-i', concat_file, '-c', 'copy', output_segment
+            ], check=True, capture_output=True, timeout=60)
+
+        shutil.rmtree(temp_dir, ignore_errors=True)
         
         # Validate extracted segment
         if not os.path.exists(output_segment) or os.path.getsize(output_segment) < 1024:
