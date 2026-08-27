@@ -379,31 +379,19 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         # The animated frame intro (if any) is only on segment 0 — the
         # fade/hold/fade-out all happen inside the first ~12s. It needs a
         # 2-input filter_complex (gameplay + the card PNG).
-        use_overlay = (i == 0 and overlay_filter is not None)
+        # FIXED (exit-234 OOM kill): the overlay filter chain (crop→scale→
+        # RGBA→overlay→yuv420p) combined with `-loop 1` PNG input caused
+        # ffmpeg to be OOM-killed on every attempt (even at 1080x1920,
+        # 30fps, medium preset, threads=1). Instead, ALL segments render
+        # as simple yuv420p without overlay, and the Reddit frame card is
+        # applied in a single clean post-mux pass below.
         cmd_process = [
             'ffmpeg', '-y',
             '-ss', str(start_time),
             '-t', str(segment_duration),
             '-i', gameplay_segment,
         ]
-        if use_overlay:
-            # The base chain must stay RGBA so the card's alpha composites
-            # correctly; yuv420p is applied AFTER the overlay.
-            # IMPORTANT: `-loop 1` on the PNG input — without it the card is
-            # a SINGLE frame at t=0, and the fade-in (st=0.35) blanks that
-            # only frame, so the card would never be visible. Looped, the
-            # card streams continuously and the fades/overlay work. The loop
-            # MUST be duration-bounded (-t 15): an unbounded image loop never
-            # EOFs and the overlay runs forever (hung the render). 15s covers
-            # the longest title intro (12s max + fade); after that the card
-            # is fully faded out, so repeating its last (invisible) frame is
-            # harmless.
-            base = vf_chain.replace("format=yuv420p,setsar=1", "format=rgba,setsar=1")
-            fc = f"[0:v]{base}[bg];{overlay_filter},format=yuv420p,setsar=1[v]"
-            cmd_process += ['-loop', '1', '-t', '15', '-i', frame_input,
-                            '-filter_complex', fc, '-map', '[v]']
-        else:
-            cmd_process += ['-vf', vf_chain]
+        cmd_process += ['-vf', vf_chain]
         cmd_process += [
             '-sws_flags', 'lanczos',
             '-c:v', 'libx264',
@@ -689,6 +677,60 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"      - Duration: {final_duration:.1f}s")
     print(f"   ✅ YouTube-compatible format (yuv420p, faststart, AAC)")
     
+    # --- REDDIT FRAME OVERLAY (post-mux pass) ---
+    # FIXED (exit-234 OOM kill): moved from segment-0 rendering to a
+    # single post-mux pass. The overlay filter (crop→scale→RGBA→overlay→
+    # yuv420p) + `-loop 1` PNG input caused OOM kills on GitHub Actions.
+    # By applying it AFTER the mux, we avoid the complex filter during
+    # segment rendering entirely. The card is visible from 0:00, slides
+    # LEFT at t3, and is fully off-screen by t4.
+    if overlay_filter and frame_input and os.path.exists(frame_input) and TITLE_INTRO:
+        print("\n✨ Applying Reddit frame overlay (post-mux pass)...")
+        overlay_output = final_output.replace(".mp4", "_frame.mp4")
+        # The overlay needs the same timing variables computed earlier.
+        # Recompute t3/t4 from the script (same logic as above).
+        total_words = len((script or "").split())
+        title_words = len(title.split()) if title else 0
+        if total_words and title_words:
+            title_secs = (audio_duration * title_words / total_words) / VOICE_SPEED
+            title_secs = title_secs + TITLE_HOLD_SEC
+            final_dur = audio_duration / VOICE_SPEED
+            title_secs = min(max(title_secs, TITLE_MIN_SEC), TITLE_MAX_SEC, max(final_dur - 0.5, 1.0))
+            t4 = title_secs
+            t3 = max(t4 - TITLE_FADE_SEC, 0.0)
+            frame_top = round(0.14 * OUTPUT_H)
+            slide_x = OUTPUT_W + 100
+            slide_duration = TITLE_FADE_SEC
+            x_expr = f"(W-w)/2-{slide_x}*clip((t-{t3:.3f})/{slide_duration:.3f},0,1)"
+            # Simple overlay: scale card, composite onto background.
+            # Uses -itsoffset 0 so the card starts at t=0 of the video.
+            fc = (
+                f"[1:v]scale={OUTPUT_W}:-1:flags=lanczos[card];"
+                f"[0:v][card]overlay=x='{x_expr}':y={frame_top}:eval=frame:format=auto[vout]"
+            )
+            cmd_frame = [
+                'ffmpeg', '-y',
+                '-i', final_output,
+                '-i', frame_input,
+                '-filter_complex', fc,
+                '-map', '[vout]', '-map', '0:a',
+                '-c:v', 'libx264', '-preset', 'medium', '-crf', '15',
+                '-profile:v', 'high', '-pix_fmt', 'yuv420p',
+                '-c:a', 'aac', '-b:a', '192k',
+                '-movflags', '+faststart',
+                overlay_output
+            ]
+            try:
+                run_ffmpeg(cmd_frame, timeout=600, label="reddit frame overlay")
+                os.unlink(final_output)
+                final_output = overlay_output
+                print(f"   ✅ Reddit frame overlay applied ({title_secs:.1f}s on screen, slides out at {t3:.1f}s)")
+            except Exception as e:
+                print(f"   ⚠️ Reddit frame overlay failed: {e}")
+                print("   Continuing without frame overlay...")
+                if os.path.exists(overlay_output):
+                    os.unlink(overlay_output)
+
     # --- PART NUMBER OVERLAY ---
     if part_label and "Part" in part_label:
         print(f"\n📌 Adding Part number overlay: {part_label}")
