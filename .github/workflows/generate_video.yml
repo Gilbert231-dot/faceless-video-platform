@@ -57,6 +57,8 @@ jobs:
     if: needs.pause-check.outputs.go == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    env:
+      PYTHONUNBUFFERED: '1'
 
     steps:
       - name: Checkout code

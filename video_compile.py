@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import math
 import time
@@ -7,6 +8,12 @@ import tempfile
 import shutil
 from tqdm import tqdm
 from config import VOICE_SPEED
+
+# Force line-buffered stdout so every print() appears in the Actions log
+# immediately (Python defaults to block-buffered when piped, which hides
+# critical ffmpeg error output until the process exits — too late to help).
+sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
 
 # --- ENCODING CONSTANTS (module-level so tasks.py can stay in sync) ---
 # Background footage playback speed. 1.0 = the source's ORIGINAL speed —
@@ -180,6 +187,8 @@ def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
     real error (the reason ffmpeg exited non-zero) was silently swallowed,
     forcing blind guesses (e.g. the exit-234 crash). On failure, print the
     last lines of ffmpeg's stderr so the cause is in the Actions log.
+    Also writes the FULL ffmpeg command + stderr to a log file so the
+    error is never lost even if stdout is swallowed by threads/CI.
     """
     try:
         subprocess.run(cmd, check=True, capture_output=True, timeout=timeout)
@@ -187,7 +196,24 @@ def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
     except subprocess.CalledProcessError as e:
         err = (e.stderr or b"").decode("utf-8", errors="replace")
         tail = "\n".join(err.splitlines()[-25:]) if err.strip() else "(no stderr captured)"
-        print(f"   ❌ {label} failed (exit {e.returncode}). ffmpeg said:\n{tail}", flush=True)
+        # Write FULL diagnostic to a file — survives thread/CI buffering
+        try:
+            log_path = os.path.join(os.environ.get('OUTPUT_DIR', '.'),
+                                    f'ffmpeg_error_{label.replace(" ", "_")}.log')
+            with open(log_path, 'w', encoding='utf-8') as lf:
+                lf.write(f"Label: {label}\n")
+                lf.write(f"Exit code: {e.returncode}\n")
+                lf.write(f"Command: {' '.join(str(c) for c in cmd)}\n\n")
+                lf.write(f"FULL STDERR:\n{err}\n")
+            print(f"   ❌ {label} failed (exit {e.returncode}). Error log: {log_path}", flush=True)
+        except Exception:
+            print(f"   ❌ {label} failed (exit {e.returncode}). ffmpeg said:\n{tail}", flush=True)
+        # Also write to stderr (unbuffered in CI) as a safety net
+        try:
+            sys.stderr.write(f"FFMPEG_ERROR ({label}): exit {e.returncode}\n{tail}\n")
+            sys.stderr.flush()
+        except Exception:
+            pass
         raise
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
