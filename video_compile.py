@@ -465,7 +465,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         # square pixels (the odd 1215px crop width can make ffmpeg emit a
         # 1214:1215 SAR that YouTube dislikes).
         vf_chain = (
-            f'crop=ih*9/16:ih:(iw-ih*9/16)/2:0,'
+            f'crop=min(iw\\,ih*9/16):ih:(iw-min(iw\\,ih*9/16))/2:0,'
             f'scale={OUTPUT_W}:{OUTPUT_H}:flags=lanczos,'
             f'fps={OUTPUT_FPS},'
             f'setpts={1/SPEED_FACTOR}*PTS,'
