@@ -22,19 +22,13 @@ SEGMENT_DURATION = 30
 # ~2.7x the source's motion — fast gameplay (Fortnite) rendered visibly
 # blurry no matter the CRF. 60fps keeps the source's native motion, and
 # YouTube/Shorts accept 60fps.
-OUTPUT_FPS = 60
-# Output resolution (9:16 vertical). Was 1080x1920; now 1440x2560 so the
-# 4K (3840x2160) background sources pay off: a 9:16 center-crop of a 4K
-# landscape frame is 1215x2160 native pixels, so 1440x2560 is only a mild
-# 1.19x upscale — the closest standard YouTube tier to the source's real
-# detail. Going 2160x3840 would be a 1.78x upscale (SOFTER than 1440p, not
-# sharper) and ~4x the veryslow encode time, risking the Actions timeout,
-# so 1440p is the quality/risk sweet spot. YouTube offers a 1440p stream on
-# phones, fixing the "lower quality on my phone" complaint. H.264 level 5.1
-# is required for 1440x2560@60 (level 5.0 caps below 1440p60; level 4.0
-# caps at ~1080p frame sizes).
-OUTPUT_W = 1440
-OUTPUT_H = 2560
+OUTPUT_FPS = 30
+# Output resolution (9:16 vertical). Using 1080x1920 (standard YouTube Shorts)
+# to prevent exit-234 crashes on GitHub Actions runners. 1440x2560@60fps
+# was too demanding (3.7M pixels/frame × 60fps = 222M pixels/sec).
+# 1080x1920 is still excellent quality for mobile viewing.
+OUTPUT_W = 1080
+OUTPUT_H = 1920
 # How much footage to grab relative to the narration: the background plays at
 # SPEED_FACTOR x and the voice is sped to VOICE_SPEED x, so to cover the whole
 # narration (with 10% slack) we need:
