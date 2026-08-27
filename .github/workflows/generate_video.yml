@@ -122,7 +122,7 @@ jobs:
           # GitHub's 100 MB limit is irrelevant — so the bigger files and
           # slower encode are fine.
           echo "VIDEO_CRF=15" >> $GITHUB_ENV
-          echo "VIDEO_PRESET=slow" >> $GITHUB_ENV
+          echo "VIDEO_PRESET=veryslow" >> $GITHUB_ENV
           # CAPTION burn quality (caption_utils.py) is SEPARATE and cheaper:
           # FIXED — burning at veryslow + CRF 15 timed out on every 30s
           # segment of a 2-core runner (>600s each), silently fell back to
