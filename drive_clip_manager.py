@@ -63,9 +63,19 @@ def download_file(file_id, dest_path):
 def load_state():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, 'r') as f:
-            return json.load(f)
-    return {"video_index": 0, "offset": 0.0}
-
+            state = json.load(f)
+        # Migrate old index-based state to new ID-based state
+        if "video_index" in state and "video_id" not in state:
+            files = get_footage_files()
+            idx = state["video_index"]
+            if idx < len(files):
+                state["video_id"] = files[idx]["id"]
+            else:
+                state["video_id"] = files[0]["id"]
+            state.pop("video_index")
+        return state
+    return {"video_id": "", "offset": 0.0}
+  
 def save_state(state):
     with open(STATE_FILE, 'w') as f:
         json.dump(state, f)
@@ -144,15 +154,21 @@ def get_next_segment(duration_needed):
     os.makedirs(CACHE_DIR, exist_ok=True)
     files = get_footage_files()
     state = load_state()
-    current_idx = state["video_index"]
+    current_id = state.get("video_id", "")
     offset = state["offset"]
 
-    # Folder may have shrunk since last run — restart from the top.
-    if current_idx >= len(files):
-        current_idx = 0
+    # Find current video by ID in the sorted lists
+    current_pos = 0
+    for i, f in enumerate(files):
+        if f["id"] == current_id:
+            current_pos = i
+            break
+    else:
+        # Current video not found (deleted/replaced) — start from beginning
+        offset = 0.0
 
     while True:
-        file_id = files[current_idx]["id"]
+        file_id = files[current_pos]["id"]
         # Cache by FILE ID (not index) so renames/reorders in the folder
         # never make the pipeline re-download or grab the wrong file.
         cache_path = os.path.join(CACHE_DIR, f"video_{file_id}.mp4")
@@ -201,7 +217,7 @@ def get_next_segment(duration_needed):
 
         # If offset exceeds duration, move to next video
         if offset >= duration:
-            current_idx = (current_idx + 1) % len(files)
+            current_pos = (current_pos + 1) % len(files)
             offset = 0.0
             continue
 
@@ -215,7 +231,7 @@ def get_next_segment(duration_needed):
         # Drive's re-encoded uploads), the copy-cut produces a file that
         # passes ffprobe but fails when ffmpeg decodes frames. Re-encoding
         # with ultrafast normalizes to clean H.264 yuv420p.
-        output_segment = f"/tmp/segment_{current_idx}_{int(offset)}_{int(offset+take)}.mp4"
+        output_segment = f"/tmp/segment_{current_pos}_{int(offset)}_{int(offset+take)}.mp4"
         cmd = [
             'ffmpeg', '-y',
             '-ss', str(offset),
@@ -241,10 +257,10 @@ def get_next_segment(duration_needed):
         # Update state
         new_offset = offset + take
         if new_offset >= duration - 0.1:
-            current_idx = (current_idx + 1) % len(files)
+            current_pos = (current_pos + 1) % len(files)
             new_offset = 0.0
 
-        state["video_index"] = current_idx
+        state["video_id"] = files[current_pos]["id"]
         state["offset"] = new_offset
         save_state(state)
 
