@@ -187,7 +187,7 @@ def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
     except subprocess.CalledProcessError as e:
         err = (e.stderr or b"").decode("utf-8", errors="replace")
         tail = "\n".join(err.splitlines()[-25:]) if err.strip() else "(no stderr captured)"
-        print(f"   ❌ {label} failed (exit {e.returncode}). ffmpeg said:\n{tail}")
+        print(f"   ❌ {label} failed (exit {e.returncode}). ffmpeg said:\n{tail}", flush=True)
         raise
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
@@ -337,6 +337,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         '-preset', 'ultrafast',
         '-crf', '18',
         '-pix_fmt', 'yuv420p',
+        '-movflags', '+faststart',
         '-an',
         gameplay_segment
     ]
@@ -396,6 +397,25 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     
     video_duration = get_duration(gameplay_segment)
     print(f"   📊 Video duration: {video_duration:.2f}s")
+    
+    # SINGLE-FRAME DECODE TEST: verify the gameplay segment is actually
+    # decodable before starting the expensive segment rendering loop.
+    # A file can pass ffprobe (metadata is valid) but still have corrupt
+    # frame data that crashes the decoder during filter-chain rendering.
+    try:
+        subprocess.run(
+            ['ffmpeg', '-y', '-i', gameplay_segment,
+             '-frames:v', '1', '-f', 'null', '-'],
+            check=True, capture_output=True, timeout=60
+        )
+        print(f"   ✅ Single-frame decode test passed")
+    except Exception as e:
+        print(f"   ❌ Single-frame decode test FAILED: {e}")
+        print(f"   💡 The gameplay segment is not decodable — the source video may be corrupt")
+        raise Exception(
+            f"Gameplay segment is not decodable. The source video may be corrupt "
+            f"or have a codec issue. File: {gameplay_segment}"
+        )
     
     seg_plan = _segment_plan(video_duration, SEGMENT_DURATION)
     if not seg_plan:
@@ -490,6 +510,17 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         
         jobs.append((i, segment_output, cmd_process))
     
+    # DISK CHECK before rendering: log free space so exit-234 I/O errors
+    # can be correlated with disk pressure on the runner.
+    try:
+        disk = shutil.disk_usage(output_dir)
+        free_gb = disk.free / (1024 ** 3)
+        print(f"   💾 Disk free before rendering: {free_gb:.1f} GB")
+        if free_gb < 5.0:
+            print(f"   ⚠️ Low disk space ({free_gb:.1f} GB) — segment rendering may fail")
+    except Exception:
+        pass
+    
     # FIXED (60fps timeout): segments are independent ffmpeg encodes — run
     # two at a time (the runner has 2 cores) so the veryslow 1440x2560@60
     # render stays inside the job timeout. Every worker keeps the SAME
@@ -505,15 +536,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         except Exception as e:
             print(f"   ⚠️ Segment {i+1} failed: {e}")
             print(f"   🔄 Using fallback for segment {i+1}...")
-            # FALLBACK is a REAL recovery path: same filter chain and the
-            # SAME CRF 15 (quality is set by CRF, not the preset), but a
-            # faster preset (slow ≈ 2x faster than veryslow) so a segment
-            # that failed on veryslow can still finish in time. The old
-            # fallback duplicated the primary exactly (same preset, same
-            # copy-cut input), so it could never recover anything — it just
-            # re-failed identically (as it did with the exit-234 crash).
+            # FALLBACK: same filter chain and CRF 15 (quality is set by
+            # CRF, not the preset), but ultrafast preset (5-10x faster than
+            # slow) so a segment that failed on slow can still finish. Also
+            # drops to 1080x1920 to halve pixel work if ultrafast still fails.
             cmd_fallback = list(cmd_process)
-            cmd_fallback[cmd_fallback.index('-preset') + 1] = 'slow'
+            cmd_fallback[cmd_fallback.index('-preset') + 1] = 'ultrafast'
             cmd_fallback[cmd_fallback.index('-crf') + 1] = str(CRF_VALUE)
             run_ffmpeg(cmd_fallback, timeout=1500, label=f"segment {i+1} fallback")
             return i, segment_output, True
