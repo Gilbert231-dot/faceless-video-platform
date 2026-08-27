@@ -84,31 +84,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Windscribe VPN: route YouTube/Facebook uploads through a US/UK IP
-      # so the platforms treat the account as a US/UK creator (higher RPM,
-      # better algorithmic push). TikTok is excluded — it's posted manually
-      # with Windscribe on the user's laptop. Free tier = 10 GB/month;
-      # each upload uses ~10-50 MB (just the API call), so this is plenty.
-      - name: Install Windscribe VPN CLI
-        run: |
-          curl -L https://windscribe.com/install/desktop/linux_deb_x64_cli -o ~/windscribe.deb
-          sudo apt install -y ~/windscribe.deb
-          echo "✅ Windscribe CLI installed"
-          windscribe-cli --version
-          # Start the daemon (CLI-only build needs manual daemon start)
-          sudo systemctl start windscribe || windscribe-cli start || true
-          sleep 3
-          echo "🔌 Daemon started, waiting for readiness..."
-          for i in 1 2 3 4 5; do
-            if windscribe-cli status 2>&1 | grep -qi "internet connectivity"; then
-              echo "✅ Windscribe daemon ready"
-              break
-            fi
-            echo "   Waiting for daemon... ($i/5)"
-            sleep 2
-          done
-          windscribe-cli status
-
       - name: Set up environment variables
         run: |
           echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
@@ -146,19 +121,6 @@ jobs:
           # slower encode are fine.
           echo "VIDEO_CRF=15" >> $GITHUB_ENV
           echo "VIDEO_PRESET=veryslow" >> $GITHUB_ENV
-          # Windscribe VPN credentials (GitHub Secrets). Strip newlines
-          # — secrets with trailing whitespace break GITHUB_ENV format.
-          WS_USER=$(echo "${{ secrets.WINDSCRIBE_USERNAME }}" | tr -d '\r\n' | xargs)
-          WS_PASS=$(echo "${{ secrets.WINDSCRIBE_PASSWORD }}" | tr -d '\r\n' | xargs)
-          WS_LOC=$(echo "${{ secrets.WINDSCRIBE_LOCATION || 'United Kingdom' }}" | tr -d '\r\n' | xargs)
-          if [ -n "$WS_USER" ]; then
-            echo "WINDSCRIBE_USERNAME=$WS_USER" >> $GITHUB_ENV
-            echo "WINDSCRIBE_PASSWORD=$WS_PASS" >> $GITHUB_ENV
-            echo "WINDSCRIBE_LOCATION=$WS_LOC" >> $GITHUB_ENV
-            echo "✅ Windscribe secrets loaded (location: $WS_LOC)"
-          else
-            echo "⚠️  Windscribe secrets not set — VPN will be skipped"
-          fi
           # CAPTION burn quality (caption_utils.py) is SEPARATE and cheaper:
           # FIXED — burning at veryslow + CRF 15 timed out on every 30s
           # segment of a 2-core runner (>600s each), silently fell back to
@@ -311,38 +273,6 @@ jobs:
         run: |
           python verify_youtube_compat.py
 
-      # --- VPN: connect before YouTube + Facebook uploads ---
-      - name: Connect Windscribe VPN (US/UK for YouTube + Facebook)
-        if: env.WINDSCRIBE_USERNAME != ''
-        run: |
-          echo "🔐 Connecting to Windscribe (${WINDSCRIBE_LOCATION:-United Kingdom})..."
-          # Login with direct args (piped stdin doesn't work with the daemon)
-          windscribe-cli login "$WINDSCRIBE_USERNAME" "$WINDSCRIBE_PASSWORD" || true
-          sleep 2
-          # Connect with retry (daemon may need a moment)
-          for attempt in 1 2 3; do
-            echo "   Connection attempt $attempt..."
-            windscribe-cli connect "${WINDSCRIBE_LOCATION:-United Kingdom}" && break
-            echo "   ⚠️ Attempt $attempt failed, retrying in 3s..."
-            sleep 3
-          done
-          sleep 5
-          # Turn off Windscribe firewall so YouTube/Facebook API calls work
-          # The CLI-only package's 'firewall off' silently fails on headless runners,
-          # so we also flush Windscribe's iptables chains as a fallback.
-          echo "🔥 Attempting to disable Windscribe firewall..."
-          windscribe-cli firewall off 2>&1 && echo '   ✅ windscribe-cli firewall off succeeded' || echo '   ⚠️ windscribe-cli firewall off failed (expected on CLI-only)'
-          # Flush ONLY Windscribe's firewall filter chains (not routing chains)
-          for chain in windscribe windscribe-killswitch; do
-            iptables -F "$chain" 2>/dev/null && echo "   ✅ Flushed iptables chain: $chain" || true
-            ip6tables -F "$chain" 2>/dev/null && echo "   ✅ Flushed ip6tables chain: $chain" || true
-          done
-          # Verify the VPN is active and show our apparent location
-          echo "🔥 Firewall chains after flush:"
-          iptables -L windscribe -n 2>/dev/null || echo '   (no windscribe chain found)'
-          windscribe-cli status
-          echo "VPN status shown above"
-
       - name: Upload videos to YouTube
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
@@ -478,15 +408,6 @@ jobs:
               print(f"✅ TikTok publish complete: {result}")
           PY
 
-      # Disconnect Windscribe before Facebook upload — the VPN's WireGuard
-      # tunnel drops connections to graph.facebook.com even with the firewall
-      # off. YouTube already uploaded successfully through the UK IP.
-      - name: Disconnect Windscribe VPN (before Facebook)
-        run: |
-          echo "🔓 Disconnecting Windscribe before Facebook upload..."
-          windscribe-cli disconnect || true
-          echo "✅ VPN disconnected — Facebook upload will use runner's IP"
-
       # Facebook posting via the official Graph API Video API. Gated by the
       # FACEBOOK_ENABLED repo file (flip to 'true' after the manual setup in
       # FACEBOOK_SETUP.md). Test runs post DRAFTS (admin-only — the FB
@@ -570,13 +491,6 @@ jobs:
               else:
                   print(f"✅ Facebook post -> {result.get('url')}")
           PY
-
-      # --- VPN: disconnect after all uploads are done ---
-      - name: Disconnect Windscribe VPN
-        if: always() && env.WINDSCRIBE_USERNAME != ''
-        run: |
-          windscribe-cli disconnect
-          echo "🔓 Windscribe disconnected"
 
       # Agent room: move Buffy to LAPTOP now that uploads are done.
       - name: Agent room — uploading
