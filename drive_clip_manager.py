@@ -244,7 +244,7 @@ def get_next_segment(duration_needed):
             '-an',
             output_segment
         ]
-        subprocess.run(cmd, check=True, capture_output=True, timeout=300)
+        subprocess.run(cmd, check=True, capture_output=True, timeout=900)
         
         # Validate extracted segment
         if not os.path.exists(output_segment) or os.path.getsize(output_segment) < 1024:
