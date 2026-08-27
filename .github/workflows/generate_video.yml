@@ -137,6 +137,8 @@ jobs:
           # 2 videos/day targeting US: 7 PM ET (evening peak) + 11 PM ET (late night)
           # Option A: Evening Peak + Late Night — best for Reddit story narration
           echo "YOUTUBE_SCHEDULE_TIMES=23:00,03:00" >> $GITHUB_ENV
+          # TEMPORARY: disable animated title intro to isolate exit-234 crash
+          echo "TITLE_INTRO=false" >> $GITHUB_ENV
 
       # The story bank now lives directly in the repo as reddit_stories/ (the
       # old reddit_stories.zip was 146 MB unpacked, mostly raw comment dumps
