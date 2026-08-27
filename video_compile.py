@@ -128,20 +128,22 @@ def _segment_plan(duration, max_seg):
 
 
 def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
-    """Run ffmpeg with stderr surfaced on failure.
-
-    Every ffmpeg call in the render path used capture_output=True and the
-    real error (the reason ffmpeg exited non-zero) was silently swallowed,
-    forcing blind guesses (e.g. the exit-234 crash). On failure, print the
-    last lines of ffmpeg's stderr so the cause is in the Actions log.
-    """
+    """Run ffmpeg with stderr surfaced on failure."""
     try:
-        subprocess.run(cmd, check=True, capture_output=True, timeout=timeout)
+        result = subprocess.run(cmd, capture_output=True, timeout=timeout)
+        if result.returncode != 0:
+            err = (result.stderr or b"").decode("utf-8", errors="replace")
+            tail = "\n".join(err.splitlines()[-50:]) if err.strip() else "(no stderr captured)"
+            print(f"   ❌ {label} FAILED (exit {result.returncode}). ffmpeg stderr:\n{tail}", flush=True)
+            raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
         return None
-    except subprocess.CalledProcessError as e:
-        err = (e.stderr or b"").decode("utf-8", errors="replace")
-        tail = "\n".join(err.splitlines()[-25:]) if err.strip() else "(no stderr captured)"
-        print(f"   ❌ {label} failed (exit {e.returncode}). ffmpeg said:\n{tail}")
+    except subprocess.TimeoutExpired:
+        print(f"   ❌ {label} TIMED OUT after {timeout}s", flush=True)
+        raise
+    except subprocess.CalledProcessError:
+        raise
+    except Exception as e:
+        print(f"   ❌ {label} FAILED: {e}", flush=True)
         raise
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
