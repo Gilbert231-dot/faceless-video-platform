@@ -109,6 +109,46 @@ def get_duration(media_path: str) -> float:
     return float(result.stdout.strip())
 
 
+def probe_video(media_path: str):
+    """Log codec, resolution, pixel format, and frame rate via ffprobe.
+
+    Returns the parsed dict for programmatic use, or None on failure.
+    Pure diagnostic — never raises.
+    """
+    import json as _json
+    cmd = [
+        'ffprobe', '-v', 'error',
+        '-select_streams', 'v:0',
+        '-show_entries', 'stream=codec_name,profile,width,height,pix_fmt,r_frame_rate,avg_frame_rate',
+        '-of', 'json',
+        media_path
+    ]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        data = _json.loads(result.stdout or '{}')
+        streams = data.get('streams') or []
+        if streams:
+            s = streams[0]
+            info = {
+                'codec': s.get('codec_name', '?'),
+                'profile': s.get('profile', '?'),
+                'width': s.get('width', '?'),
+                'height': s.get('height', '?'),
+                'pix_fmt': s.get('pix_fmt', '?'),
+                'r_frame_rate': s.get('r_frame_rate', '?'),
+                'avg_frame_rate': s.get('avg_frame_rate', '?'),
+            }
+            print(f"   🔍 Video probe: {info['codec']} {info['width']}x{info['height']} "
+                  f"pix_fmt={info['pix_fmt']} profile={info['profile']} "
+                  f"fps={info['avg_frame_rate']} ({os.path.basename(media_path)})")
+            return info
+        print(f"   ⚠️ No video stream found in {os.path.basename(media_path)}")
+        return None
+    except Exception as e:
+        print(f"   ⚠️ Video probe failed for {os.path.basename(media_path)}: {e}")
+        return None
+
+
 def _segment_plan(duration, max_seg):
     """Return [(start_sec, dur_sec), ...] — evenly-sized segments.
 
@@ -279,20 +319,58 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if not os.path.exists(source_video):
         raise Exception(f"Source video not found: {source_video}")
     
+    # FIXED (exit-234 crash): the old -c:v copy preserved the source's
+    # original codec (VP9, AV1, etc.) and container metadata — when the
+    # source had sparse keyframes or a non-H.264 codec (common with
+    # Google Drive's re-encoded uploads), the copy-cut produced a file
+    # that passed ffprobe but failed when ffmpeg decoded frames for the
+    # filter chain. Re-encoding with ultrafast normalizes ANY input to
+    # clean H.264 yuv420p with dense keyframes — the format the segment
+    # renderer expects. The quality cost is zero: the FINAL encode still
+    # uses CRF 15 + slow preset; this ultrafast pass is just a format
+    # normalizer.
     cmd_extract = [
         'ffmpeg', '-y',
         '-i', source_video,
         '-t', str(extract_duration),
-        '-c:v', 'copy',
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-crf', '18',
+        '-pix_fmt', 'yuv420p',
         '-an',
         gameplay_segment
     ]
     
     try:
-        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=120)
-        print(f"   ✅ Extracted {extract_duration:.2f}s segment.")
+        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=300)
+        print(f"   ✅ Extracted {extract_duration:.2f}s segment (re-encoded to H.264).")
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
+    
+    # POST-EXTRACTION VALIDATION: verify the extracted segment is playable.
+    # A copy-cut from a corrupt or non-H.264 source can produce a file that
+    # passes ffprobe (metadata is fine) but fails when ffmpeg decodes frames.
+    probe_video(gameplay_segment)
+    if not os.path.exists(gameplay_segment) or os.path.getsize(gameplay_segment) < 1024:
+        raise Exception(
+            f"Extraction produced invalid output "
+            f"({os.path.getsize(gameplay_segment) if os.path.exists(gameplay_segment) else 0} bytes). "
+            f"Source: {source_video} — check if the source video is corrupt or has an unsupported codec."
+        )
+    # Verify the segment is actually decodable (not just metadata-valid)
+    try:
+        subprocess.run(
+            ['ffprobe', '-v', 'error', '-select_streams', 'v:0',
+             '-show_entries', 'stream=codec_name,width,height',
+             '-of', 'json', gameplay_segment],
+            check=True, capture_output=True, timeout=30
+        )
+    except Exception as e:
+        raise Exception(
+            f"Extracted segment is not decodable: {e}. "
+            f"The source video may have a codec that libx264 cannot decode (e.g., VP9/AV1). "
+            f"Source: {source_video}"
+        )
     
     # DISK FIX: delete the cached source video immediately after extraction.
     # The 483 MB+ source sits on disk while segments render — on the GitHub

@@ -161,6 +161,34 @@ def get_next_segment(duration_needed):
         if not os.path.exists(cache_path):
             download_file(file_id, cache_path)
 
+        # Log file size and video properties for diagnostics
+        file_mb = os.path.getsize(cache_path) / (1024 * 1024) if os.path.exists(cache_path) else 0
+        print(f"[drive] Cached video: {os.path.basename(cache_path)} ({file_mb:.1f} MB)")
+        if file_mb < 1.0:
+            print(f"[drive] ⚠️ WARNING: Video file is suspiciously small ({file_mb:.1f} MB) — may be corrupt or incomplete")
+        
+        # Probe video properties (codec, resolution) for diagnostics
+        try:
+            probe_cmd = [
+                'ffprobe', '-v', 'error',
+                '-select_streams', 'v:0',
+                '-show_entries', 'stream=codec_name,width,height,pix_fmt',
+                '-of', 'json',
+                cache_path
+            ]
+            probe_result = subprocess.run(probe_cmd, capture_output=True, text=True, timeout=30)
+            import json as _json
+            probe_data = _json.loads(probe_result.stdout or '{}')
+            streams = probe_data.get('streams') or []
+            if streams:
+                s = streams[0]
+                print(f"[drive] Source video: {s.get('codec_name','?')} "
+                      f"{s.get('width','?')}x{s.get('height','?')} "
+                      f"pix_fmt={s.get('pix_fmt','?')} "
+                      f"({os.path.basename(cache_path)})")
+        except Exception:
+            pass  # non-critical — log but don’t abort
+        
         # Verify the file is valid
         try:
             duration = get_video_duration(cache_path)
@@ -181,17 +209,34 @@ def get_next_segment(duration_needed):
         remaining = duration - offset
         take = min(duration_needed, remaining)
 
-        # Extract segment using FFmpeg (fast, no re-encode)
+        # FIXED (exit-234 crash): -c copy preserves the source's original
+        # codec (VP9, AV1, etc.) and container metadata. When the source
+        # has sparse keyframes or a non-H.264 codec (common with Google
+        # Drive's re-encoded uploads), the copy-cut produces a file that
+        # passes ffprobe but fails when ffmpeg decodes frames. Re-encoding
+        # with ultrafast normalizes to clean H.264 yuv420p.
         output_segment = f"/tmp/segment_{current_idx}_{int(offset)}_{int(offset+take)}.mp4"
         cmd = [
             'ffmpeg', '-y',
             '-ss', str(offset),
             '-i', cache_path,
             '-t', str(take),
-            '-c', 'copy',
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-crf', '18',
+            '-pix_fmt', 'yuv420p',
+            '-an',
             output_segment
         ]
-        subprocess.run(cmd, check=True, capture_output=True)
+        subprocess.run(cmd, check=True, capture_output=True, timeout=300)
+        
+        # Validate extracted segment
+        if not os.path.exists(output_segment) or os.path.getsize(output_segment) < 1024:
+            raise RuntimeError(
+                f"[drive] Segment extraction produced invalid output "
+                f"({os.path.getsize(output_segment) if os.path.exists(output_segment) else 0} bytes). "
+                f"Source: {cache_path}"
+            )
 
         # Update state
         new_offset = offset + take
