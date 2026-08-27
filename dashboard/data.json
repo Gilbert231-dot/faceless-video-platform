@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-27T14:23:18Z",
+  "generated_at": "2026-08-27T18:52:26Z",
   "total_stories": 366,
   "unused_stories": 337,
   "used_stories": 29,
@@ -88,20 +88,42 @@
     }
   ],
   "schedule": {
-    "next_index": 51
+    "next_index": 52
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "23:00",
+      "03:00"
     ],
     "next_publish_utc": [
-      "2026-09-07T12:00:00Z",
-      "2026-09-07T18:00:00Z"
+      "2026-09-07T23:00:00Z",
+      "2026-09-07T03:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1787855657_ending_captioned_1787855831.mp4",
+      "title": "[TEST] My (35 year old male) wifes (33 year old female) phone usage is out of control. What can I do to help her?",
+      "subreddit": "relationship_advice",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1474993267737750",
+      "url": "https://www.facebook.com/1272041649331476/videos/1474993267737750",
+      "posted_at": "2026-08-27T18:52:26Z",
+      "hook_score": 47
+    },
+    {
+      "video_file": "output_1787855657_ending_captioned_1787855831.mp4",
+      "title": "[TEST] My (35 year old male) wifes (33 year old female) phone usage is out of control. What can I do to help her?",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "YNa-GkgoTvE",
+      "url": "https://youtu.be/YNa-GkgoTvE",
+      "posted_at": "2026-08-27T18:51:59Z",
+      "hook_score": 47
+    },
     {
       "video_file": "output_1787826531_ending_captioned_1787826697.mp4",
       "title": "[TEST] People are way too uptight about their dogs now.",
@@ -195,28 +217,6 @@
       "posted_at": "2026-08-26T01:05:49Z",
       "hook_score": 0,
       "publish_at": "2026-08-26T12:00:00Z"
-    },
-    {
-      "video_file": "output_1787687140_ending_captioned_1787687338.mp4",
-      "title": "[TEST] Apparently I could have put the refuse lorry driver in ‘fear for his life’",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "2138260763390724",
-      "url": "https://www.facebook.com/1272041649331476/videos/2138260763390724",
-      "posted_at": "2026-08-25T20:05:21Z",
-      "hook_score": 21
-    },
-    {
-      "video_file": "output_1787687140_ending_captioned_1787687338.mp4",
-      "title": "[TEST] Apparently I could have put the refuse lorry driver in ‘fear for his life’",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "HXHurEg_4_M",
-      "url": "https://youtu.be/HXHurEg_4_M",
-      "posted_at": "2026-08-25T20:04:49Z",
-      "hook_score": 21
     }
   ]
 }
