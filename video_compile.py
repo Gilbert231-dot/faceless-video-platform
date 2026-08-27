@@ -14,7 +14,7 @@ from config import VOICE_SPEED
 # stretching). The narration is still sped to VOICE_SPEED; EXTRACT_FACTOR
 # below buys back enough footage to cover the sped narration.
 SPEED_FACTOR = 1.0
-SEGMENT_DURATION = 45
+SEGMENT_DURATION = 30
 # Locked output framerate: every video renders at exactly 60fps to MATCH
 # the 4K 60fps background sources (a 24/30fps source is pulled up to 60).
 # FIXED (motion blur): the old 30fps cap halved the 60fps source's motion
@@ -187,7 +187,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     # estimation — videos upload straight to YouTube, so the slower encode
     # and bigger files are fine.
     CRF_VALUE = int(os.environ.get("VIDEO_CRF", "15"))
-    PRESET = os.environ.get("VIDEO_PRESET", "veryslow")
+    PRESET = os.environ.get("VIDEO_PRESET", "slow")
     
     print(f"   🎙️ Voice target: {voice_target:.0f} LUFS (auto-gained per narration)")
     print(f"   🎙️ Voice speed: {VOICE_SPEED}x")
