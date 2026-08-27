@@ -2,10 +2,10 @@ name: Generate Faceless Videos
 
 on:
   schedule:
-    # Daily generation moved 2h EARLIER (midnight UTC): the 60fps renders
-    # now take ~2 hours, so starting at 2 AM meant videos finished ~4 AM.
-    # Midnight keeps the batch done around 2 AM as before.
-    - cron: "0 22 * * *"  # Daily at 10 PM UTC — 14h buffer before first slot (12:00 UTC)
+    # Daily generation at 7 PM UTC (19:00): videos finish ~9 PM UTC,
+    # giving 2h buffer before the first posting slot at 23:00 UTC (7 PM ET).
+    # Two posting slots: 23:00 UTC (7 PM ET) and 03:00 UTC (11 PM ET).
+    - cron: "0 19 * * *"  # Daily at 7 PM UTC — 4h before first posting slot
   workflow_dispatch:
     inputs:
       count:
@@ -134,8 +134,9 @@ jobs:
           # Without it, videos land in the repo root and every output/* glob
           # (upload step, cleanup) silently misses them.
           echo "OUTPUT_DIR=output" >> $GITHUB_ENV
-          # 1 video/day targeting US: 9PM EDT (prime time)
-          echo "YOUTUBE_SCHEDULE_TIMES=01:00" >> $GITHUB_ENV
+          # 2 videos/day targeting US: 7 PM ET (evening peak) + 11 PM ET (late night)
+          # Option A: Evening Peak + Late Night — best for Reddit story narration
+          echo "YOUTUBE_SCHEDULE_TIMES=23:00,03:00" >> $GITHUB_ENV
 
       # The story bank now lives directly in the repo as reddit_stories/ (the
       # old reddit_stories.zip was 146 MB unpacked, mostly raw comment dumps
@@ -189,7 +190,7 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             COUNT="${{ inputs.count }}"
           else
-            COUNT="1"
+            COUNT="2"
           fi
           echo "📹 Generating $COUNT videos..."
           echo "🔬 DEBUG_MODE is set to: ${{ env.DEBUG_MODE }}"
