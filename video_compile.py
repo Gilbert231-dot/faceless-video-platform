@@ -22,13 +22,19 @@ SEGMENT_DURATION = 30
 # ~2.7x the source's motion — fast gameplay (Fortnite) rendered visibly
 # blurry no matter the CRF. 60fps keeps the source's native motion, and
 # YouTube/Shorts accept 60fps.
-OUTPUT_FPS = 30
-# Output resolution (9:16 vertical). Using 1080x1920 (standard YouTube Shorts)
-# to prevent exit-234 crashes on GitHub Actions runners. 1440x2560@60fps
-# was too demanding (3.7M pixels/frame × 60fps = 222M pixels/sec).
-# 1080x1920 is still excellent quality for mobile viewing.
-OUTPUT_W = 1080
-OUTPUT_H = 1920
+OUTPUT_FPS = 60
+# Output resolution (9:16 vertical). Was 1080x1920; now 1440x2560 so the
+# 4K (3840x2160) background sources pay off: a 9:16 center-crop of a 4K
+# landscape frame is 1215x2160 native pixels, so 1440x2560 is only a mild
+# 1.19x upscale — the closest standard YouTube tier to the source's real
+# detail. Going 2160x3840 would be a 1.78x upscale (SOFTER than 1440p, not
+# sharper) and ~4x the veryslow encode time, risking the Actions timeout,
+# so 1440p is the quality/risk sweet spot. YouTube offers a 1440p stream on
+# phones, fixing the "lower quality on my phone" complaint. H.264 level 5.1
+# is required for 1440x2560@60 (level 5.0 caps below 1440p60; level 4.0
+# caps at ~1080p frame sizes).
+OUTPUT_W = 1440
+OUTPUT_H = 2560
 # How much footage to grab relative to the narration: the background plays at
 # SPEED_FACTOR x and the voice is sped to VOICE_SPEED x, so to cover the whole
 # narration (with 10% slack) we need:
@@ -128,32 +134,20 @@ def _segment_plan(duration, max_seg):
 
 
 def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
-    """Run ffmpeg with stderr surfaced on failure."""
+    """Run ffmpeg with stderr surfaced on failure.
+
+    Every ffmpeg call in the render path used capture_output=True and the
+    real error (the reason ffmpeg exited non-zero) was silently swallowed,
+    forcing blind guesses (e.g. the exit-234 crash). On failure, print the
+    last lines of ffmpeg's stderr so the cause is in the Actions log.
+    """
     try:
-        result = subprocess.run(cmd, capture_output=True, timeout=timeout)
-        if result.returncode != 0:
-            err = (result.stderr or b"").decode("utf-8", errors="replace")
-            tail = "\n".join(err.splitlines()[-50:]) if err.strip() else "(no stderr captured)"
-            msg = f"   FAILED {label} (exit {result.returncode}). ffmpeg stderr:\n{tail}\n"
-            print(msg, flush=True)
-            # Write to file AND stderr so it survives buffering
-            import sys
-            sys.stderr.write(msg)
-            sys.stderr.flush()
-            try:
-                with open(f"/tmp/{label.replace(' ', '_')}_error.log", "w") as f:
-                    f.write(f"exit code: {result.returncode}\n{err}\n")
-            except Exception:
-                pass
-            raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
+        subprocess.run(cmd, check=True, capture_output=True, timeout=timeout)
         return None
-    except subprocess.TimeoutExpired:
-        print(f"   ❌ {label} TIMED OUT after {timeout}s", flush=True)
-        raise
-    except subprocess.CalledProcessError:
-        raise
-    except Exception as e:
-        print(f"   ❌ {label} FAILED: {e}", flush=True)
+    except subprocess.CalledProcessError as e:
+        err = (e.stderr or b"").decode("utf-8", errors="replace")
+        tail = "\n".join(err.splitlines()[-25:]) if err.strip() else "(no stderr captured)"
+        print(f"   ❌ {label} failed (exit {e.returncode}). ffmpeg said:\n{tail}")
         raise
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
@@ -379,19 +373,31 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         # The animated frame intro (if any) is only on segment 0 — the
         # fade/hold/fade-out all happen inside the first ~12s. It needs a
         # 2-input filter_complex (gameplay + the card PNG).
-        # FIXED (exit-234 OOM kill): the overlay filter chain (crop→scale→
-        # RGBA→overlay→yuv420p) combined with `-loop 1` PNG input caused
-        # ffmpeg to be OOM-killed on every attempt (even at 1080x1920,
-        # 30fps, medium preset, threads=1). Instead, ALL segments render
-        # as simple yuv420p without overlay, and the Reddit frame card is
-        # applied in a single clean post-mux pass below.
+        use_overlay = (i == 0 and overlay_filter is not None)
         cmd_process = [
             'ffmpeg', '-y',
             '-ss', str(start_time),
             '-t', str(segment_duration),
             '-i', gameplay_segment,
         ]
-        cmd_process += ['-vf', vf_chain]
+        if use_overlay:
+            # The base chain must stay RGBA so the card's alpha composites
+            # correctly; yuv420p is applied AFTER the overlay.
+            # IMPORTANT: `-loop 1` on the PNG input — without it the card is
+            # a SINGLE frame at t=0, and the fade-in (st=0.35) blanks that
+            # only frame, so the card would never be visible. Looped, the
+            # card streams continuously and the fades/overlay work. The loop
+            # MUST be duration-bounded (-t 15): an unbounded image loop never
+            # EOFs and the overlay runs forever (hung the render). 15s covers
+            # the longest title intro (12s max + fade); after that the card
+            # is fully faded out, so repeating its last (invisible) frame is
+            # harmless.
+            base = vf_chain.replace("format=yuv420p,setsar=1", "format=rgba,setsar=1")
+            fc = f"[0:v]{base}[bg];{overlay_filter},format=yuv420p,setsar=1[v]"
+            cmd_process += ['-loop', '1', '-t', '15', '-i', frame_input,
+                            '-filter_complex', fc, '-map', '[v]']
+        else:
+            cmd_process += ['-vf', vf_chain]
         cmd_process += [
             '-sws_flags', 'lanczos',
             '-c:v', 'libx264',
@@ -399,7 +405,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-crf', str(segment_crf),
             '-profile:v', 'high',
             '-level', '5.1',
-            '-threads', '1',
             '-an',
             '-movflags', '+faststart',
             segment_output
@@ -429,19 +434,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             # fallback duplicated the primary exactly (same preset, same
             # copy-cut input), so it could never recover anything — it just
             # re-failed identically (as it did with the exit-234 crash).
-            # FALLBACK: go one preset faster than the primary.
-            # Preset ladder: verlow > slow > medium > fast > ultrafast
-            PRESET_LADDER = ['veryslow', 'slow', 'medium', 'fast', 'ultrafast']
             cmd_fallback = list(cmd_process)
-            primary_preset = segment_preset
-            try:
-                idx = PRESET_LADDER.index(primary_preset)
-                fallback_preset = PRESET_LADDER[min(idx + 1, len(PRESET_LADDER) - 1)]
-            except ValueError:
-                fallback_preset = 'medium'
-            cmd_fallback[cmd_fallback.index('-preset') + 1] = fallback_preset
+            cmd_fallback[cmd_fallback.index('-preset') + 1] = 'slow'
             cmd_fallback[cmd_fallback.index('-crf') + 1] = str(CRF_VALUE)
-            print(f"   ⚡ Fallback preset: {fallback_preset} (from {primary_preset})")
             run_ffmpeg(cmd_fallback, timeout=1500, label=f"segment {i+1} fallback")
             return i, segment_output, True
     
@@ -677,60 +672,6 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"      - Duration: {final_duration:.1f}s")
     print(f"   ✅ YouTube-compatible format (yuv420p, faststart, AAC)")
     
-    # --- REDDIT FRAME OVERLAY (post-mux pass) ---
-    # FIXED (exit-234 OOM kill): moved from segment-0 rendering to a
-    # single post-mux pass. The overlay filter (crop→scale→RGBA→overlay→
-    # yuv420p) + `-loop 1` PNG input caused OOM kills on GitHub Actions.
-    # By applying it AFTER the mux, we avoid the complex filter during
-    # segment rendering entirely. The card is visible from 0:00, slides
-    # LEFT at t3, and is fully off-screen by t4.
-    if overlay_filter and frame_input and os.path.exists(frame_input) and TITLE_INTRO:
-        print("\n✨ Applying Reddit frame overlay (post-mux pass)...")
-        overlay_output = final_output.replace(".mp4", "_frame.mp4")
-        # The overlay needs the same timing variables computed earlier.
-        # Recompute t3/t4 from the script (same logic as above).
-        total_words = len((script or "").split())
-        title_words = len(title.split()) if title else 0
-        if total_words and title_words:
-            title_secs = (audio_duration * title_words / total_words) / VOICE_SPEED
-            title_secs = title_secs + TITLE_HOLD_SEC
-            final_dur = audio_duration / VOICE_SPEED
-            title_secs = min(max(title_secs, TITLE_MIN_SEC), TITLE_MAX_SEC, max(final_dur - 0.5, 1.0))
-            t4 = title_secs
-            t3 = max(t4 - TITLE_FADE_SEC, 0.0)
-            frame_top = round(0.14 * OUTPUT_H)
-            slide_x = OUTPUT_W + 100
-            slide_duration = TITLE_FADE_SEC
-            x_expr = f"(W-w)/2-{slide_x}*clip((t-{t3:.3f})/{slide_duration:.3f},0,1)"
-            # Simple overlay: scale card, composite onto background.
-            # Uses -itsoffset 0 so the card starts at t=0 of the video.
-            fc = (
-                f"[1:v]scale={OUTPUT_W}:-1:flags=lanczos[card];"
-                f"[0:v][card]overlay=x='{x_expr}':y={frame_top}:eval=frame:format=auto[vout]"
-            )
-            cmd_frame = [
-                'ffmpeg', '-y',
-                '-i', final_output,
-                '-i', frame_input,
-                '-filter_complex', fc,
-                '-map', '[vout]', '-map', '0:a',
-                '-c:v', 'libx264', '-preset', 'medium', '-crf', '15',
-                '-profile:v', 'high', '-pix_fmt', 'yuv420p',
-                '-c:a', 'aac', '-b:a', '192k',
-                '-movflags', '+faststart',
-                overlay_output
-            ]
-            try:
-                run_ffmpeg(cmd_frame, timeout=600, label="reddit frame overlay")
-                os.unlink(final_output)
-                final_output = overlay_output
-                print(f"   ✅ Reddit frame overlay applied ({title_secs:.1f}s on screen, slides out at {t3:.1f}s)")
-            except Exception as e:
-                print(f"   ⚠️ Reddit frame overlay failed: {e}")
-                print("   Continuing without frame overlay...")
-                if os.path.exists(overlay_output):
-                    os.unlink(overlay_output)
-
     # --- PART NUMBER OVERLAY ---
     if part_label and "Part" in part_label:
         print(f"\n📌 Adding Part number overlay: {part_label}")
