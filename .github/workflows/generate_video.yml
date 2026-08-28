@@ -2,9 +2,9 @@ name: Generate Faceless Videos
 
 on:
   schedule:
-    # Daily generation at 7 PM UTC (19:00): videos finish ~9 PM UTC,
-    # giving 2h buffer before the first posting slot at 23:00 UTC (7 PM ET).
-    # Two posting slots: 23:00 UTC (7 PM ET) and 03:00 UTC (11 PM ET).
+    # Daily generation at 5 PM UTC (17:00): 3 videos finish ~9 PM UTC,
+    # giving 4h buffer before the first posting slot at 23:00 UTC (7 PM ET).
+    # Three posting slots: 23:00 UTC, 03:00 UTC, 15:00 UTC.
     - cron: "0 17 * * *"  # Daily at 5 PM UTC — 4h before first posting slot
   workflow_dispatch:
     inputs:
