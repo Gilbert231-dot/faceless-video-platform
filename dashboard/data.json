@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-28T07:36:01Z",
+  "generated_at": "2026-08-28T15:32:04Z",
   "total_stories": 366,
   "unused_stories": 337,
   "used_stories": 29,
@@ -93,13 +93,12 @@
   "youtube": {
     "privacy": "public",
     "slots": [
-      "23:00",
-      "03:00",
-      "15:00"
+      "12:00",
+      "18:00"
     ],
     "next_publish_utc": [
-      "2026-09-04T03:00:00Z",
-      "2026-09-04T15:00:00Z"
+      "2026-09-08T12:00:00Z",
+      "2026-09-08T18:00:00Z"
     ]
   },
   "videos": [
