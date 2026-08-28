@@ -254,12 +254,12 @@ def adapt_reddit_story(title, story, max_words=2000, split_threshold=800, use_ho
 
 IMPORTANT RULES:
 - Part 1 should end at a natural cliffhanger or emotional peak.
-- Part 2 should resolve the story.
+- Part 2 should end on a cliffhanger or emotional peak — never a neat resolution.
 - Both parts should be approximately {max_words // 2} words each.
 - Write in first-person ("I", "my", "me").
 - **COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.**
-- **END WITH A FINAL SENTENCE THAT CLOSES THE STORY.**
-- **If the story doesn't have a natural ending, create a satisfying conclusion.**
+- **END ON A CLIFFHANGER or emotional peak — leave the audience wanting more.**
+- **If the story ends, let it trail off naturally — never force a closing line.**
 - **DO NOT include "Part 1", "Part 2", or any part labels in the spoken script.**
 - **Part 1 must START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.**
 - **In Part 2, start with a smooth transition like "So here's what happened next..." or "Continuing the story..."**
@@ -342,9 +342,16 @@ The goal is to make the story feel fresh, personal, and engaging."""
     
     script_text = strip_hype_intro(script_text)
 
-    # --- FORCE COMPLETE ENDING FOR SINGLE PART ---
-    if script_text and not script_text.strip().endswith(('.', '!', '?')):
-        script_text = script_text.strip() + " And that's the end of the story."
+    # --- NO FORCED ENDING — let the story end naturally (cliffhanger) ---
+    # Remove any explicit "end of story" cues the LLM might add
+    ending_patterns = [
+        r'\s*And that\'?s? (?:the end of )?the story\.?\s*$',
+        r'\s*That\'?s? (?:the )?end\.?\s*$',
+        r'\s*The end\.?\s*$',
+        r'\s*And that\'?s? how (?:the )?story (?:ended|ends)\.?\s*$',
+    ]
+    for pat in ending_patterns:
+        script_text = re.sub(pat, '', script_text, flags=re.IGNORECASE)
     
     return {
         'script': script_text,
