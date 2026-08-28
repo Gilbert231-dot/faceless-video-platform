@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "23:22:52 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "23:22:52 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "18:09:29 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "18:09:29 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "18:09:29 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "18:09:29 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "07:36:01 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -164,66 +200,30 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "01:07:35 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
-    },
-    {
-      "t": "01:07:35 UTC",
-      "who": "Buffy",
-      "station": "LAPTOP",
-      "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "22:29:17 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "22:29:16 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "22:29:16 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "22:29:16 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-08-28T07:36:01Z",
+  "updated_at": "2026-08-28T23:22:52Z",
   "stories": [
     {
-      "subreddit": "pettyrevenge",
-      "title": "Got my doctorate",
-      "score": 8652,
+      "subreddit": "MaliciousCompliance",
+      "title": "Toxic ex-boss begs me to leave a company review. I give him exactly what he asked for.",
+      "score": 8232,
       "comments": 0,
-      "url": "https://reddit.com/r/pettyrevenge/comments/1v3xhvy/got_my_doctorate/"
+      "url": "https://reddit.com/r/MaliciousCompliance/comments/1uoxpi9/toxic_exboss_begs_me_to_leave_a_company_review_i/"
+    },
+    {
+      "subreddit": "pettyrevenge",
+      "title": "Teammates were annoying so I made them the best brownies of their life",
+      "score": 8005,
+      "comments": 0,
+      "url": "https://reddit.com/r/pettyrevenge/comments/1urrpj0/teammates_were_annoying_so_i_made_them_the_best/"
     },
     {
       "subreddit": "MaliciousCompliance",
-      "title": "How I Handled Being the Only Person in a Group Project Who Gave a Single Shit",
-      "score": 8571,
+      "title": "Professional photographer knew better than three ophthalmologists. It cost him €750.",
+      "score": 7919,
       "comments": 0,
-      "url": "https://reddit.com/r/MaliciousCompliance/comments/1up84zz/how_i_handled_being_the_only_person_in_a_group/"
-    },
-    {
-      "subreddit": "pettyrevenge",
-      "title": "I force Wells Fargo to mail me a statement that will always be zero.",
-      "score": 8521,
-      "comments": 0,
-      "url": "https://reddit.com/r/pettyrevenge/comments/1urejtt/i_force_wells_fargo_to_mail_me_a_statement_that/"
+      "url": "https://reddit.com/r/MaliciousCompliance/comments/1tu95f6/professional_photographer_knew_better_than_three/"
     }
   ]
 }

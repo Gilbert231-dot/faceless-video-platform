@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-28T15:32:04Z",
+  "generated_at": "2026-08-28T23:22:52Z",
   "total_stories": 366,
-  "unused_stories": 337,
-  "used_stories": 29,
+  "unused_stories": 334,
+  "used_stories": 32,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 168,
-  "runway_date": "2027-02-12",
+  "days_of_stories": 167,
+  "runway_date": "2027-02-11",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -67,18 +67,18 @@
       "unused": 22
     },
     {
-      "name": "pettyrevenge",
-      "total": 23,
-      "unused": 22
-    },
-    {
       "name": "MaliciousCompliance",
-      "total": 21,
-      "unused": 21
+      "total": 20,
+      "unused": 20
     },
     {
       "name": "EntitledPeople",
       "total": 20,
+      "unused": 20
+    },
+    {
+      "name": "pettyrevenge",
+      "total": 21,
       "unused": 20
     },
     {
@@ -88,20 +88,93 @@
     }
   ],
   "schedule": {
-    "next_index": 54
+    "next_index": 57
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "23:00",
+      "03:00",
+      "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-08T12:00:00Z",
-      "2026-09-08T18:00:00Z"
+      "2026-09-07T23:00:00Z",
+      "2026-09-07T03:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1787957830_ending_captioned_1787958075.mp4",
+      "title": "I force Wells Fargo to mail me a statement that will always be zero.",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "859093957170587",
+      "url": "https://www.facebook.com/1272041649331476/videos/859093957170587",
+      "posted_at": "2026-08-28T23:22:52Z",
+      "hook_score": 13,
+      "publish_at": "2026-08-29T15:00:00Z"
+    },
+    {
+      "video_file": "output_1787950931_ending_captioned_1787951103.mp4",
+      "title": "How I Handled Being the Only Person in a Group Project Who Gave a Single Shit",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1600443888340122",
+      "url": "https://www.facebook.com/1272041649331476/videos/1600443888340122",
+      "posted_at": "2026-08-28T23:22:20Z",
+      "hook_score": 21,
+      "publish_at": "2026-08-29T03:00:00Z"
+    },
+    {
+      "video_file": "output_1787945490_ending_captioned_1787945686.mp4",
+      "title": "Got my doctorate",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "2299118674171273",
+      "url": "https://www.facebook.com/1272041649331476/videos/2299118674171273",
+      "posted_at": "2026-08-28T23:21:57Z",
+      "hook_score": 13,
+      "publish_at": "2026-08-29T23:00:00Z"
+    },
+    {
+      "video_file": "output_1787957830_ending_captioned_1787958075.mp4",
+      "title": "I force Wells Fargo to mail me a statement that will always be zero.",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "XAsS-eaFmfo",
+      "url": "https://youtu.be/XAsS-eaFmfo",
+      "posted_at": "2026-08-28T23:21:31Z",
+      "hook_score": 13,
+      "publish_at": "2026-08-29T15:00:00Z"
+    },
+    {
+      "video_file": "output_1787950931_ending_captioned_1787951103.mp4",
+      "title": "How I Handled Being the Only Person in a Group Project Who Gave a Single Shit",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "w-i-xCezNXA",
+      "url": "https://youtu.be/w-i-xCezNXA",
+      "posted_at": "2026-08-28T23:21:16Z",
+      "hook_score": 21,
+      "publish_at": "2026-08-29T03:00:00Z"
+    },
+    {
+      "video_file": "output_1787945490_ending_captioned_1787945686.mp4",
+      "title": "Got my doctorate",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "YpL0GMd12OA",
+      "url": "https://youtu.be/YpL0GMd12OA",
+      "posted_at": "2026-08-28T23:21:03Z",
+      "hook_score": 13,
+      "publish_at": "2026-08-29T23:00:00Z"
+    },
     {
       "video_file": "output_1787901057_ending_captioned_1787901297.mp4",
       "title": "[TEST] I was deceived not only by someone I was dating, but also by his friend.",
@@ -145,74 +218,6 @@
       "url": "https://youtu.be/q5hV7eWqVUA",
       "posted_at": "2026-08-28T02:25:50Z",
       "hook_score": 34
-    },
-    {
-      "video_file": "output_1787855657_ending_captioned_1787855831.mp4",
-      "title": "[TEST] My (35 year old male) wifes (33 year old female) phone usage is out of control. What can I do to help her?",
-      "subreddit": "relationship_advice",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1474993267737750",
-      "url": "https://www.facebook.com/1272041649331476/videos/1474993267737750",
-      "posted_at": "2026-08-27T18:52:26Z",
-      "hook_score": 47
-    },
-    {
-      "video_file": "output_1787855657_ending_captioned_1787855831.mp4",
-      "title": "[TEST] My (35 year old male) wifes (33 year old female) phone usage is out of control. What can I do to help her?",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "YNa-GkgoTvE",
-      "url": "https://youtu.be/YNa-GkgoTvE",
-      "posted_at": "2026-08-27T18:51:59Z",
-      "hook_score": 47
-    },
-    {
-      "video_file": "output_1787826531_ending_captioned_1787826697.mp4",
-      "title": "[TEST] People are way too uptight about their dogs now.",
-      "subreddit": "unpopularopinion",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "2014550119164457",
-      "url": "https://www.facebook.com/1272041649331476/videos/2014550119164457",
-      "posted_at": "2026-08-27T10:45:42Z",
-      "hook_score": 0
-    },
-    {
-      "video_file": "output_1787826531_ending_captioned_1787826697.mp4",
-      "title": "[TEST] People are way too uptight about their dogs now.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "NZryMXjFZ3o",
-      "url": "https://youtu.be/NZryMXjFZ3o",
-      "posted_at": "2026-08-27T10:45:14Z",
-      "hook_score": 0
-    },
-    {
-      "video_file": "output_1787705576_ending_captioned_1787705705.mp4",
-      "title": "Tricking My Slacker Coworker into Sabotaging Himself",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1024959960375593",
-      "url": "https://www.facebook.com/1272041649331476/videos/1024959960375593",
-      "posted_at": "2026-08-26T01:07:35Z",
-      "hook_score": 13,
-      "publish_at": "2026-08-27T12:00:00Z"
-    },
-    {
-      "video_file": "output_1787702122_ending_captioned_1787702254.mp4",
-      "title": "If you're gonna steal the catalytics off my truck you should've checked if they were actually functional first, wasn't so funny when it was turn.",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "902200839259547",
-      "url": "https://www.facebook.com/1272041649331476/videos/902200839259547",
-      "posted_at": "2026-08-26T01:07:13Z",
-      "hook_score": 8,
-      "publish_at": "2026-08-26T18:00:00Z"
     }
   ]
 }
