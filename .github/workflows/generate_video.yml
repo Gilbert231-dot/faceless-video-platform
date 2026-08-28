@@ -5,7 +5,7 @@ on:
     # Daily generation at 7 PM UTC (19:00): videos finish ~9 PM UTC,
     # giving 2h buffer before the first posting slot at 23:00 UTC (7 PM ET).
     # Two posting slots: 23:00 UTC (7 PM ET) and 03:00 UTC (11 PM ET).
-    - cron: "0 19 * * *"  # Daily at 7 PM UTC — 4h before first posting slot
+    - cron: "0 17 * * *"  # Daily at 7 PM UTC — 4h before first posting slot
   workflow_dispatch:
     inputs:
       count:
@@ -136,9 +136,9 @@ jobs:
           # Without it, videos land in the repo root and every output/* glob
           # (upload step, cleanup) silently misses them.
           echo "OUTPUT_DIR=output" >> $GITHUB_ENV
-          # 2 videos/day targeting US: 7 PM ET (evening peak) + 11 PM ET (late night)
+          # 3 videos/day targeting US: 11 AM ET (lunch) + 7 PM ET (evening peak) + 11 PM ET (late night)
           # Option A: Evening Peak + Late Night — best for Reddit story narration
-          echo "YOUTUBE_SCHEDULE_TIMES=23:00,03:00" >> $GITHUB_ENV
+          echo "YOUTUBE_SCHEDULE_TIMES=23:00,03:00,15:00" >> $GITHUB_ENV
 
       # The story bank now lives directly in the repo as reddit_stories/ (the
       # old reddit_stories.zip was 146 MB unpacked, mostly raw comment dumps
@@ -192,7 +192,7 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             COUNT="${{ inputs.count }}"
           else
-            COUNT="2"
+            COUNT="3"
           fi
           echo "📹 Generating $COUNT videos..."
           echo "🔬 DEBUG_MODE is set to: ${{ env.DEBUG_MODE }}"
