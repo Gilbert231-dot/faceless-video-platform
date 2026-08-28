@@ -725,15 +725,24 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         # video (blurred background) + the sharp card. One per video, so the
         # YouTube custom thumbnail shows the exact intro frame.
         def _make_thumb(video_path):
+            import traceback
             if not frame_path:
+                print("   ⚠️ Thumbnail skipped: frame_path is None")
+                return None
+            if not os.path.exists(frame_path):
+                print(f"   ⚠️ Thumbnail skipped: frame file missing: {frame_path}")
                 return None
             thumb_path = video_path.replace(".mp4", "_thumb.jpg")
             try:
                 from make_thumbnail import _make_thumbnail as _mt
-                _mt(video_path, frame_path, thumb_path)
-                return thumb_path if os.path.exists(thumb_path) else None
+                result = _mt(video_path, frame_path, thumb_path)
+                exists = os.path.exists(thumb_path)
+                size = os.path.getsize(thumb_path) if exists else 0
+                print(f"   🖼️ Thumbnail result: exists={exists} size={size} path={thumb_path}")
+                return thumb_path if exists else None
             except Exception as e:
-                print(f"   ⚠️ Thumbnail skipped: {e}")
+                print(f"   ⚠️ Thumbnail FAILED: {e}")
+                traceback.print_exc()
                 return None
 
         thumb_1 = _make_thumb(video_path_1)
