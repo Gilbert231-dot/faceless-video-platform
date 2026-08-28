@@ -123,15 +123,21 @@ def upload_to_youtube(
 
     # --- Load metadata from JSON if available ---
     thumbnail_path = None
-    if metadata_path and os.path.exists(metadata_path):
-        with open(metadata_path, "r") as f:
-            metadata = json.load(f)
-        title = metadata.get("title", title)
-        description = metadata.get("description", description)
-        tags = metadata.get("tags", tags)
-        thumb = metadata.get("thumbnail")
-        if thumb and os.path.exists(thumb):
-            thumbnail_path = thumb
+        if metadata_path and os.path.exists(metadata_path):
+            with open(metadata_path, "r") as f:
+                metadata = json.load(f)
+            title = metadata.get("title", title)
+            description = metadata.get("description", description)
+            tags = metadata.get("tags", tags)
+            thumb = metadata.get("thumbnail")
+            if thumb:
+                if os.path.exists(thumb):
+                    thumbnail_path = thumb
+                    logger.info("🖼️ Thumbnail found: %s (%d bytes)", thumb, os.path.getsize(thumb))
+                else:
+                    logger.warning("⚠️ Thumbnail path in metadata but file missing: %s", thumb)
+            else:
+                logger.warning("⚠️ No thumbnail in metadata (thumbnail=%s)", thumb)
 
     body = build_upload_body(title, description, tags, privacy_status, publish_at)
     if publish_at:
