@@ -295,7 +295,7 @@ def get_next_segment(duration_needed):
             )
 
         # Update state
-        new_offset = offset + take
+        new_offset = offset
         if new_offset >= duration - 0.1:
             current_pos = (current_pos + 1) % len(files)
             new_offset = 0.0
