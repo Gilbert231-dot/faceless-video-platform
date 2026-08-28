@@ -725,25 +725,47 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         # video (blurred background) + the sharp card. One per video, so the
         # YouTube custom thumbnail shows the exact intro frame.
         def _make_thumb(video_path):
+            """Generate a YouTube thumbnail. Tries the fancy PIL composite first,
+            falls back to a simple ffmpeg frame grab if that fails."""
             import traceback
-            if not frame_path:
-                print("   ⚠️ Thumbnail skipped: frame_path is None")
-                return None
-            if not os.path.exists(frame_path):
-                print(f"   ⚠️ Thumbnail skipped: frame file missing: {frame_path}")
-                return None
+            import subprocess as _sp
+
             thumb_path = video_path.replace(".mp4", "_thumb.jpg")
+
+            # --- Attempt 1: full PIL composite (card + background) ---
+            if frame_path and os.path.exists(frame_path):
+                try:
+                    from make_thumbnail import _make_thumbnail as _mt
+                    _mt(video_path, frame_path, thumb_path)
+                    if os.path.exists(thumb_path) and os.path.getsize(thumb_path) > 1000:
+                        print(f"   🖼️ Thumbnail OK (PIL composite): {thumb_path} ({os.path.getsize(thumb_path)} bytes)")
+                        return thumb_path
+                    print("   ⚠️ PIL composite produced empty/thin file, trying fallback...")
+                except Exception as e:
+                    print(f"   ⚠️ PIL composite failed: {e}")
+                    traceback.print_exc()
+            else:
+                print(f"   ⚠️ frame_path missing ({frame_path}), trying fallback...")
+
+            # --- Attempt 2: simple ffmpeg frame grab ---
             try:
-                from make_thumbnail import _make_thumbnail as _mt
-                result = _mt(video_path, frame_path, thumb_path)
-                exists = os.path.exists(thumb_path)
-                size = os.path.getsize(thumb_path) if exists else 0
-                print(f"   🖼️ Thumbnail result: exists={exists} size={size} path={thumb_path}")
-                return thumb_path if exists else None
+                # Grab a frame at 3 seconds (the intro card is visible there)
+                r = _sp.run(
+                    ["ffmpeg", "-y", "-ss", "3", "-i", video_path,
+                     "-frames:v", "1",
+                     "-vf", "scale=1080:-1",
+                     "-q:v", "2", thumb_path],
+                    capture_output=True, timeout=30,
+                )
+                if r.returncode == 0 and os.path.exists(thumb_path) and os.path.getsize(thumb_path) > 1000:
+                    print(f"   🖼️ Thumbnail OK (ffmpeg fallback): {thumb_path} ({os.path.getsize(thumb_path)} bytes)")
+                    return thumb_path
+                print(f"   ⚠️ ffmpeg fallback failed (rc={r.returncode}): {r.stderr.decode()[:200]}")
             except Exception as e:
-                print(f"   ⚠️ Thumbnail FAILED: {e}")
-                traceback.print_exc()
-                return None
+                print(f"   ⚠️ ffmpeg fallback exception: {e}")
+
+            print("   ❌ Thumbnail generation failed completely")
+            return None
 
         thumb_1 = _make_thumb(video_path_1)
         save_metadata(video_path_1, title, subreddit_name, score, author, thumb_1)
