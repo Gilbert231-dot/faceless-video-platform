@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "07:36:01 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "07:36:01 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "05:35:22 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "05:35:21 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "05:35:21 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "05:35:21 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "02:26:04 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -164,45 +200,9 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "20:05:21 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
-    },
-    {
-      "t": "20:05:21 UTC",
-      "who": "Buffy",
-      "station": "LAPTOP",
-      "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "18:39:27 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "18:39:26 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "18:39:26 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "18:39:26 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-08-28T02:26:04Z",
+  "updated_at": "2026-08-28T07:36:01Z",
   "stories": [
     {
       "subreddit": "pettyrevenge",
