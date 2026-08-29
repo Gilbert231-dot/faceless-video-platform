@@ -258,12 +258,12 @@ IMPORTANT RULES:
 - Both parts should be approximately {max_words // 2} words each.
 - Write in first-person ("I", "my", "me").
 - **COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.**
-- **END ON A CLIFFHANGER or emotional peak — leave the audience wanting more.**
-- **If the story ends, let it trail off naturally — never force a closing line.**
+- **The ending should feel UNFINISHED — stop mid-thought or at a moment of tension. Never summarize or conclude.**
+- **NEVER use the words "cliffhanger", "to be continued", or "that's the end" in the narration.**
 - **DO NOT include "Part 1", "Part 2", or any part labels in the spoken script.**
 - **Part 1 must START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.**
 - **In Part 2, start with a smooth transition like "So here's what happened next..." or "Continuing the story..."**
-- **INSERT MICRO-HOOKS every 2-3 sentences: "but here's the thing...", "what I didn't know was...", "and that's when everything changed..."**
+- **Use MAX 2 micro-hooks TOTAL across both parts combined. Pick from variety: "but here's the thing", "then it hit me", "but wait — it gets worse", "and honestly?". NEVER repeat the same phrase. Space them far apart — one per part at most.**
 - **BUILD TENSION WAVES: short punchy lines during drama, longer during reflection. End each paragraph with a mini-hook that pulls into the next.**
 - **HIGHLIGHT STAKES: show what's at risk — "If this didn't work, I'd lose everything", "This wasn't just about money anymore"**
 
@@ -285,11 +285,11 @@ IMPORTANT RULES:
 - START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.
 - Keep it under {max_words} words.
 - **COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.**
-- **END ON A CLIFFHANGER or emotional peak — leave the audience wanting more.**
-- **If the story ends, let it trail off naturally — never force a closing line.**
+- **The ending should feel UNFINISHED — stop mid-thought or at a moment of tension. Never summarize or conclude.**
+- **NEVER use the words "cliffhanger", "to be continued", or "that's the end" in the narration.**
 - **DO NOT include the title in the narration—it will be spoken separately.**
 - **DO NOT include "Part 1" or any part labels in the spoken script.**
-- **INSERT MICRO-HOOKS every 2-3 sentences: "but here's the thing...", "what I didn't know was...", "and that's when everything changed..."**
+- **Use MAX 2 micro-hooks TOTAL. Pick from variety: "but here's the thing", "then it hit me", "but wait — it gets worse", "and honestly?". NEVER repeat the same phrase. Space them far apart.**
 - **BUILD TENSION WAVES: short punchy lines during drama, longer during reflection. End each paragraph with a mini-hook.**
 - **HIGHLIGHT STAKES: show what's at risk — "If this didn't work, I'd lose everything", "This wasn't just about money anymore"**
 
