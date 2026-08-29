@@ -946,17 +946,27 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                     audio_inputs += ['-i', sub_wav]
                 if has_like_audio:
                     audio_inputs += ['-i', like_wav]
+                # FIX: write to temp file first — ffmpeg can't edit in-place
+                audio_tmp = ending_output.replace(".mp4", "_audio_tmp.mp4")
                 cmd_audio = [
                     'ffmpeg', '-y', *audio_inputs,
                     '-filter_complex', audio_fc,
                     '-map', '0:v', '-map', '[aout]',
                     '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                    '-movflags', '+faststart', ending_output
+                    '-movflags', '+faststart', audio_tmp
                 ]
                 try:
                     run_ffmpeg(cmd_audio, timeout=300, label="ending audio mix")
+                    # Swap: replace original with audio-mixed version
+                    os.replace(audio_tmp, ending_output)
                 except Exception as e:
                     print(f"   ⚠️ Audio mix failed: {e}")
+                    # Clean up temp file if it exists
+                    try:
+                        if os.path.exists(audio_tmp):
+                            os.unlink(audio_tmp)
+                    except OSError:
+                        pass
 
         if ending_output and os.path.exists(ending_output):
             os.unlink(final_output)
