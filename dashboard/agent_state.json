@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "22:52:54 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "22:52:54 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "19:36:23 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "19:36:22 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "19:36:22 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "19:36:22 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "08:37:39 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -164,66 +200,30 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "02:26:04 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
-    },
-    {
-      "t": "02:26:04 UTC",
-      "who": "Buffy",
-      "station": "LAPTOP",
-      "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "01:52:04 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "01:52:04 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "01:52:04 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "01:52:04 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-08-29T08:37:39Z",
+  "updated_at": "2026-08-29T22:52:54Z",
   "stories": [
     {
-      "subreddit": "MaliciousCompliance",
-      "title": "Toxic ex-boss begs me to leave a company review. I give him exactly what he asked for.",
-      "score": 8232,
+      "subreddit": "ProRevenge",
+      "title": "Lock my funds because of your mistake? Have your bank's social media ruined",
+      "score": 7300,
       "comments": 0,
-      "url": "https://reddit.com/r/MaliciousCompliance/comments/1uoxpi9/toxic_exboss_begs_me_to_leave_a_company_review_i/"
-    },
-    {
-      "subreddit": "pettyrevenge",
-      "title": "Teammates were annoying so I made them the best brownies of their life",
-      "score": 8005,
-      "comments": 0,
-      "url": "https://reddit.com/r/pettyrevenge/comments/1urrpj0/teammates_were_annoying_so_i_made_them_the_best/"
+      "url": "https://reddit.com/r/ProRevenge/comments/1n6k4ph/lock_my_funds_because_of_your_mistake_have_your/"
     },
     {
       "subreddit": "MaliciousCompliance",
-      "title": "Professional photographer knew better than three ophthalmologists. It cost him €750.",
-      "score": 7919,
+      "title": "Punished for over-performing, so I did the bare minimum before leaving...",
+      "score": 7210,
       "comments": 0,
-      "url": "https://reddit.com/r/MaliciousCompliance/comments/1tu95f6/professional_photographer_knew_better_than_three/"
+      "url": "https://reddit.com/r/MaliciousCompliance/comments/1u32tnw/punished_for_overperforming_so_i_did_the_bare/"
+    },
+    {
+      "subreddit": "ProRevenge",
+      "title": "Gas Thief Revenge",
+      "score": 6963,
+      "comments": 0,
+      "url": "https://reddit.com/r/ProRevenge/comments/1qlqzxo/gas_thief_revenge/"
     }
   ]
 }
