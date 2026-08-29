@@ -1,5 +1,27 @@
 [
   {
+    "video_file": "output_1787970731_ending_captioned_1787970818.mp4",
+    "title": "[TEST] Today I messed up by hitting \"reply all\" on a company-wide email that included a very unprofessional rant meant only for my manager",
+    "subreddit": "tifu",
+    "platform": "facebook",
+    "status": "posted",
+    "video_id": "122105978901447442",
+    "url": "https://www.facebook.com/reel/1365756435769126",
+    "posted_at": "2026-08-29T02:42:20Z",
+    "hook_score": 34
+  },
+  {
+    "video_file": "output_1787970731_ending_captioned_1787970818.mp4",
+    "title": "[TEST] Today I messed up by hitting \"reply all\" on a company-wide email that included a very unprofessional rant meant only for my manager",
+    "subreddit": "tifu",
+    "platform": "youtube",
+    "status": "posted",
+    "video_id": "mHVZaUE4xWU",
+    "url": "https://youtu.be/mHVZaUE4xWU",
+    "posted_at": "2026-08-29T02:41:40Z",
+    "hook_score": 34
+  },
+  {
     "video_file": "output_1787957830_ending_captioned_1787958075.mp4",
     "title": "I force Wells Fargo to mail me a statement that will always be zero.",
     "subreddit": "pettyrevenge",
@@ -1080,17 +1102,6 @@
     "video_id": "BLY66CJq02U",
     "url": "https://youtu.be/BLY66CJq02U",
     "posted_at": "2026-08-09T19:03:19Z",
-    "error": ""
-  },
-  {
-    "video_file": "",
-    "title": "I love games, but the truth is, the most iconic ones are hidden gems, not bestsellers.",
-    "subreddit": "unpopularopinion",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "-2zyu1TxQAE",
-    "url": "https://youtu.be/-2zyu1TxQAE",
-    "posted_at": "2026-08-09T17:25:25Z",
     "error": ""
   }
 ]
