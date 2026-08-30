@@ -276,7 +276,53 @@ jobs:
         run: |
           python verify_youtube_compat.py
 
+      # Calculate publish schedule times for both YouTube and Facebook.
+      # This runs ALWAYS — even in LOCAL_UPLOAD_MODE — so Facebook gets slots.
+      - name: Calculate publish schedule
+        run: |
+          python - <<'PY'
+          import os
+          from youtube_schedule import next_publish_times
+
+          privacy = "private"
+          try:
+              with open("YOUTUBE_PRIVACY", encoding="utf-8") as f:
+                  privacy = f.read().strip().lower()
+          except FileNotFoundError:
+              pass
+          if privacy not in ("private", "unlisted", "public"):
+              privacy = "private"
+          if os.environ.get("DEBUG_MODE", "").lower() == "true":
+              privacy = "private"
+
+          import glob
+          videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
+          count = len(videos)
+
+          if privacy == "public" and count > 0:
+              publish_times = next_publish_times(count)
+              times_str = ",".join(t for t in publish_times if t)
+          else:
+              times_str = ""
+
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
+              f.write(f"PUBLISH_TIMES={times_str}\n")
+              f.write(f"YOUTUBE_PRIVACY_VALUE={privacy}\n")
+          print(f"📅 Schedule: privacy={privacy}, times={times_str}, videos={count}")
+          PY
+
+      # LOCAL UPLOAD MODE: When LOCAL_UPLOAD_MODE=true, skip the YouTube upload
+      # step here. Videos are saved as artifacts and uploaded from the user's
+      # laptop using local_youtube_upload.py (residential IP = better algorithm push).
+      - name: Local upload mode notice
+        if: ${{ vars.LOCAL_UPLOAD_MODE }}
+        run: |
+          echo "🏠 LOCAL UPLOAD MODE is enabled"
+          echo "   YouTube upload is skipped — videos will be uploaded from your laptop"
+          echo "   Run 'python local_youtube_upload.py' on your laptop to upload"
+
       - name: Upload videos to YouTube
+        if: ${{ !vars.LOCAL_UPLOAD_MODE }}
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
@@ -287,45 +333,22 @@ jobs:
           import json
           import os
 
-          from youtube_schedule import next_publish_times
           from youtube_uploader import upload_to_youtube
           from video_history import record_video
 
-          privacy = "private"
-          try:
-              with open("YOUTUBE_PRIVACY", encoding="utf-8") as f:
-                  privacy = f.read().strip().lower()
-          except FileNotFoundError:
-              pass
-          if privacy not in ("private", "unlisted", "public"):
-              privacy = "private"
-
-          # TEST runs always stay private, no matter what the file says — a
-          # [TEST] video must never go live.
-          if os.environ.get("DEBUG_MODE", "").lower() == "true":
-              privacy = "private"
-              print("🔒 Test run: forcing PRIVATE (never schedule a [TEST] video)")
-
-          print(f"🔒 YouTube privacy: {privacy} (from YOUTUBE_PRIVACY file)")
+          privacy = os.environ.get("YOUTUBE_PRIVACY_VALUE", "private")
+          print(f"🔒 YouTube privacy: {privacy}")
           videos = sorted(glob.glob("output/*_captioned_*.mp4")) or sorted(glob.glob("output/*.mp4"))
 
           if not videos:
               print("❌ No videos were generated — the run produced nothing.")
               raise SystemExit(1)
 
-          # PUBLIC mode: give each video its own far-apart future slot so two
-          # videos on the same day never shadow each other (default slots
-          # 12:00/20:00 UTC = 8h apart; YOUTUBE_SCHEDULE_TIMES overrides).
-          # YouTube auto-flips them public at their publishAt time.
-          publish_times = next_publish_times(len(videos)) if privacy == "public" else [None] * len(videos)
-
-          # Hand the chosen slots to the Facebook step so the SAME videos go
-          # live on both platforms at the same times — one scheduling decision
-          # per run. Empty in private/test mode (Facebook then drafts/posts
-          # per its own rules, see the Facebook step below).
-          if any(publish_times):
-              with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
-                  f.write("PUBLISH_TIMES=" + ",".join(t for t in publish_times if t) + "\n")
+          raw_times = os.environ.get("PUBLISH_TIMES", "")
+          publish_times = [t if t else None for t in raw_times.split(",")] if raw_times else [None] * len(videos)
+          # Pad if fewer times than videos
+          while len(publish_times) < len(videos):
+              publish_times.append(None)
 
           for video, publish_at in zip(videos, publish_times):
               metadata_path = video[:-4] + "_metadata.json"
@@ -346,7 +369,6 @@ jobs:
                       publish_at=publish_at,
                   )
               except Exception as e:
-                  # Record the failure so the dashboard shows it, then fail the run.
                   record_video(video, metadata=meta, status="failed", error=e)
                   raise
               record_video(video, metadata=meta, video_id=video_id, status="posted",
@@ -498,7 +520,11 @@ jobs:
       # Agent room: move Buffy to LAPTOP now that uploads are done.
       - name: Agent room — uploading
         run: |
-          python update_agent_state.py buffy "LAPTOP" "Uploading the finished videos"
+          if [ "${{ vars.LOCAL_UPLOAD_MODE }}" = "true" ]; then
+            python update_agent_state.py buffy "PROJECT FOLDER" "Videos saved as artifacts for local upload"
+          else
+            python update_agent_state.py buffy "LAPTOP" "Uploading the finished videos"
+          fi
 
       # Refresh the dashboard's data.json (story stats + video history) so the
       # deployed GitHub Pages dashboard stays current after every run.
