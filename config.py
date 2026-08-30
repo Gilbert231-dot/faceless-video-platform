@@ -82,8 +82,10 @@ PLATFORM_TAGS = {
         "#fyp",
         "#foryou",
         "#reddit",
-        "#truestory",
-        "#storynarration",
+        "#storytimeviral",
+        "#drama",
+        "#redditread",
+        "#viralstory",
     ],
 }
 
@@ -93,14 +95,24 @@ def platform_tags(platform, subreddit=""):
 
     YouTube tags are plain words; Facebook/TikTok tags get '#'. The subreddit
     is appended the same way ('AITAH' on YouTube, '#AITAH' on FB/TikTok).
+    
+    For AITAH/AmITheJerk subreddits, both #aita and #amIthejerk are added
+    (they always travel together as tags).
     """
     tags = list(PLATFORM_TAGS[platform])
     if subreddit:
         subreddit = subreddit.strip()
+        subreddit_lower = subreddit.lower().replace(" ", "").replace("#", "")
+        # Add AITAH-specific tags when the subreddit is AITAH or AmITheJerk
+        if subreddit_lower in ("aitah", "amithejerk", "aita"):
+            if platform == "youtube":
+                tags.extend(["AITA", "AmITheJerk"])
+            else:
+                tags.extend(["#aita", "#amIthejerk"])
         if platform == "youtube":
             tags.append(subreddit)
         else:
-            tags.append("#" + subreddit.replace(" ", "").replace("#", ""))
+            tags.append("#" + subreddit_lower)
     return tags
 # ===========================
 # CAPTIONS SETTINGS

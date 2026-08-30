@@ -866,11 +866,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
 
         print(f"   Subscribe@{subscribe_start:.1f}s, Like@{like_start:.1f}s")
 
-        # Positions for 1440x2560 (from CapCut reverse-engineering)
-        sub_w, sub_h = 400, 404  # capcut is 614x620, scale proportionally
-        sub_x, sub_y = 520, 580
+        # Positions for 1440x2560 — lowered to match TikTok engagement area
+        # (like/comment/share sit ~55-65% down on TikTok)
+        sub_w, sub_h = 400, 404
+        sub_x, sub_y = 520, 1450
         like_w, like_h = 175, 163
-        like_x, like_y = 634, 738
+        like_x, like_y = 634, 1600
 
         # STEP 1: Video overlay using -itsoffset (proven working method)
         ending_output = final_output.replace(".mp4", "_ending.mp4")
@@ -931,12 +932,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 mix_inputs = "[0:a]"
                 n_mix = 1
                 if has_sub_audio:
-                    audio_filters.append(f"[1:a]volume=3.0,adelay={int(subscribe_start*1000)}|{int(subscribe_start*1000)}[sa]")
+                    audio_filters.append(f"[1:a]volume=1.2,adelay={int(subscribe_start*1000)}|{int(subscribe_start*1000)}[sa]")
                     mix_inputs += "[sa]"
                     n_mix += 1
                 if has_like_audio:
                     idx = 2 if has_sub_audio else 1
-                    audio_filters.append(f"[{idx}:a]volume=3.0,adelay={int(like_start*1000)}|{int(like_start*1000)}[la]")
+                    audio_filters.append(f"[{idx}:a]volume=1.2,adelay={int(like_start*1000)}|{int(like_start*1000)}[la]")
                     mix_inputs += "[la]"
                     n_mix += 1
                 audio_filters.append(f"{mix_inputs}amix=inputs={n_mix}:duration=first:dropout_transition=0:normalize=0[aout]")

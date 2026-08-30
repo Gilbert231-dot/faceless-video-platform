@@ -56,11 +56,15 @@ def generate_hook(story_text, title, subreddit=None):
     You are a viral TikTok hook writer. Create ONE scroll-stopping hook for this Reddit story.
     
     Rules:
-    - MAX 15 words
+    - MAX 12 words
     - No greetings or introductions
-    - Create a curiosity gap
-    - Use conversational language
+    - Create a HUGE curiosity gap — make people NEED to know what happens
+    - Use dramatic, emotional, or shocking language
+    - Make it feel personal and relatable
     - Don't spoil the ending
+    - Think: what would make someone STOP scrolling?
+    - Use power words: destroyed, revenge, betrayed, exposed, ruined, destroyed, caught, stunned
+    - Phrases that work: "My boss tried to...", "I can't believe they...", "This changed everything"
     
     Story Title: {title}
     Story Text: {story_text[:500]}...
