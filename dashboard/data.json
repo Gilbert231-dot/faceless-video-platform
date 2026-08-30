@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-08-29T22:52:54Z",
+  "generated_at": "2026-08-30T08:53:33Z",
   "total_stories": 366,
-  "unused_stories": 331,
-  "used_stories": 35,
+  "unused_stories": 329,
+  "used_stories": 37,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 165,
+  "days_of_stories": 164,
   "runway_date": "2027-02-10",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -78,17 +78,17 @@
     },
     {
       "name": "MaliciousCompliance",
-      "total": 18,
-      "unused": 18
+      "total": 17,
+      "unused": 17
     },
     {
       "name": "ProRevenge",
-      "total": 16,
-      "unused": 15
+      "total": 15,
+      "unused": 14
     }
   ],
   "schedule": {
-    "next_index": 62
+    "next_index": 64
   },
   "youtube": {
     "privacy": "public",
@@ -98,11 +98,35 @@
       "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-09T23:00:00Z",
-      "2026-09-09T03:00:00Z"
+      "2026-09-10T15:00:00Z",
+      "2026-09-11T23:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1788078652_ending_captioned_1788078870.mp4",
+      "title": "Punished for over-performing, so I did the bare minimum before leaving...",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1635191988123683",
+      "url": "https://www.facebook.com/1272041649331476/videos/1635191988123683",
+      "posted_at": "2026-08-30T08:53:33Z",
+      "hook_score": 26,
+      "publish_at": "2026-08-31T03:00:00Z"
+    },
+    {
+      "video_file": "output_1788071716_ending_captioned_1788071844.mp4",
+      "title": "Lock my funds because of your mistake? Have your bank's social media ruined",
+      "subreddit": "ProRevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1058680083691955",
+      "url": "https://www.facebook.com/1272041649331476/videos/1058680083691955",
+      "posted_at": "2026-08-30T08:53:04Z",
+      "hook_score": 39,
+      "publish_at": "2026-08-31T23:00:00Z"
+    },
     {
       "video_file": "output_1788043457_ending_captioned_1788043524.mp4",
       "title": "Professional photographer knew better than three ophthalmologists. It cost him €750.",
@@ -195,28 +219,6 @@
       "video_id": "VZThU7cnrzI",
       "url": "https://youtu.be/VZThU7cnrzI",
       "posted_at": "2026-08-29T08:37:03Z",
-      "hook_score": 34
-    },
-    {
-      "video_file": "output_1787970731_ending_captioned_1787970818.mp4",
-      "title": "[TEST] Today I messed up by hitting \"reply all\" on a company-wide email that included a very unprofessional rant meant only for my manager",
-      "subreddit": "tifu",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122105978901447442",
-      "url": "https://www.facebook.com/reel/1365756435769126",
-      "posted_at": "2026-08-29T02:42:20Z",
-      "hook_score": 34
-    },
-    {
-      "video_file": "output_1787970731_ending_captioned_1787970818.mp4",
-      "title": "[TEST] Today I messed up by hitting \"reply all\" on a company-wide email that included a very unprofessional rant meant only for my manager",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "mHVZaUE4xWU",
-      "url": "https://youtu.be/mHVZaUE4xWU",
-      "posted_at": "2026-08-29T02:41:40Z",
       "hook_score": 34
     }
   ]

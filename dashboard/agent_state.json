@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "08:53:33 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "08:53:33 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Videos saved as artifacts for local upload"
+    },
+    {
+      "t": "05:32:44 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "05:32:44 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "05:32:44 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "05:32:44 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "22:52:54 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -164,66 +200,30 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "07:36:01 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
-    },
-    {
-      "t": "07:36:01 UTC",
-      "who": "Buffy",
-      "station": "LAPTOP",
-      "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "05:35:22 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "05:35:21 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "05:35:21 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "05:35:21 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-08-29T22:52:54Z",
+  "updated_at": "2026-08-30T08:53:33Z",
   "stories": [
-    {
-      "subreddit": "ProRevenge",
-      "title": "Lock my funds because of your mistake? Have your bank's social media ruined",
-      "score": 7300,
-      "comments": 0,
-      "url": "https://reddit.com/r/ProRevenge/comments/1n6k4ph/lock_my_funds_because_of_your_mistake_have_your/"
-    },
-    {
-      "subreddit": "MaliciousCompliance",
-      "title": "Punished for over-performing, so I did the bare minimum before leaving...",
-      "score": 7210,
-      "comments": 0,
-      "url": "https://reddit.com/r/MaliciousCompliance/comments/1u32tnw/punished_for_overperforming_so_i_did_the_bare/"
-    },
     {
       "subreddit": "ProRevenge",
       "title": "Gas Thief Revenge",
       "score": 6963,
       "comments": 0,
       "url": "https://reddit.com/r/ProRevenge/comments/1qlqzxo/gas_thief_revenge/"
+    },
+    {
+      "subreddit": "ProRevenge",
+      "title": "A lawyer's pro revenge on a landlord",
+      "score": 6633,
+      "comments": 0,
+      "url": "https://reddit.com/r/ProRevenge/comments/1c1pnev/a_lawyers_pro_revenge_on_a_landlord/"
+    },
+    {
+      "subreddit": "ProRevenge",
+      "title": "Phone calls for the previous owner, who turned out to be my shitty manager",
+      "score": 6259,
+      "comments": 0,
+      "url": "https://reddit.com/r/ProRevenge/comments/1eay1tl/phone_calls_for_the_previous_owner_who_turned_out/"
     }
   ]
 }
