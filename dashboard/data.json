@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-30T20:04:10Z",
+  "generated_at": "2026-08-31T09:57:20Z",
   "total_stories": 366,
   "unused_stories": 328,
   "used_stories": 38,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 164,
-  "runway_date": "2027-02-10",
+  "runway_date": "2027-02-11",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -93,13 +93,12 @@
   "youtube": {
     "privacy": "public",
     "slots": [
-      "23:00",
-      "03:00",
-      "15:00"
+      "12:00",
+      "18:00"
     ],
     "next_publish_utc": [
-      "2026-09-11T23:00:00Z",
-      "2026-09-11T03:00:00Z"
+      "2026-09-18T12:00:00Z",
+      "2026-09-18T18:00:00Z"
     ]
   },
   "videos": [
