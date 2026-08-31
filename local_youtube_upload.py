@@ -207,7 +207,6 @@ def upload_to_youtube(video_path, metadata=None, thumbnail_path=None, config=Non
         token_uri="https://oauth2.googleapis.com/token",
         scopes=[
             "https://www.googleapis.com/auth/youtube.upload",
-            "https://www.googleapis.com/auth/youtube.readonly",
         ],
     )
 
@@ -412,6 +411,7 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Just list what would be uploaded")
     parser.add_argument("--force", action="store_true", help="Re-upload even if already uploaded")
     parser.add_argument("--limit", type=int, default=3, help="Number of recent runs to check")
+    parser.add_argument("--upload-count", type=int, default=0, help="Number of videos to upload (0=all, 1=first only, etc.)")
     args = parser.parse_args()
 
     if args.setup:
@@ -451,7 +451,7 @@ def main():
         print(f"   Created: {run_created}")
 
         # Check if already processed
-        if str(run_id) in uploaded_data.get("uploaded_artifacts", []):
+        if not args.force and str(run_id) in uploaded_data.get("uploaded_artifacts", []):
             print(f"   ⏭️  Already processed, skipping")
             continue
 
@@ -469,10 +469,16 @@ def main():
 
             print(f"\n   📦 Artifact: {artifact_name}")
 
-            # Download
-            artifact_dir = download_artifact(config, artifact_id, artifact_name)
-            if not artifact_dir:
-                continue
+            # Check if already downloaded locally
+            local_artifact_dir = DOWNLOAD_DIR / artifact_name
+            if local_artifact_dir.exists() and list(local_artifact_dir.rglob("*.mp4")):
+                print(f"   ✅ Already downloaded: {local_artifact_dir}")
+                artifact_dir = local_artifact_dir
+            else:
+                # Download
+                artifact_dir = download_artifact(config, artifact_id, artifact_name)
+                if not artifact_dir:
+                    continue
 
             # Find videos
             videos = find_videos(artifact_dir)
@@ -482,7 +488,9 @@ def main():
 
             print(f"   🎬 Found {len(videos)} video(s)")
 
-            # Upload
+            # Upload (respect --upload-count)
+            if args.upload_count > 0:
+                videos = videos[:args.upload_count]
             uploaded = process_videos(videos, config, dry_run=args.dry_run, force=args.force)
             total_uploaded += uploaded
 

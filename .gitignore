@@ -29,3 +29,8 @@ fb_local_certs/
 # Debug-mode story copies / test state — never commit these
 reddit_stories_debug/
 test_used_ids.json
+
+# Local upload config (contains secrets - never commit)
+local_config.json
+local_uploaded_ids.json
+local_downloads/

@@ -369,7 +369,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     ]
     
     try:
-        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=300)
+        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=900)
         print(f"   ✅ Extracted {extract_duration:.2f}s segment (re-encoded to H.264).")
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
