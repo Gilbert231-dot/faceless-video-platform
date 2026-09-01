@@ -21,7 +21,6 @@ logger.setLevel(logging.INFO)
 # videos().list call fails with "insufficient authentication scopes".
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
-    "https://www.googleapis.com/auth/youtube.readonly",
 ]
 
 # Fields that the uploader will wait-and-retry on (transient failures)
