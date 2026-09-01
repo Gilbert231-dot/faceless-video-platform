@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-31T18:21:53Z",
+  "generated_at": "2026-09-01T07:34:50Z",
   "total_stories": 366,
   "unused_stories": 328,
   "used_stories": 38,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 164,
-  "runway_date": "2027-02-11",
+  "runway_date": "2027-02-12",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -88,67 +88,52 @@
     }
   ],
   "schedule": {
-    "next_index": 66
+    "next_index": 67
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "23:00",
-      "03:00",
-      "15:00"
+      "15:00",
+      "21:00"
     ],
     "next_publish_utc": [
-      "2026-09-12T23:00:00Z",
-      "2026-09-12T03:00:00Z"
+      "2026-09-19T15:00:00Z",
+      "2026-09-19T21:00:00Z"
     ]
   },
   "videos": [
     {
-      "video_file": "output_1788199954_ending_captioned_1788200029.mp4",
-      "title": "[TEST] Today I messed up",
-      "subreddit": "tifu",
+      "video_file": "output_1788246864_ending_captioned_1788247062.mp4",
+      "title": "[TEST] I Lied About Finding a Wallet So I Could Keep the Cash Inside",
+      "subreddit": "confession",
       "platform": "facebook",
       "status": "posted",
-      "video_id": "122107049103447442",
-      "url": "https://www.facebook.com/reel/816233931547996",
-      "posted_at": "2026-08-31T18:21:53Z",
-      "hook_score": 26
+      "video_id": "1831956041582315",
+      "url": "https://www.facebook.com/1272041649331476/videos/1831956041582315",
+      "posted_at": "2026-09-01T07:34:50Z",
+      "hook_score": 39
     },
     {
-      "video_file": "output_1788119720_ending_captioned_1788119803.mp4",
-      "title": "Gas Thief Revenge",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
+      "video_file": "output_1788246864_ending_captioned_1788247062.mp4",
+      "title": "[TEST] I Lied About Finding a Wallet So I Could Keep the Cash Inside",
+      "subreddit": "confession",
+      "platform": "youtube",
       "status": "posted",
-      "video_id": "122106641871447442",
-      "url": "https://www.facebook.com/reel/1381665576850538",
-      "posted_at": "2026-08-30T20:04:10Z",
-      "hook_score": 0,
-      "publish_at": "2026-08-31T15:00:00Z"
-    },
-    {
-      "video_file": "output_1788078652_ending_captioned_1788078870.mp4",
-      "title": "Punished for over-performing, so I did the bare minimum before leaving...",
-      "subreddit": "MaliciousCompliance",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1635191988123683",
-      "url": "https://www.facebook.com/1272041649331476/videos/1635191988123683",
-      "posted_at": "2026-08-30T08:53:33Z",
-      "hook_score": 26,
-      "publish_at": "2026-08-31T03:00:00Z"
+      "video_id": "8TZW9XfVszo",
+      "url": "https://youtu.be/8TZW9XfVszo",
+      "posted_at": "2026-09-01T07:34:17Z",
+      "hook_score": 39
     },
     {
       "video_file": "output_1788071716_ending_captioned_1788071844.mp4",
       "title": "Lock my funds because of your mistake? Have your bank's social media ruined",
       "subreddit": "ProRevenge",
-      "platform": "facebook",
+      "platform": "youtube",
       "status": "posted",
-      "video_id": "1058680083691955",
-      "url": "https://www.facebook.com/1272041649331476/videos/1058680083691955",
-      "posted_at": "2026-08-30T08:53:04Z",
-      "hook_score": 39,
-      "publish_at": "2026-08-31T23:00:00Z"
+      "video_id": "tEMEl4JWM9I",
+      "url": "https://youtu.be/tEMEl4JWM9I",
+      "posted_at": "2026-08-30T17:04:57Z",
+      "hook_score": 39
     },
     {
       "video_file": "output_1788043457_ending_captioned_1788043524.mp4",
@@ -221,6 +206,17 @@
       "posted_at": "2026-08-29T22:51:35Z",
       "hook_score": 21,
       "publish_at": "2026-08-30T23:00:00Z"
+    },
+    {
+      "video_file": "output_1787991534_ending_captioned_1787991711.mp4",
+      "title": "[TEST] Am I the jerk for hiding my dead dog's bowls and refusing to go to Spain for my mum's anniversary with my dad's new girlfriend?",
+      "subreddit": "AITAH",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "939099455891330",
+      "url": "https://www.facebook.com/1272041649331476/videos/939099455891330",
+      "posted_at": "2026-08-29T08:37:39Z",
+      "hook_score": 34
     }
   ]
 }
