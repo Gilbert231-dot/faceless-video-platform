@@ -1,16 +1,22 @@
-name: Generate Faceless Videos
+name: "Generate Faceless Videos - ${{ github.event.schedule == '0 1 * * *' && 'Batch 1 (3PM/7PM)' || github.event.schedule == '30 4 * * *' && 'Batch 2 (11PM/3AM)' || 'Manual' }}"
 
 on:
   schedule:
-    # Daily generation at 5 PM UTC (17:00): 3 videos finish ~9 PM UTC,
-    # giving 4h buffer before the first posting slot at 23:00 UTC (7 PM ET).
-    # Three posting slots: 23:00 UTC, 03:00 UTC, 15:00 UTC.
-    - cron: "0 17 * * *"  # Daily at 5 PM UTC — 4h before first posting slot
+    # TWO BATCHES per day for 4 videos total:
+    # Batch 1 (1 AM UTC): Generates 2 videos → posts at 3 PM & 7 PM Ghana
+    # Batch 2 (4:30 AM UTC): Generates 2 videos → posts at 11 PM & 3 AM Ghana
+    - cron: "0 1 * * *"    # Batch 1 — 1 AM UTC (10h before first post)
+    - cron: "30 4 * * *"   # Batch 2 — 4:30 AM UTC (6.5h before third post)
   workflow_dispatch:
     inputs:
       count:
         description: 'Number of videos to generate'
         required: true
+        default: '2'
+        type: string
+      batch:
+        description: 'Batch number (1 or 2) — for manual runs'
+        required: false
         default: '1'
         type: string
       test_mode:
@@ -136,9 +142,20 @@ jobs:
           # Without it, videos land in the repo root and every output/* glob
           # (upload step, cleanup) silently misses them.
           echo "OUTPUT_DIR=output" >> $GITHUB_ENV
-          # 3 videos/day targeting US: 11 AM ET (lunch) + 7 PM ET (evening peak) + 11 PM ET (late night)
-          # Option A: Evening Peak + Late Night — best for Reddit story narration
-          echo "YOUTUBE_SCHEDULE_TIMES=23:00,03:00,15:00" >> $GITHUB_ENV
+          # Detect batch from cron schedule or manual input
+          # Batch 1 (1 AM trigger) → posts at 3 PM & 7 PM Ghana
+          # Batch 2 (4:30 AM trigger) → posts at 11 PM & 3 AM Ghana
+          if [ "${{ github.event.schedule }}" == "0 1 * * *" ] || [ "${{ inputs.batch }}" == "1" ]; then
+            echo "🎬 BATCH 1: Afternoon/Evening posts"
+            echo "YOUTUBE_SCHEDULE_TIMES=15:00,21:00" >> $GITHUB_ENV
+            echo "TIKTOK_SCHEDULE_TIMES=14:00,18:00" >> $GITHUB_ENV
+            echo "BATCH_NAME=Batch 1 (3PM/7PM)" >> $GITHUB_ENV
+          else
+            echo "🎬 BATCH 2: Night/Early Morning posts"
+            echo "YOUTUBE_SCHEDULE_TIMES=23:00,03:00" >> $GITHUB_ENV
+            echo "TIKTOK_SCHEDULE_TIMES=22:00,02:00" >> $GITHUB_ENV
+            echo "BATCH_NAME=Batch 2 (11PM/3AM)" >> $GITHUB_ENV
+          fi
 
       # The story bank now lives directly in the repo as reddit_stories/ (the
       # old reddit_stories.zip was 146 MB unpacked, mostly raw comment dumps
@@ -185,16 +202,16 @@ jobs:
       # preset veryfast instead of medium), so 2 videos fit comfortably inside
       # the 360-min job limit. If you raise the count, prefer running several
       # workflow_dispatch runs in parallel over raising count in one run.
-      - name: Generate videos
+      - name: "Generate videos (${{ env.BATCH_NAME || 'Manual' }})"
         id: generate
         run: |
           python update_agent_state.py buffy "STUDIO" "Rendering 4K stories (CRF 15, veryslow)"
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             COUNT="${{ inputs.count }}"
           else
-            COUNT="3"
+            COUNT="2"
           fi
-          echo "📹 Generating $COUNT videos..."
+          echo "📹 $BATCH_NAME: Generating $COUNT videos..."
           echo "🔬 DEBUG_MODE is set to: ${{ env.DEBUG_MODE }}"
 
           # Free the ~3 GB pip cache BEFORE the heavy encoding so the runner
