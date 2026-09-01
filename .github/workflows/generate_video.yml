@@ -1,4 +1,4 @@
-name: "Generate Faceless Videos - ${{ github.event.schedule == '0 1 * * *' && 'Batch 1 (3PM/7PM)' || github.event.schedule == '30 4 * * *' && 'Batch 2 (11PM/3AM)' || 'Manual' }}"
+name: Generate Faceless Videos
 
 on:
   schedule:
