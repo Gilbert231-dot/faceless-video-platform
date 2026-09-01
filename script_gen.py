@@ -46,6 +46,15 @@ def normalize_slang(text):
     text = re.sub(r'(\d+)\s*([FM])\b', lambda m: f"{m.group(1)} year old {'female' if m.group(2).upper() == 'F' else 'male'}", text, flags=re.IGNORECASE)
     return text
 
+
+def strip_part_labels(script):
+    """Remove Part 1/Part 2 labels from narration so viewers never hear them."""
+    script = re.sub(r'\bPart\s*[12]\b:?\s*', '', script, flags=re.IGNORECASE)
+    script = re.sub(r'\bPt\.?\s*[12]\b:?\s*', '', script, flags=re.IGNORECASE)
+    script = re.sub(r'\s{2,}', ' ', script)
+    return script.strip()
+
+
 # ===========================
 # HOOK GENERATION
 # ===========================
@@ -220,13 +229,13 @@ def strip_hype_intro(script, max_sentences=3):
 # REDDIT STORY ADAPTATION (FIXED)
 # ===========================
 
-def adapt_reddit_story(title, story, max_words=2000, split_threshold=800, use_hook=True):
+def adapt_reddit_story(title, story, max_words=3000, split_threshold=800, use_hook=True):
     """
     Rewrite a Reddit story and return script + part labels.
     GUARANTEES the script is complete.
     
     Args:
-        max_words: Maximum words for a single part (increased to 2000)
+        max_words: Maximum words for a single part (increased to 3000)
         split_threshold: Words threshold to split into 2 parts (decreased to 800, so more stories get a Part 2)
     """
     
@@ -275,7 +284,7 @@ OUTPUT FORMAT:
 Part 1: [script text for part 1]
 Part 2: [script text for part 2]"""
         
-        max_tokens_value = 2500  # Increased from 1800
+        max_tokens_value = 3500  # Increased from 2500
         
     else:
         system_prompt = f"""You are a viral storyteller. Rewrite the following Reddit story as a dramatic first-person narration.
@@ -299,7 +308,7 @@ IMPORTANT RULES:
 
 The goal is to make the story feel fresh, personal, and engaging."""
 
-        max_tokens_value = 1500  # Increased from 1200
+        max_tokens_value = 2200  # Increased from 1500
 
     user_content = f"Title: {title}\n\nStory: {story}"
     
@@ -334,6 +343,8 @@ The goal is to make the story feel fresh, personal, and engaging."""
             part2_script = normalize_slang(part2_script)
             part1_script = strip_hype_intro(part1_script)
             part2_script = strip_hype_intro(part2_script)
+            part1_script = strip_part_labels(part1_script)
+            part2_script = strip_part_labels(part2_script)
             
             return {
                 'script': part1_script,
@@ -356,6 +367,8 @@ The goal is to make the story feel fresh, personal, and engaging."""
     ]
     for pat in ending_patterns:
         script_text = re.sub(pat, '', script_text, flags=re.IGNORECASE)
+    
+    script_text = strip_part_labels(script_text)
     
     return {
         'script': script_text,

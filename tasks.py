@@ -132,7 +132,7 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown",
             "allow_stitch": False,
         },
         "schedule": {
-            "cadence": "2 posts per day",
+            "cadence": "4 posts per day",
             "suggested_post_time_utc": suggested_slot.strftime("%Y-%m-%d %H:%M UTC"),
             "slots_utc": _tiktok_slot_times(),
             "max_ahead_days": 10,
@@ -160,11 +160,11 @@ TIKTOK_SCHEDULE_STATE = "tiktok_schedule_state.json"
 
 
 def _tiktok_slot_times():
-    """The two post slots per day (UTC). Override with TIKTOK_SCHEDULE_TIMES,
-    e.g. "10:00,20:00" in the workflow env."""
-    raw = os.environ.get("TIKTOK_SCHEDULE_TIMES", "13:00,19:00")
+    """The four post slots per day (UTC). Override with TIKTOK_SCHEDULE_TIMES,
+    e.g. "14:00,18:00,22:00,02:00" in the workflow env."""
+    raw = os.environ.get("TIKTOK_SCHEDULE_TIMES", "14:00,18:00,22:00,02:00")
     slots = [t.strip() for t in raw.split(",") if t.strip()]
-    return slots or ["13:00", "19:00"]
+    return slots or ["14:00", "18:00", "22:00", "02:00"]
 
 
 def _next_tiktok_slot():
@@ -505,8 +505,12 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             print(f"   💬 No valid comments found - skipping comments for this video")
         
         #--- SPLIT LOGIC ---
-        MAX_CHARS_PER_VIDEO = 12000
+        MAX_CHARS_PER_VIDEO = 18000
         MIN_PART_2_CHARS = 2000
+
+        # Strip Part 1/Part 2 labels so viewers never hear them
+        from script_gen import strip_part_labels
+        story_text = strip_part_labels(story_text)
 
         full_narration = f"{story_text} {comment_script}" if comment_script else story_text
         needs_split = len(full_narration) > MAX_CHARS_PER_VIDEO
