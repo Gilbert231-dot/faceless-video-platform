@@ -1,5 +1,29 @@
 [
   {
+    "video_file": "output_1788323538_ending_captioned_1788323908.mp4",
+    "title": "A lawyer's pro revenge on a landlord",
+    "subreddit": "ProRevenge",
+    "platform": "facebook",
+    "status": "posted",
+    "video_id": "1547141366587825",
+    "url": "https://www.facebook.com/1272041649331476/videos/1547141366587825",
+    "posted_at": "2026-09-02T05:14:43Z",
+    "hook_score": 0,
+    "publish_at": "2026-09-25T21:00:00Z"
+  },
+  {
+    "video_file": "output_1788323538_ending_captioned_1788323908.mp4",
+    "title": "A lawyer's pro revenge on a landlord",
+    "subreddit": "ProRevenge",
+    "platform": "youtube",
+    "status": "posted",
+    "video_id": "Ra37C28g8q8",
+    "url": "https://youtu.be/Ra37C28g8q8",
+    "posted_at": "2026-09-02T05:09:14Z",
+    "hook_score": 0,
+    "publish_at": "2026-09-25T21:00:00Z"
+  },
+  {
     "video_file": "output_1788246864_ending_captioned_1788247062.mp4",
     "title": "[TEST] I Lied About Finding a Wallet So I Could Keep the Cash Inside",
     "subreddit": "confession",
@@ -1094,27 +1118,5 @@
     "url": "https://youtu.be/WyHkUZ5dtqw",
     "posted_at": "2026-08-14T05:44:14Z",
     "publish_at": "2026-08-16T20:00:00Z"
-  },
-  {
-    "video_file": "output_1786682288_captioned_1786682292.mp4",
-    "title": "\"My girlfriend held hands with a coworker while I was away for 2 weeks... what was going on?\"",
-    "subreddit": "relationship_advice",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "VBTm6L8uVpQ",
-    "url": "https://youtu.be/VBTm6L8uVpQ",
-    "posted_at": "2026-08-14T05:44:04Z",
-    "publish_at": "2026-08-16T12:00:00Z"
-  },
-  {
-    "video_file": "output_1786598254_captioned_1786598257.mp4",
-    "title": "\"Swim test disaster: 1 in 5 kids fails, but that's not the worst part...\"",
-    "subreddit": "EntitledPeople",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "Scsq7OwRpSk",
-    "url": "https://youtu.be/Scsq7OwRpSk",
-    "posted_at": "2026-08-13T05:24:26Z",
-    "publish_at": "2026-08-14T20:00:00Z"
   }
 ]

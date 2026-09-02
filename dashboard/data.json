@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-01T08:48:21Z",
+  "generated_at": "2026-09-02T05:14:43Z",
   "total_stories": 366,
-  "unused_stories": 328,
-  "used_stories": 38,
+  "unused_stories": 327,
+  "used_stories": 39,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 164,
+  "days_of_stories": 163,
   "runway_date": "2027-02-12",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -83,25 +83,48 @@
     },
     {
       "name": "ProRevenge",
-      "total": 14,
-      "unused": 13
+      "total": 13,
+      "unused": 12
     }
   ],
   "schedule": {
-    "next_index": 67
+    "next_index": 68
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "21:00"
     ],
     "next_publish_utc": [
-      "2026-09-19T12:00:00Z",
-      "2026-09-19T18:00:00Z"
+      "2026-10-09T21:00:00Z",
+      "2026-10-10T21:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1788323538_ending_captioned_1788323908.mp4",
+      "title": "A lawyer's pro revenge on a landlord",
+      "subreddit": "ProRevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1547141366587825",
+      "url": "https://www.facebook.com/1272041649331476/videos/1547141366587825",
+      "posted_at": "2026-09-02T05:14:43Z",
+      "hook_score": 0,
+      "publish_at": "2026-09-25T21:00:00Z"
+    },
+    {
+      "video_file": "output_1788323538_ending_captioned_1788323908.mp4",
+      "title": "A lawyer's pro revenge on a landlord",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Ra37C28g8q8",
+      "url": "https://youtu.be/Ra37C28g8q8",
+      "posted_at": "2026-09-02T05:09:14Z",
+      "hook_score": 0,
+      "publish_at": "2026-09-25T21:00:00Z"
+    },
     {
       "video_file": "output_1788246864_ending_captioned_1788247062.mp4",
       "title": "[TEST] I Lied About Finding a Wallet So I Could Keep the Cash Inside",
@@ -194,29 +217,6 @@
       "posted_at": "2026-08-29T22:51:44Z",
       "hook_score": 26,
       "publish_at": "2026-08-30T03:00:00Z"
-    },
-    {
-      "video_file": "output_1788037347_ending_captioned_1788037531.mp4",
-      "title": "Toxic ex-boss begs me to leave a company review. I give him exactly what he asked for.",
-      "subreddit": "MaliciousCompliance",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "ZpkI-3Mvh0M",
-      "url": "https://youtu.be/ZpkI-3Mvh0M",
-      "posted_at": "2026-08-29T22:51:35Z",
-      "hook_score": 21,
-      "publish_at": "2026-08-30T23:00:00Z"
-    },
-    {
-      "video_file": "output_1787991534_ending_captioned_1787991711.mp4",
-      "title": "[TEST] Am I the jerk for hiding my dead dog's bowls and refusing to go to Spain for my mum's anniversary with my dad's new girlfriend?",
-      "subreddit": "AITAH",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "939099455891330",
-      "url": "https://www.facebook.com/1272041649331476/videos/939099455891330",
-      "posted_at": "2026-08-29T08:37:39Z",
-      "hook_score": 34
     }
   ]
 }
