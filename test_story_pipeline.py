@@ -54,9 +54,11 @@ loader.used_ids = []
 ids = [s["id"] for s in loader.get_unused_stories(limit=10)]
 print("   order:", ids)
 check("all four stories returned", len(ids) == 4, f"got {ids}")
-old_pos = max(ids.index("old1"), ids.index("old2"))
-new_pos = min(ids.index("new1"), ids.index("new2"))
-check("old stories always before new", old_pos < new_pos, f"old_pos={old_pos} new_pos={new_pos}")
+# Order is now randomized within the top pool (FIXED: story repeats) — the
+# contract is that ALL unused stories are eligible, not that old ones sort
+# before new ones.
+check("both old stories returned", {"old1", "old2"} <= set(ids), f"got {ids}")
+check("both new stories returned", {"new1", "new2"} <= set(ids), f"got {ids}")
 
 # new stories picked ONLY after old ones are used
 loader.used_ids = ["old1", "old2"]

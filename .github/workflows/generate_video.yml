@@ -219,11 +219,9 @@ jobs:
         id: generate
         run: |
           python update_agent_state.py buffy "STUDIO" "Rendering 4K stories (CRF 15, veryslow)"
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            COUNT="${{ inputs.count }}"
-          else
-            COUNT="1"
-          fi
+          # One video per run — the dispatch dialog no longer exposes a
+          # count input; every batch (scheduled or manual) makes exactly 1.
+          COUNT="1"
           echo "📹 $BATCH_NAME: Generating $COUNT videos..."
           echo "🔬 DEBUG_MODE is set to: ${{ env.DEBUG_MODE }}"
 
@@ -285,6 +283,24 @@ jobs:
       - name: Remove used stories (keep folder lean)
         run: |
           python cleanup_used_stories.py
+
+      # FIXED (story repeats): persist the used-marks NOW, before any upload
+      # step.  The old flow only pushed used_story_ids.json at the very end
+      # ("Push state files"), so any run that failed at an upload step lost
+      # its marks and the next run re-picked the same story.  If this push
+      # fails it's non-fatal — the final push (if: always()) retries later.
+      # always(): also ships partial marks when a multi-video run dies after
+      # marking some stories used but before finishing all of them.
+      - name: Push used-story state (early)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f used_story_ids.json 2>/dev/null || true
+          git add -f reddit_stories/ 2>/dev/null || true
+          git commit -m "Persist used-story marks before upload" 2>/dev/null || echo "ℹ️ Nothing new to commit"
+          git pull --rebase origin main 2>/dev/null || true
+          git push origin main || echo "⚠️ Early state push failed"
 
       # FIXED: CRF 18 videos are ~187 MB for a 100s short — GitHub rejects
       # files over 100 MB, so videos CANNOT be pushed to the repo anymore.
@@ -571,6 +587,9 @@ jobs:
           python make_landing_demo.py
 
       - name: Push state files
+        # FIXED (story repeats): always() — push used-marks and history even
+        # when an upload step failed, so the next run can't re-pick the story.
+        if: always()
         run: |
           # Persist used-story IDs and clip state so the next run doesn't reuse
           # the same stories (state JSONs only — videos are uploaded directly).

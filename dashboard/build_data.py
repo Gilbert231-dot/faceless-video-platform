@@ -104,33 +104,27 @@ def load_schedule():
 
 def load_youtube_schedule():
     """Next YouTube publish slots (UTC) + current privacy setting."""
-    next_index = 0
-    try:
-        with open(YT_SCHEDULE_FILE, encoding="utf-8") as f:
-            next_index = int(json.load(f).get("next_index", 0))
-    except Exception:
-        pass
-
     # Mirror youtube_schedule.slot_times() env override + default
     raw = os.environ.get("YOUTUBE_SCHEDULE_TIMES", ",".join(DEFAULT_YT_SLOTS))
     slots = [t.strip() for t in raw.split(",") if t.strip()] or DEFAULT_YT_SLOTS
 
+    # Same no-drift logic as youtube_schedule.next_publish_times(): show the
+    # next 2 future slot times (today if still >= 1h away, else later days).
     now = datetime.datetime.now(datetime.timezone.utc)
     upcoming = []
-    idx = next_index
-    # Slots cycle through the day list; show the next 2 future publish times
-    while len(upcoming) < 2 and idx < next_index + 60:
-        slot = slots[idx % len(slots)]
+    guard = 0
+    while len(upcoming) < 2 and guard < 60 * max(1, len(slots)):
+        slot = slots[guard % len(slots)]
         try:
             hh, mm = slot.split(":")
-            day = now.date() + datetime.timedelta(days=idx // len(slots))
+            day = now.date() + datetime.timedelta(days=guard // len(slots))
             t = datetime.datetime(day.year, day.month, day.day,
                                   int(hh), int(mm), tzinfo=datetime.timezone.utc)
         except ValueError:
             t = now + datetime.timedelta(days=1)
         if t > now + datetime.timedelta(hours=1):
             upcoming.append(t)
-        idx += 1
+        guard += 1
 
     privacy = "private"
     try:

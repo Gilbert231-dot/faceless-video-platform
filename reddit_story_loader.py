@@ -6,6 +6,12 @@ import shutil
 import hashlib
 from datetime import datetime
 
+# Number of top-scored unused stories to pick from (randomly).
+# FIXED (story repeats): the old "always pick the #1 story" behavior meant a
+# run that failed before pushing its used-marks re-narrated the exact same
+# story on the next attempt.
+TOP_PICK_POOL = 10
+
 class RedditStoryLoader:
     """
     Load Reddit stories from the organized local data structure.
@@ -308,7 +314,13 @@ class RedditStoryLoader:
             (s.get('added_at') or ''), # oldest first within same score
             random.random()            # random tiebreaker
         ))
-        return unused[:limit]
+        # FIXED (story repeats): pick randomly within the top TOP_PICK_POOL
+        # instead of always the single highest-scored story — a run that
+        # failed before pushing its used-marks can no longer deterministically
+        # re-pick the same story on the next attempt.
+        pool = unused[:TOP_PICK_POOL]
+        random.shuffle(pool)
+        return pool[:limit]
     
     def get_random_story(self, subreddit=None, force_real=False):
         """
