@@ -2,28 +2,15 @@ name: Generate Faceless Videos
 
 on:
   schedule:
-    # TWO BATCHES per day for 4 videos total:
-    # Batch 1 (1 AM UTC): Generates 2 videos → posts at 3 PM & 7 PM Ghana
-    # Batch 2 (4:30 AM UTC): Generates 2 videos → posts at 11 PM & 3 AM Ghana
-    - cron: "0 1 * * *"    # Batch 1 — 1 AM UTC (10h before first post)
-    - cron: "30 4 * * *"   # Batch 2 — 4:30 AM UTC (6.5h before third post)
+    # Only Batch 1 triggers via cron — it chains to Batches 2, 3, 4 automatically
+    - cron: "0 1 * * *"    # Batch 1 — 1 AM UTC
   workflow_dispatch:
     inputs:
-      count:
-        description: 'Number of videos to generate'
-        required: true
-        default: '2'
-        type: string
       batch:
-        description: 'Batch number (1 or 2) — for manual runs'
-        required: false
-        default: '1'
+        description: 'Batch: 0=test (no chain), 1-4=production runs'
+        required: true
+        default: '0'
         type: string
-      test_mode:
-        description: 'Test mode (does NOT mark stories as used)'
-        required: false
-        default: true
-        type: boolean
 
 permissions:
   contents: write   # needed to push videos/state back to the repo
@@ -119,8 +106,21 @@ jobs:
           # consumed a story and posted a real video. Normalize in the shell:
           # any case-insensitive true => test mode. (Schedule runs have no
           # input => empty => production, as intended.)
-          TM=$(echo '${{ inputs.test_mode }}' | xargs)   # trim whitespace
-          echo "DEBUG_MODE=$(echo "$TM" | tr '[:upper:]' '[:lower:]' | grep -q '^true$' && echo True || echo False)" >> $GITHUB_ENV
+          # Determine batch number: from cron (always 1) or manual input
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            BATCH_NUM="1"
+          elif [ "${{ inputs.batch }}" == "0" ]; then
+            BATCH_NUM="0"
+          else
+            BATCH_NUM="${{ inputs.batch }}"
+          fi
+          echo "BATCH_NUM=$BATCH_NUM" >> $GITHUB_ENV
+          # Batch 0 = test mode (stories NOT consumed)
+          if [ "$BATCH_NUM" == "0" ]; then
+            echo "DEBUG_MODE=True" >> $GITHUB_ENV
+          else
+            echo "DEBUG_MODE=False" >> $GITHUB_ENV
+          fi
           echo "FAST_MODE=True" >> $GITHUB_ENV
           # BACKGROUND render quality (video_compile.py): maximum quality.
           # CRF 15 is near-visually-lossless; preset=veryslow squeezes the
@@ -142,20 +142,33 @@ jobs:
           # Without it, videos land in the repo root and every output/* glob
           # (upload step, cleanup) silently misses them.
           echo "OUTPUT_DIR=output" >> $GITHUB_ENV
-          # Detect batch from cron schedule or manual input
-          # Batch 1 (1 AM trigger) → posts at 3 PM & 7 PM Ghana
-          # Batch 2 (4:30 AM trigger) → posts at 11 PM & 3 AM Ghana
-          if [ "${{ github.event.schedule }}" == "0 1 * * *" ] || [ "${{ inputs.batch }}" == "1" ]; then
-            echo "🎬 BATCH 1: Afternoon/Evening posts"
-            echo "YOUTUBE_SCHEDULE_TIMES=15:00,21:00" >> $GITHUB_ENV
-            echo "TIKTOK_SCHEDULE_TIMES=14:00,18:00" >> $GITHUB_ENV
-            echo "BATCH_NAME=Batch 1 (3PM/7PM)" >> $GITHUB_ENV
-          else
-            echo "🎬 BATCH 2: Night/Early Morning posts"
-            echo "YOUTUBE_SCHEDULE_TIMES=23:00,03:00" >> $GITHUB_ENV
-            echo "TIKTOK_SCHEDULE_TIMES=22:00,02:00" >> $GITHUB_ENV
-            echo "BATCH_NAME=Batch 2 (11PM/3AM)" >> $GITHUB_ENV
-          fi
+          # Set schedule times and batch name based on batch number
+          case "$BATCH_NUM" in
+            1)
+              echo "🎬 BATCH 1: Afternoon post"
+              echo "YOUTUBE_SCHEDULE_TIMES=15:00" >> $GITHUB_ENV
+              echo "TIKTOK_SCHEDULE_TIMES=14:00" >> $GITHUB_ENV
+              echo "BATCH_NAME=Batch 1 (3PM)" >> $GITHUB_ENV
+              ;;
+            2)
+              echo "🎬 BATCH 2: Evening post"
+              echo "YOUTUBE_SCHEDULE_TIMES=21:00" >> $GITHUB_ENV
+              echo "TIKTOK_SCHEDULE_TIMES=18:00" >> $GITHUB_ENV
+              echo "BATCH_NAME=Batch 2 (7PM)" >> $GITHUB_ENV
+              ;;
+            3)
+              echo "🎬 BATCH 3: Late night post"
+              echo "YOUTUBE_SCHEDULE_TIMES=23:00" >> $GITHUB_ENV
+              echo "TIKTOK_SCHEDULE_TIMES=22:00" >> $GITHUB_ENV
+              echo "BATCH_NAME=Batch 3 (11PM)" >> $GITHUB_ENV
+              ;;
+            *)
+              echo "🎬 BATCH 4: Night owl post"
+              echo "YOUTUBE_SCHEDULE_TIMES=03:00" >> $GITHUB_ENV
+              echo "TIKTOK_SCHEDULE_TIMES=02:00" >> $GITHUB_ENV
+              echo "BATCH_NAME=Batch 4 (3AM)" >> $GITHUB_ENV
+              ;;
+          esac
 
       # The story bank now lives directly in the repo as reddit_stories/ (the
       # old reddit_stories.zip was 146 MB unpacked, mostly raw comment dumps
@@ -209,7 +222,7 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             COUNT="${{ inputs.count }}"
           else
-            COUNT="2"
+            COUNT="1"
           fi
           echo "📹 $BATCH_NAME: Generating $COUNT videos..."
           echo "🔬 DEBUG_MODE is set to: ${{ env.DEBUG_MODE }}"
@@ -626,3 +639,18 @@ jobs:
           rm -rf output/*.mp4
           rm -rf cached_videos/*.mp4
           df -h
+
+
+      - name: "🔗 Trigger next batch (chain)"
+        if: success() && env.BATCH_NUM != '0' && env.BATCH_NUM != '4' && github.event_name != 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEXT_BATCH=$((BATCH_NUM + 1))
+          echo "⏰ Waiting 30 minutes before triggering Batch $NEXT_BATCH..."
+          sleep 1800
+          echo "🔗 Triggering Batch $NEXT_BATCH..."
+          gh workflow run generate_video.yml \
+            --ref main \
+            -f batch="$NEXT_BATCH"
+          echo "✅ Batch $NEXT_BATCH triggered!"
