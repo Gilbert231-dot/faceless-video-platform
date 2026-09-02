@@ -82,6 +82,46 @@ REEL_MAX_SECONDS = 90
 # arrived truncated, so it gets the same fallback treatment.
 HANDLE_REJECT_CODES = {6000, 390}
 
+# Facebook rejects uploads over ~200 MB via the Resumable Upload API.
+# Re-encode with aggressive compression before uploading to FB.
+FB_MAX_SIZE_MB = 200
+
+
+def _compress_for_facebook(video_path):
+    """Re-encode a large video for Facebook upload (CRF 20, 1080p, fast).
+
+    Returns the path to the compressed file (in a temp location).
+    Caller is responsible for cleanup. If the file is already small
+    enough, returns the original path unchanged.
+    """
+    size_mb = os.path.getsize(video_path) / (1024 * 1024)
+    if size_mb <= FB_MAX_SIZE_MB:
+        logger.info("Video is %.1f MB (under %d MB limit) — no compression needed", size_mb, FB_MAX_SIZE_MB)
+        return video_path, False
+
+    compressed_path = video_path + ".fb_compress.mp4"
+    logger.info(
+        "Compressing %.1f MB video for Facebook → CRF 20, 1080p, fast preset...",
+        size_mb,
+    )
+    cmd = [
+        "ffmpeg", "-y", "-i", video_path,
+        "-vf", "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease:flags=lanczos",
+        "-c:v", "libx264", "-preset", "fast", "-crf", "20",
+        "-pix_fmt", "yuv420p", "-movflags", "+faststart",
+        "-c:a", "aac", "-b:a", "128k",
+        "-t", "300",  # cap at 5 minutes for FB
+        compressed_path,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+    if result.returncode != 0 or not os.path.exists(compressed_path):
+        logger.warning("Compression failed (%s) — uploading original", result.stderr[-200:] if result.stderr else "unknown")
+        return video_path, False
+
+    new_size = os.path.getsize(compressed_path) / (1024 * 1024)
+    logger.info("Compressed: %.1f MB → %.1f MB (%.0f%% smaller)", size_mb, new_size, (1 - new_size / size_mb) * 100)
+    return compressed_path, True
+
 
 class FacebookError(RuntimeError):
     """Raised for deterministic Facebook API failures.
@@ -530,6 +570,9 @@ def publish_to_facebook(
     else:
         logger.info("Publishing %s as '%s' (DRAFT — admin-only)", os.path.basename(video_path), title)
 
+    # Compress large videos before uploading (Facebook rejects >200 MB)
+    fb_video_path, was_compressed = _compress_for_facebook(video_path)
+
     attempt = 0
     last_error = None
     while attempt < max_attempts:
@@ -543,7 +586,7 @@ def publish_to_facebook(
             if duration is not None and duration <= REEL_MAX_SECONDS:
                 try:
                     return _publish_reel(
-                        page_id, token, video_path, title, description,
+                        page_id, token, fb_video_path, title, description,
                         published, scheduled_unix, thumbnail_path,
                     )
                 except FacebookError as exc:
@@ -555,11 +598,11 @@ def publish_to_facebook(
 
             logger.info(
                 "Uploading %s (%.1f MB) via Resumable Upload (single-shot, resumable)...",
-                os.path.basename(video_path),
-                os.path.getsize(video_path) / (1024 * 1024),
+                os.path.basename(fb_video_path),
+                os.path.getsize(fb_video_path) / (1024 * 1024),
             )
-            session_id = _start_upload_session(app_id, token, video_path)
-            handle = _upload_file(session_id, token, video_path)
+            session_id = _start_upload_session(app_id, token, fb_video_path)
+            handle = _upload_file(session_id, token, fb_video_path)
 
             # Publish the handle under the documented field name first, then
             # under the community workaround name if Meta rejects it — no
@@ -590,7 +633,7 @@ def publish_to_facebook(
                     "back to non-resumable multipart source upload..."
                 )
                 post_id = _publish_source(
-                    page_id, token, video_path, title, description,
+                    page_id, token, fb_video_path, title, description,
                     published, scheduled_unix,
                 )
 
@@ -606,6 +649,9 @@ def publish_to_facebook(
             }
             if scheduled_unix:
                 result["scheduled_publish_time"] = scheduled_publish_time
+            # Clean up compressed temp file
+            if was_compressed and os.path.exists(fb_video_path):
+                os.remove(fb_video_path)
             logger.info("✅ Facebook publish complete: %s", result)
             return result
         except FacebookError as exc:
