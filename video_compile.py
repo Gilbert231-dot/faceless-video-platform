@@ -887,11 +887,20 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             '-itsoffset', str(subscribe_start), '-i', SUBSCRIBE_MOV,
             '-itsoffset', str(like_start), '-i', LIKE_MOV,
         ]
+        # FIXED (blurry background): this whole-video pass used to re-encode
+        # EVERY frame at CRF 23 + ultrafast — the worst quality in the whole
+        # chain — and its output became the input for the caption burn, so
+        # the softness carried into the final file. The buttons only occupy
+        # the last ~20s, but the re-encode touches all frames. CRF sets the
+        # quality floor, so raise it to 18 (matches the caption burn; any
+        # finer is wasted because the caption pass re-encodes at 18 anyway).
+        # Preset stays ultrafast — CRF does not affect encode speed, so the
+        # Actions timeout risk is unchanged.
         cmd_ending = [
             'ffmpeg', '-y', *inputs,
             '-filter_complex', filter_script,
             '-map', '[vout]', '-map', '[aout]',
-            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18',
             '-pix_fmt', 'yuv420p',
             '-c:a', 'aac', '-b:a', '128k',
             '-movflags', '+faststart',
