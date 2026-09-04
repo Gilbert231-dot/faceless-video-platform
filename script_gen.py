@@ -117,12 +117,12 @@ def get_gen_z_style(include_hook=True):
     
     STORY LADDER TECHNIQUES (Kallaway Framework — bake these into EVERY story):
     
-    LEVEL 2 — MICRO-HOOKS (pattern interrupts every 2-3 sentences):
-    - Insert "but here's the thing..." before a twist
-    - Use "what I didn't know was..." to create curiosity gaps
-    - Add "however..." or "until..." to subvert expectations
-    - Every paragraph should end with a mini-hook that pulls into the next
-    - Example: "I thought it was over. It wasn't."
+    LEVEL 2 — MICRO-HOOKS (pattern interrupts — use SPARINGLY, max 2 total per script):
+    - Never force a hook phrase — let one land naturally at a real twist, not every few sentences
+    - Vary the phrasing each time — NEVER reuse the same hook phrase twice in one script
+    - Prefer subtle transitions ("but wait", "then it hit me", "and honestly?") over recycled catchphrases
+    - Most paragraphs should flow naturally with NO hook at all
+    - Example of a good single hook: "I thought it was over. It wasn't."
     
     LEVEL 3 — STAKES (make the audience CARE):
     - Highlight what's at stake: "If this didn't work, I'd lose everything"
@@ -133,8 +133,8 @@ def get_gen_z_style(include_hook=True):
     LEVEL 4 — OPEN LOOPS & TENSION WAVES:
     - Open a loop early: "Little did I know, this was just the beginning"
     - Create tension waves: build up, release, build up BIGGER
-    - Use "and that's when everything changed..." at key turning points
-    - Add mini-cliffhangers at natural breaks: "But what happened next? That's the part nobody saw coming."
+    - At ONE key turning point (at most), a twist phrase is okay — but make it fresh, not "and that's when everything changed"
+    - End on a moment of tension or surprise WITHOUT announcing it — no "what happened next" or "cliffhanger" wording
     - Vary pacing: short punchy lines during tension, longer during reflection
     
     LEVEL 5 — CLARITY & METAPHORS:
