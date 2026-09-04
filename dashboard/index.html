@@ -25,10 +25,15 @@
             <h1><img src="../favicon-32x32.png" alt="icon" style="width:28px;height:28px;vertical-align:middle;margin-right:6px;"> Faceless Video Dashboard <a href="agent_room.html" style="font-size:0.7em;margin-left:12px;color:#a78bfa;"><img src="../favicon-32x32.png" alt="icon" style="width:20px;height:20px;vertical-align:middle;"> Agent Room <span style="color:#fbbf24;border:1px solid rgba(251,191,36,.5);border-radius:999px;padding:1px 6px;font-size:.62rem;vertical-align:middle;">WIP · side project</span></a></h1>
             <span id="live-pill" class="pill pill-live">live</span>
         </div>
-        <p class="subtitle">Your Reddit-story → YouTube/TikTok automation at a glance.
+        <p class="subtitle">Live demo — a sample creator workspace.
             <span id="generated-at"></span>
         </p>
     </header>
+
+    <div id="demo-banner" class="alert">
+        🧪 <strong>Demo workspace</strong> — sample/development data shown for
+        illustration. This showcases the product; it is not a personal dashboard.
+    </div>
 
     <div id="low-bank-alert" class="alert" hidden>
         ⚠️ <strong>Story bank running low</strong> — <span id="low-bank-count"></span> unused
@@ -59,8 +64,8 @@
             </section>
 
             <section class="panel">
-                <h2>Latest pipeline runs</h2>
-                <p class="subtitle">Live from GitHub Actions.</p>
+                <h2>Latest activity (sample)</h2>
+                <p class="subtitle">Sample activity from a development environment.</p>
                 <ul id="run-list" class="runs"></ul>
             </section>
         </div>
@@ -72,8 +77,7 @@
     </main>
 
     <footer>
-        Data regenerated on every pipeline run (<code>dashboard/build_data.py</code>).
-        Story stats from <code>reddit_stories/</code> + <code>used_story_ids.json</code>.
+        Demo workspace — sample data shown for illustration.
     </footer>
 
     <script src="app.js"></script>

@@ -30,7 +30,7 @@ filled from files already in this repo:
 |---|---|
 | App name | Must match the site. Use **Faceless Video Creator Poster** (the ToS/privacy pages already use this name) |
 | App icon | Download **`app_icon.png`** from the repo (repo root) and upload it — already 1024×1024, ready to go |
-| App description | Paste: *"Automates creation and posting of short-form faceless story videos. Users provide story text; the app rewrites it, generates an AI voiceover, compiles a captioned video and posts it to the user's own TikTok account via the official API."* |
+| App description | Paste: *"AI turns Reddit stories into narrated, captioned shorts. Creators connect their TikTok to auto-publish them."* — use public-service framing only; wording like "posts to my/your own account" reads as personal use and gets the app rejected. |
 | Category | **Developer tools** or **Entertainment** (either is fine) |
 | Privacy Policy URL | `https://gilbert231-dot.github.io/faceless-video-platform/privacy.html` |
 | Terms of Service URL | `https://gilbert231-dot.github.io/faceless-video-platform/terms.html` |
