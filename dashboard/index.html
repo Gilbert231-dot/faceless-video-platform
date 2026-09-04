@@ -22,8 +22,8 @@
 <body>
     <header>
         <div class="title-row">
-            <h1><img src="../favicon-32x32.png" alt="icon" style="width:28px;height:28px;vertical-align:middle;margin-right:6px;"> Faceless Video Dashboard <a href="agent_room.html" style="font-size:0.7em;margin-left:12px;color:#a78bfa;"><img src="../favicon-32x32.png" alt="icon" style="width:20px;height:20px;vertical-align:middle;"> Agent Room <span style="color:#fbbf24;border:1px solid rgba(251,191,36,.5);border-radius:999px;padding:1px 6px;font-size:.62rem;vertical-align:middle;">WIP · side project</span></a></h1>
-            <span id="live-pill" class="pill pill-live">live</span>
+            <h1><img src="../favicon-32x32.png" alt="icon" style="width:28px;height:28px;vertical-align:middle;margin-right:6px;"> Faceless Video Dashboard</h1>
+            <span class="pill pill-live">demo</span>
         </div>
         <p class="subtitle">Live demo — a sample creator workspace.
             <span id="generated-at"></span>
@@ -37,8 +37,7 @@
 
     <div id="low-bank-alert" class="alert" hidden>
         ⚠️ <strong>Story bank running low</strong> — <span id="low-bank-count"></span> unused
-        stories left. Run <code>fetch_stories.py</code> on your laptop (or wait for its weekly
-        schedule) to refill before the bank runs dry.
+        stories left. The bank is refilled automatically on a weekly schedule.
     </div>
 
     <main>
@@ -47,7 +46,7 @@
         </section>
 
         <section class="panel">
-            <h2>Latest videos <span class="hint">(most recent first)</span></h2>
+            <h2>Sample videos <span class="hint">(most recent first)</span></h2>
             <ul id="video-list" class="videos"></ul>
         </section>
 
