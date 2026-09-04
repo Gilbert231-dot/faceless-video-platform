@@ -76,7 +76,18 @@ def main():
 
     input("\n→ Step 2: press Enter to open the sandbox OAuth page (record this).")
     from tiktok_setup import main as setup_main
-    setup_main()
+    refresh_token = setup_main()
+
+    # Hand the refresh token the OAuth just minted to the posting step,
+    # so the demo post can run in the same session without re-pasting it.
+    if refresh_token:
+        os.environ["TIKTOK_REFRESH_TOKEN"] = refresh_token
+    elif not os.environ.get("TIKTOK_REFRESH_TOKEN"):
+        print(
+            "\n❌ No refresh token available. Re-run with TIKTOK_REFRESH_TOKEN set,"
+            " or complete the OAuth above first."
+        )
+        sys.exit(1)
 
     input("\n→ Step 3: press Enter to post the demo clip via the Content Posting API (record this).")
     sys.argv = ["tiktok_demo.py"] + ([video] if video else [])

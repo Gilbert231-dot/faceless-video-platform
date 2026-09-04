@@ -163,6 +163,10 @@ def main():
     print("Then flip the TIKTOK_ENABLED file in the repo to 'true' and")
     print("dispatch a workflow run. Full steps: TIKTOK_SETUP.md")
 
+    # Returned so callers (e.g. tiktok_sandbox_demo.py) can use the token
+    # immediately instead of asking the user to paste it again.
+    return payload.get("refresh_token")
+
 
 if __name__ == "__main__":
     main()
