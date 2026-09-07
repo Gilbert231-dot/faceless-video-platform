@@ -18,7 +18,7 @@ What it fixes (the "things the narrator should never say"):
   3. Reddit acronyms -> spoken-out meanings ("AITAH" -> "Am I the jerk",
      "ITAH" -> "I am the jerk") so anyone listening understands.
   4. Markdown & artifacts TTS reads literally: "**" -> "asterisk asterisk",
-     "[Test]" / "[FULL STORY]" title labels stripped (never spoken), URLs
+     "[TEST]" / "[FULL STORY]" title labels stripped (never spoken), URLs
      read aloud, emojis read by name, HTML entities.
   5. "I'm" -> "I am" — deterministic fix for the glottal-stop trigger that
      makes the voice insert the "ale" syllable even when the text is clean.
@@ -90,7 +90,7 @@ MARKDOWN_PATTERNS = [
     (re.compile(r"https?://\S+|www\.\S+"), " "),  # URLs
 ]
 
-# Bracket labels the narrator must never speak: the [Test] test-mode title
+# Bracket labels the narrator must never speak: the [TEST] test-mode title
 # prefix, the [FULL STORY] production-title prefix, Reddit's
 # [removed]/[deleted] markers, etc. (generic brackets like "[F 23]" are
 # left alone — the age is still useful narration).

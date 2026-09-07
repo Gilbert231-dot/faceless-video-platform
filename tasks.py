@@ -65,13 +65,13 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown",
     # Hook-strength check: the title IS the first thing viewers hear (~2
     # seconds), so score it against proven viral patterns (never fails).
     # Score the CLEAN title (labels stripped) — that's what the narrator
-    # actually speaks; "[Test]" / "[FULL STORY]" are upload labels, not part
+    # actually speaks; "[TEST]" / "[FULL STORY]" are upload labels, not part
     # of the hook.
     hook_score = None
     try:
         from hook_checker import score_opening
         hook_title = title
-        for _label in ("[Test] ", "[FULL STORY] "):
+        for _label in ("[TEST] ", "[FULL STORY] "):
             if hook_title.startswith(_label):
                 hook_title = hook_title[len(_label):]
                 break
@@ -114,13 +114,13 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown",
     hashtags = platform_tags("tiktok", subreddit_name)
     suggested_slot = _next_tiktok_slot()
     # The TikTok companion file is for MANUAL uploads the user might post
-    # publicly — never carry the [Test] marker there (same rule as the reddit
+    # publicly — never carry the [TEST] marker there (same rule as the reddit
     # card). The YouTube metadata.json above keeps it, since test uploads are
     # private and labeled. [FULL STORY] stays — real videos carry that label
     # on every platform.
     tiktok_title = title
-    if tiktok_title.startswith("[Test] "):
-        tiktok_title = tiktok_title[len("[Test] "):]
+    if tiktok_title.startswith("[TEST] "):
+        tiktok_title = tiktok_title[len("[TEST] "):]
     tiktok_meta = {
         "video_file": os.path.basename(video_path),
         "title": tiktok_title,
@@ -374,7 +374,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         if DEBUG_MODE:
             print("\n🔬 DEBUG MODE ACTIVE")
             print("   ⚠️ Stories will NOT be marked as used")
-            print("   🏷️ Titles will have [Test] prefix")
+            print("   🏷️ Titles will have [TEST] prefix")
             print("   📂 Using debug data copy\n")
         else:
             print("\n🚀 PRODUCTION MODE ACTIVE")
@@ -445,12 +445,12 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         else:
             title = normalized_title or title
         
-        # Title labels: test runs are marked [Test], production runs are
+        # Title labels: test runs are marked [TEST], production runs are
         # marked [FULL STORY] (every video now contains the entire story in
         # one part). Guard against double-prefixing: strip any existing label
         # first (a "[TEST] [TEST] ..." title shipped once — the label must
         # apply exactly once, no matter what the hook/bank produced).
-        _TITLE_LABELS = ("[Test] ", "[FULL STORY] ", "[TEST] ")
+        _TITLE_LABELS = ("[TEST] ", "[FULL STORY] ")
         # Strip EVERY leading label (a "[TEST] [TEST] ..." title shipped
         # once) so the new label applies exactly once.
         while True:
@@ -461,14 +461,14 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             else:
                 break
         if DEBUG_MODE:
-            title = f"[Test] {title}"
+            title = f"[TEST] {title}"
         else:
             title = f"[FULL STORY] {title}"
         
         print(f"   📝 Normalized title: {title}")
         
         # The reddit card (intro overlay + thumbnail) shows the CLEAN story
-        # title — the [Test] / [FULL STORY] labels belong on the upload title
+        # title — the [TEST] / [FULL STORY] labels belong on the upload title
         # ONLY, never inside the frame. (tts_clean.py already stops the
         # narrator from speaking them; this stops them from being drawn into
         # the card too.)
