@@ -5,7 +5,8 @@ Usage (via the schedule_public.yml workflow, which supplies the OAuth
 secrets):  python schedule_public.py <VIDEO_ID>
 
   - Strips a "[Test] " prefix from the title (testing is done — the prefix
-    must not ship to the public channel).
+    must not ship to the public channel), then labels the promoted video
+    "[FULL STORY] " so it matches normal production titles.
   - Schedules the video PUBLIC at the next free pipeline slot (12:00/20:00
     UTC, same logic as youtube_schedule.next_publish_times) unless
     --publish-at is given, or makes it public immediately with --now.
@@ -29,6 +30,10 @@ from googleapiclient.errors import HttpError
 from youtube_schedule import next_publish_times
 
 TEST_PREFIX = "[Test] "
+FULL_STORY_PREFIX = "[FULL STORY] "
+# All label variants (longest first). Stripping is a while-loop, so a
+# promoted video can never carry two labels no matter what it shipped with.
+TITLE_LABELS = (FULL_STORY_PREFIX, TEST_PREFIX, "[TEST] ")
 
 # videos().update needs youtube.force-ssl; list needs youtube.readonly.
 # The uploader module keeps its narrower scope so plain uploads keep
@@ -61,7 +66,7 @@ def get_client():
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("video_id", help="YouTube video ID to update")
-    ap.add_argument("--title", help="exact new title (default: strip '[Test] ' prefix)")
+    ap.add_argument("--title", help="exact new title, used as-is (default: strip '[Test] ' and add '[FULL STORY] ')")
     ap.add_argument("--publish-at", help="ISO8601 UTC publish time (default: next free slot)")
     ap.add_argument("--now", action="store_true", help="make public immediately (no schedule)")
     args = ap.parse_args()
@@ -78,11 +83,20 @@ def main():
 
     old_title = video["snippet"]["title"]
     if args.title:
+        # Explicit title — use it exactly as given (no auto-label).
         new_title = args.title
-    elif old_title.startswith(TEST_PREFIX):
-        new_title = old_title[len(TEST_PREFIX):]
     else:
+        # Promote a test video: strip ANY existing title label, then add
+        # [FULL STORY] so the public video matches normal production titles.
         new_title = old_title
+        while True:
+            for _label in TITLE_LABELS:
+                if new_title.startswith(_label):
+                    new_title = new_title[len(_label):]
+                    break
+            else:
+                break
+        new_title = FULL_STORY_PREFIX + new_title
     video["snippet"]["title"] = new_title
 
     if args.now:
