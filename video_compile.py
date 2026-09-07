@@ -368,8 +368,12 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         gameplay_segment
     ]
     
+    # Timeout scales with footage length: full-story videos can need 700+s
+    # of footage, and this whole-duration re-encode runs at roughly 1.4-2x
+    # realtime on a 2-core runner — 900s would trip on the longest stories.
+    # 1800s (30 min) covers the worst case the adapter can produce.
     try:
-        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=900)
+        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=1800)
         print(f"   ✅ Extracted {extract_duration:.2f}s segment (re-encoded to H.264).")
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
@@ -907,7 +911,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             ending_output
         ]
         try:
-            run_ffmpeg(cmd_ending, timeout=600, label="ending video overlay")
+            # Whole-video re-encode: 600s is fine for shorts but a long
+            # full-story video needs more headroom. 1200s (20 min) keeps the
+            # subscribe/like overlay from being dropped on long videos.
+            run_ffmpeg(cmd_ending, timeout=1200, label="ending video overlay")
         except Exception as e:
             print(f"   ⚠️ Ending overlay failed: {e}")
             print("   Continuing without ending overlay...")

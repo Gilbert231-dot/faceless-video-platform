@@ -225,7 +225,10 @@ def get_next_segment(duration_needed):
 
         # Extract in 60-second batches to avoid timeout on large files.
         # Each batch re-encodes with ultrafast — fast per batch, no fixed
-        # timeout risk regardless of file size.
+        # timeout risk regardless of file size. 240s per 60s batch keeps
+        # ~4x headroom over the typical ~60-100s (4K 60fps sources at
+        # ~1.4-2x realtime on a 2-core runner); a full-story run can need
+        # 10+ batches.
         BATCH_SIZE = 60  # seconds per batch
         temp_dir = tempfile.mkdtemp(prefix="drive_seg_")
         batch_files = []
@@ -257,7 +260,7 @@ def get_next_segment(duration_needed):
                 '-an',
                 batch_path
             ]
-            subprocess.run(cmd, check=True, capture_output=True, timeout=120)
+            subprocess.run(cmd, check=True, capture_output=True, timeout=240)
 
             if not os.path.exists(batch_path) or os.path.getsize(batch_path) < 1024:
                 raise RuntimeError(f"Batch extraction failed for {cache_path} at offset {offset}")
