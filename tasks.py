@@ -64,10 +64,18 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown",
     # credit, so keep this in mind if you ever re-enable it.
     # Hook-strength check: the title IS the first thing viewers hear (~2
     # seconds), so score it against proven viral patterns (never fails).
+    # Score the CLEAN title (labels stripped) — that's what the narrator
+    # actually speaks; "[Test]" / "[FULL STORY]" are upload labels, not part
+    # of the hook.
     hook_score = None
     try:
         from hook_checker import score_opening
-        hook_result = score_opening(title, verbose=False)
+        hook_title = title
+        for _label in ("[Test] ", "[FULL STORY] "):
+            if hook_title.startswith(_label):
+                hook_title = hook_title[len(_label):]
+                break
+        hook_result = score_opening(hook_title, verbose=False)
         hook_score = hook_result["score"]
     except Exception:
         hook_score = None
@@ -106,12 +114,13 @@ def save_metadata(video_path, title, subreddit_name, score=0, author="unknown",
     hashtags = platform_tags("tiktok", subreddit_name)
     suggested_slot = _next_tiktok_slot()
     # The TikTok companion file is for MANUAL uploads the user might post
-    # publicly — never carry the [TEST] marker there (same rule as the reddit
+    # publicly — never carry the [Test] marker there (same rule as the reddit
     # card). The YouTube metadata.json above keeps it, since test uploads are
-    # private and labeled.
+    # private and labeled. [FULL STORY] stays — real videos carry that label
+    # on every platform.
     tiktok_title = title
-    if tiktok_title.startswith("[TEST] "):
-        tiktok_title = tiktok_title[len("[TEST] "):]
+    if tiktok_title.startswith("[Test] "):
+        tiktok_title = tiktok_title[len("[Test] "):]
     tiktok_meta = {
         "video_file": os.path.basename(video_path),
         "title": tiktok_title,
@@ -365,7 +374,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         if DEBUG_MODE:
             print("\n🔬 DEBUG MODE ACTIVE")
             print("   ⚠️ Stories will NOT be marked as used")
-            print("   🏷️ Titles will have [TEST] prefix")
+            print("   🏷️ Titles will have [Test] prefix")
             print("   📂 Using debug data copy\n")
         else:
             print("\n🚀 PRODUCTION MODE ACTIVE")
@@ -436,22 +445,41 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         else:
             title = normalized_title or title
         
-        # FIXED: the [TEST] prefix was only ever PRINTED, never applied — a
-        # test-mode run could post a video with a real (non-test) title, and
-        # the dashboard/YouTube gave no hint it was a test. Apply it for real
-        # so test uploads are unmistakable (they're still private).
+        # Title labels: test runs are marked [Test], production runs are
+        # marked [FULL STORY] (every video now contains the entire story in
+        # one part). Guard against double-prefixing: strip any existing label
+        # first (a "[TEST] [TEST] ..." title shipped once — the label must
+        # apply exactly once, no matter what the hook/bank produced).
+        _TITLE_LABELS = ("[Test] ", "[FULL STORY] ", "[TEST] ")
+        # Strip EVERY leading label (a "[TEST] [TEST] ..." title shipped
+        # once) so the new label applies exactly once.
+        while True:
+            for _label in _TITLE_LABELS:
+                if title.startswith(_label):
+                    title = title[len(_label):]
+                    break
+            else:
+                break
         if DEBUG_MODE:
-            title = f"[TEST] {title}"
+            title = f"[Test] {title}"
+        else:
+            title = f"[FULL STORY] {title}"
         
         print(f"   📝 Normalized title: {title}")
         
         # The reddit card (intro overlay + thumbnail) shows the CLEAN story
-        # title — the [TEST] prefix belongs on the YouTube title ONLY, never
-        # inside the frame. (tts_clean.py already stops the narrator from
-        # speaking it; this stops it from being drawn into the card too.)
+        # title — the [Test] / [FULL STORY] labels belong on the upload title
+        # ONLY, never inside the frame. (tts_clean.py already stops the
+        # narrator from speaking them; this stops them from being drawn into
+        # the card too.)
         frame_title = title
-        if frame_title.startswith("[TEST] "):
-            frame_title = frame_title[len("[TEST] "):]
+        while True:
+            for _label in _TITLE_LABELS:
+                if frame_title.startswith(_label):
+                    frame_title = frame_title[len(_label):]
+                    break
+            else:
+                break
         
         # --- GENDER DETECTION ---
         detected_gender = gender_detector.detect_gender(
@@ -504,49 +532,20 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         if not comment_script:
             print(f"   💬 No valid comments found - skipping comments for this video")
         
-        #--- SPLIT LOGIC ---
-        MAX_CHARS_PER_VIDEO = 18000
-        MIN_PART_2_CHARS = 2000
+        #--- FULL STORY, ONE VIDEO ---
+        # Every video consumes the ENTIRE story in a single part (user
+        # request): no more Part 1/Part 2 splitting, even for long stories.
+        # The adapter (script_gen.adapt_reddit_story) already returns the
+        # complete story; here we just append the comment script.
 
-        # Strip Part 1/Part 2 labels so viewers never hear them
+        # Strip Part 1/Part 2 labels so viewers never hear them (safety net)
         from script_gen import strip_part_labels
         story_text = strip_part_labels(story_text)
 
-        full_narration = f"{story_text} {comment_script}" if comment_script else story_text
-        needs_split = len(full_narration) > MAX_CHARS_PER_VIDEO
-
-        if needs_split:
-            split_point = max(int(len(story_text) * 0.5), len(story_text) - 1500)
-            
-            for char in ['. ', '? ', '! ', '\n\n']:
-                last_pos = story_text[:split_point].rfind(char)
-                if last_pos != -1 and last_pos > int(len(story_text) * 0.35):
-                    split_point = last_pos + len(char)
-                    break
-            
-            part1_story = story_text[:split_point].strip()
-            part2_story = story_text[split_point:].strip()
-            
-            if len(part2_story) < MIN_PART_2_CHARS:
-                part1_script = full_narration
-                part2_script = None
-                part_count = 1
-                print(f"   📝 Story fits in 1 video (Part 2 too short)")
-            else:
-                if comment_script:
-                    part1_script = f"{part1_story} {comment_script}"
-                else:
-                    part1_script = part1_story
-                
-                part2_script = f"Continuing the story... {part2_story}"
-                part_count = 2
-                
-                print(f"   📝 Split into 2 parts (Part 1: {len(part1_story)} chars, Part 2: {len(part2_story)} chars)")
-        else:
-            part1_script = full_narration
-            part2_script = None
-            part_count = 1
-            print(f"   📝 Story fits in 1 video ({len(full_narration)} chars)")
+        part1_script = f"{story_text} {comment_script}" if comment_script else story_text
+        part2_script = None
+        part_count = 1
+        print(f"   📝 Full story in 1 video ({len(part1_script)} chars)")
         
         print(f"\n📖 Generating video from r/{subreddit_name}")
         print(f"   📝 Title: {title}")
@@ -613,8 +612,8 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             print(f"   ⚠️ Reddit frame generation failed (continuing without it): {e}")
             frame_path = None
         
-        # ----- GENERATE PART 1 -----
-        print("\n🎬 GENERATING PART 1...")
+        # ----- GENERATE THE VIDEO -----
+        print("\n🎬 GENERATING VIDEO...")
         video_path_1, audio_path_1, final_audio_1 = generate_single_video(
             title=title,
             script=part1_script,
@@ -625,11 +624,11 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             voice_id=selected_voice,
             intro_frame=frame_path
         )
-        print(f"✅ Part 1 ready: {video_path_1}")
+        print(f"✅ Video ready: {video_path_1}")
         
-        # ----- ADD CAPTIONS TO PART 1 -----
+        # ----- ADD CAPTIONS -----
         if USE_CAPTIONS:
-            print("\n🎬 ADDING CAPTIONS TO PART 1...")
+            print("\n🎬 ADDING CAPTIONS...")
             try:
                 captioned_path = add_subtitles_to_video(
                     video_path=video_path_1,
@@ -649,14 +648,14 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                     base_name = video_path_1.replace(".mp4", "")
                     cleanup_intermediate_files(base_name)
                     video_path_1 = captioned_path
-                    print(f"✅ Part 1 captions added: {video_path_1}")
+                    print(f"✅ Captions added: {video_path_1}")
                 else:
                     print(f"⚠️ Captioning didn't produce a new file, keeping original")
                     # Ensure we delete the extracted files anyway
                     base_name = video_path_1.replace(".mp4", "")
                     final_cleanup(base_name)
             except Exception as e:
-                print(f"⚠️ Captioning failed for Part 1: {e}")
+                print(f"⚠️ Captioning failed: {e}")
                 print("   Keeping original video without captions")
                 # Clean up extracted files
                 base_name = video_path_1.replace(".mp4", "")
@@ -667,62 +666,13 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
                 if final_audio_1 and os.path.exists(final_audio_1) and final_audio_1 != audio_path_1:
                     os.remove(final_audio_1)
         
-        # ----- GENERATE PART 2 -----
+        # ----- PART 2 REMOVED (single full-story video per run) -----
+        # Every video consumes the whole story in one part now (user
+        # request) — no Part 2 generation or captions. video_path_2 stays
+        # None so the return dict and the workflow's upload globs stay
+        # unchanged.
         video_path_2 = None
-        if part_count == 2 and part2_script:
-            print("\n🎬 GENERATING PART 2...")
-            # FIXED: generate_single_video returns (video, voiceover, final_audio) -
-            # unpack all three instead of assigning the tuple to video_path_2.
-            video_path_2, audio_path_2, final_audio_2 = generate_single_video(
-                title=title,
-                script=part2_script,
-                part_label="Part 2",
-                topic=title,
-                include_title_in_script=True,
-                subreddit=subreddit_name,
-                voice_id=selected_voice,
-                intro_frame=frame_path
-            )
-            print(f"✅ Part 2 ready: {video_path_2}")
-            
-            # ----- ADD CAPTIONS TO PART 2 -----
-            if USE_CAPTIONS:
-                print("\n🎬 ADDING CAPTIONS TO PART 2...")
-                try:
-                    captioned_path_2 = add_subtitles_to_video(
-                        video_path=video_path_2,
-                        audio_path=audio_path_2,       # raw voiceover -> whisper transcribes this
-                        mux_audio_path=final_audio_2,  # exact audio in the video (sped + music)
-                        output_path=video_path_2.replace(".mp4", f"_captioned_{int(time.time())}.mp4"),
-                        whisper_model="base",   # more accurate word-by-word captions
-                        font_size=16,  # smaller captions (user request) — scaled per frame height
-                        # FIXED: Part 2 was missing speed_factor, so its captions
-                        # were timed to the raw voice while the video played the
-                        # sped-up track — out of sync.
-                        speed_factor=VOICE_SPEED,
-                        bold=True,
-                        alignment=10,
-                        margin_v=90
-                    )
-                    
-                    if captioned_path_2 and captioned_path_2 != video_path_2 and os.path.exists(captioned_path_2) and os.path.getsize(captioned_path_2) > 1000000:
-                        base_name = video_path_2.replace(".mp4", "")
-                        cleanup_intermediate_files(base_name)
-                        video_path_2 = captioned_path_2
-                        print(f"✅ Part 2 captions added: {video_path_2}")
-                    else:
-                        print(f"⚠️ Captioning didn't produce a new file, keeping original")
-                        base_name = video_path_2.replace(".mp4", "")
-                        final_cleanup(base_name)
-                except Exception as e:
-                    print(f"⚠️ Captioning failed for Part 2: {e}")
-                    print("   Keeping original video without captions")
-                    base_name = video_path_2.replace(".mp4", "")
-                    final_cleanup(base_name)
-                finally:
-                    if final_audio_2 and os.path.exists(final_audio_2) and final_audio_2 != audio_path_2:
-                        os.remove(final_audio_2)
-        
+
         # ----- SAVE METADATA FOR THE YOUTUBE UPLOAD STEP -----
         print("\n📝 SAVING VIDEO METADATA...")
         # Custom thumbnail matching the reddit-card intro: a still from the
@@ -773,9 +723,6 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
 
         thumb_1 = _make_thumb(video_path_1)
         save_metadata(video_path_1, title, subreddit_name, score, author, thumb_1)
-        if video_path_2 and isinstance(video_path_2, str):
-            thumb_2 = _make_thumb(video_path_2)
-            save_metadata(video_path_2, f"{title} (Part 2)", subreddit_name, score, author, thumb_2)
 
         # Mark the story as used (only in production mode)
         marked = False

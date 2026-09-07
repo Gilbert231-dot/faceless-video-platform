@@ -229,14 +229,13 @@ def strip_hype_intro(script, max_sentences=3):
 # REDDIT STORY ADAPTATION (FIXED)
 # ===========================
 
-def adapt_reddit_story(title, story, max_words=3000, split_threshold=800, use_hook=True):
+def adapt_reddit_story(title, story, max_words=8000, use_hook=True):
     """
-    Rewrite a Reddit story and return script + part labels.
-    GUARANTEES the script is complete.
-    
-    Args:
-        max_words: Maximum words for a single part (increased to 3000)
-        split_threshold: Words threshold to split into 2 parts (decreased to 800, so more stories get a Part 2)
+    Rewrite a Reddit story as ONE complete narration script.
+
+    The ENTIRE story is included in a single part (no Part 1/Part 2
+    splitting) — every video consumes the full story. Stories that are
+    naturally short stay short; nothing is padded to hit a target length.
     """
     
     # Normalize slang
@@ -255,49 +254,19 @@ def adapt_reddit_story(title, story, max_words=3000, split_threshold=800, use_ho
     
     narration_title = hook if hook else title
     gen_z_style = get_gen_z_style(include_hook=False)
-    
-    word_count = len(story.split())
-    split_required = word_count > split_threshold
 
-    # --- INCREASED MAX TOKENS ---
-    if split_required:
-        system_prompt = f"""You are a viral storyteller. The following Reddit story is long ({word_count} words). Split it into TWO parts.
-
-{gen_z_style}
-
-IMPORTANT RULES:
-- Part 1 should end at a natural cliffhanger or emotional peak.
-- Part 2 should end on a cliffhanger or emotional peak — never a neat resolution.
-- Both parts should be approximately {max_words // 2} words each.
-- Write in first-person ("I", "my", "me").
-- **COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.**
-- **The ending should feel UNFINISHED — stop mid-thought or at a moment of tension. Never summarize or conclude.**
-- **NEVER use the words "cliffhanger", "to be continued", or "that's the end" in the narration.**
-- **DO NOT include "Part 1", "Part 2", or any part labels in the spoken script.**
-- **Part 1 must START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.**
-- **In Part 2, start with a smooth transition like "So here's what happened next..." or "Continuing the story..."**
-- **Use MAX 2 micro-hooks TOTAL across both parts combined. Pick from variety: "but here's the thing", "then it hit me", "but wait — it gets worse", "and honestly?". NEVER repeat the same phrase. Space them far apart — one per part at most.**
-- **BUILD TENSION WAVES: short punchy lines during drama, longer during reflection. End each paragraph with a mini-hook that pulls into the next.**
-- **HIGHLIGHT STAKES: show what's at risk — "If this didn't work, I'd lose everything", "This wasn't just about money anymore"**
-
-OUTPUT FORMAT:
-Part 1: [script text for part 1]
-Part 2: [script text for part 2]"""
-        
-        max_tokens_value = 3500  # Increased from 2500
-        
-    else:
-        system_prompt = f"""You are a viral storyteller. Rewrite the following Reddit story as a dramatic first-person narration.
+    # One complete script — the ENTIRE story in a single part (no splitting).
+    system_prompt = f"""You are a viral storyteller. Rewrite the following Reddit story as a dramatic first-person narration.
 
 {gen_z_style}
 
 IMPORTANT RULES:
 - Keep the core story the same, but rewrite it in your own words.
-- **If the story is unfinished, COMPLETE IT with a satisfying ending.**
+- **Tell the ENTIRE story from start to finish. Do NOT skip, compress, summarize, or cut any part of it — the video holds the whole story.**
+- **If the story is naturally short, keep it short — never pad, stretch, or add filler just to make it longer.**
+- If the story is unfinished, COMPLETE IT with a natural ending.
 - Write in first-person ("I", "my", "me").
 - START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.
-- Keep it under {max_words} words.
-- **COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.**
 - **The ending should feel UNFINISHED — stop mid-thought or at a moment of tension. Never summarize or conclude.**
 - **NEVER use the words "cliffhanger", "to be continued", or "that's the end" in the narration.**
 - **DO NOT include the title in the narration—it will be spoken separately.**
@@ -308,7 +277,7 @@ IMPORTANT RULES:
 
 The goal is to make the story feel fresh, personal, and engaging."""
 
-        max_tokens_value = 2200  # Increased from 1500
+    max_tokens_value = 4000  # full-story budget (model supports up to 65k)
 
     user_content = f"Title: {title}\n\nStory: {story}"
     
@@ -329,32 +298,7 @@ The goal is to make the story feel fresh, personal, and engaging."""
     
     # No forced ending — let the narrator stop naturally
 
-    # Parse parts
-    if split_required:
-        part1_match = re.search(r'(?:Part 1:?)\s*(.*?)(?=Part 2:?|$)', script_text, re.DOTALL)
-        part2_match = re.search(r'(?:Part 2:?)\s*(.*)', script_text, re.DOTALL)
-        if part1_match and part2_match:
-            part1_script = part1_match.group(1).strip()
-            part2_script = part2_match.group(1).strip()
-            
-            # No forced ending for Part 2 — let the narrator stop naturally
-            
-            part1_script = normalize_slang(part1_script)
-            part2_script = normalize_slang(part2_script)
-            part1_script = strip_hype_intro(part1_script)
-            part2_script = strip_hype_intro(part2_script)
-            part1_script = strip_part_labels(part1_script)
-            part2_script = strip_part_labels(part2_script)
-            
-            return {
-                'script': part1_script,
-                'part_count': 2,
-                'part_label': 'Part 1',
-                'part2_script': part2_script,
-                'hook': hook,
-                'normalized_title': narration_title
-            }
-    
+    # Single part — no split parsing needed; strip hype intro (safety net)
     script_text = strip_hype_intro(script_text)
 
     # --- NO FORCED ENDING — let the story end naturally (cliffhanger) ---

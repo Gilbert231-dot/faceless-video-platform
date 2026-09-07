@@ -4,7 +4,7 @@ schedule_public.py — one-off tool: clean up a test video and send it public.
 Usage (via the schedule_public.yml workflow, which supplies the OAuth
 secrets):  python schedule_public.py <VIDEO_ID>
 
-  - Strips a "[TEST] " prefix from the title (testing is done — the prefix
+  - Strips a "[Test] " prefix from the title (testing is done — the prefix
     must not ship to the public channel).
   - Schedules the video PUBLIC at the next free pipeline slot (12:00/20:00
     UTC, same logic as youtube_schedule.next_publish_times) unless
@@ -28,7 +28,7 @@ from googleapiclient.errors import HttpError
 
 from youtube_schedule import next_publish_times
 
-TEST_PREFIX = "[TEST] "
+TEST_PREFIX = "[Test] "
 
 # videos().update needs youtube.force-ssl; list needs youtube.readonly.
 # The uploader module keeps its narrower scope so plain uploads keep
@@ -61,7 +61,7 @@ def get_client():
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("video_id", help="YouTube video ID to update")
-    ap.add_argument("--title", help="exact new title (default: strip '[TEST] ' prefix)")
+    ap.add_argument("--title", help="exact new title (default: strip '[Test] ' prefix)")
     ap.add_argument("--publish-at", help="ISO8601 UTC publish time (default: next free slot)")
     ap.add_argument("--now", action="store_true", help="make public immediately (no schedule)")
     args = ap.parse_args()
