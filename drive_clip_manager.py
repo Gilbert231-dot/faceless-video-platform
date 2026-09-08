@@ -224,11 +224,14 @@ def get_next_segment(duration_needed):
             continue
 
         # Extract in 60-second batches to avoid timeout on large files.
-        # Each batch re-encodes with ultrafast — fast per batch, no fixed
-        # timeout risk regardless of file size. 240s per 60s batch keeps
-        # ~4x headroom over the typical ~60-100s (4K 60fps sources at
-        # ~1.4-2x realtime on a 2-core runner); a full-story run can need
-        # 10+ batches.
+        # IMPORTANT (quality): this re-encode is LOSSY and its output feeds
+        # the final CRF 15 veryslow render — the render can never recover
+        # detail a low-quality intermediate throws away. ultrafast + CRF 18
+        # visibly degraded fast-moving gameplay (blocking, softness), so we
+        # encode near-transparent: CRF 15 + veryfast (the preset matters as
+        # much as the CRF for motion). 480s per 60s batch keeps headroom on
+        # a 2-core runner (veryfast is slower than ultrafast); a full-story
+        # run can need 10+ batches.
         BATCH_SIZE = 60  # seconds per batch
         temp_dir = tempfile.mkdtemp(prefix="drive_seg_")
         batch_files = []
@@ -254,13 +257,13 @@ def get_next_segment(duration_needed):
                 '-i', cache_path,
                 '-t', str(batch_take),
                 '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-crf', '18',
+                '-preset', 'veryfast',
+                '-crf', '15',
                 '-pix_fmt', 'yuv420p',
                 '-an',
                 batch_path
             ]
-            subprocess.run(cmd, check=True, capture_output=True, timeout=240)
+            subprocess.run(cmd, check=True, capture_output=True, timeout=480)
 
             if not os.path.exists(batch_path) or os.path.getsize(batch_path) < 1024:
                 raise RuntimeError(f"Batch extraction failed for {cache_path} at offset {offset}")

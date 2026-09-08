@@ -350,18 +350,23 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     # source had sparse keyframes or a non-H.264 codec (common with
     # Google Drive's re-encoded uploads), the copy-cut produced a file
     # that passed ffprobe but failed when ffmpeg decoded frames for the
-    # filter chain. Re-encoding with ultrafast normalizes ANY input to
-    # clean H.264 yuv420p with dense keyframes — the format the segment
-    # renderer expects. The quality cost is zero: the FINAL encode still
-    # uses CRF 15 + slow preset; this ultrafast pass is just a format
-    # normalizer.
+    # filter chain. Re-encoding normalizes ANY input to clean H.264
+    # yuv420p with dense keyframes — the format the segment renderer
+    # expects.
+    # IMPORTANT (quality): this re-encode is LOSSY — the segment renderer
+    # encodes FROM this file and cannot recover detail thrown away here.
+    # The old ultrafast + CRF 18 visibly degraded fast-moving gameplay
+    # (the source is already a lossy re-encode from drive_clip_manager's
+    # get_next_segment). CRF 15 + veryfast keeps this intermediate
+    # near-transparent so the final CRF 15 veryslow render actually
+    # delivers CRF 15 quality.
     cmd_extract = [
         'ffmpeg', '-y',
         '-i', source_video,
         '-t', str(extract_duration),
         '-c:v', 'libx264',
-        '-preset', 'ultrafast',
-        '-crf', '18',
+        '-preset', 'veryfast',
+        '-crf', '15',
         '-pix_fmt', 'yuv420p',
         '-movflags', '+faststart',
         '-an',
@@ -369,11 +374,11 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     ]
     
     # Timeout scales with footage length: full-story videos can need 700+s
-    # of footage, and this whole-duration re-encode runs at roughly 1.4-2x
-    # realtime on a 2-core runner — 900s would trip on the longest stories.
-    # 1800s (30 min) covers the worst case the adapter can produce.
+    # of footage, and this whole-duration re-encode at veryfast runs at
+    # roughly 1-1.5x realtime on a 2-core runner. 2400s (40 min) covers the
+    # worst case the adapter can produce with room to spare.
     try:
-        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=1800)
+        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=2400)
         print(f"   ✅ Extracted {extract_duration:.2f}s segment (re-encoded to H.264).")
     except Exception as e:
         raise Exception(f"Segment extraction failed: {e}")
@@ -895,16 +900,18 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         # EVERY frame at CRF 23 + ultrafast — the worst quality in the whole
         # chain — and its output became the input for the caption burn, so
         # the softness carried into the final file. The buttons only occupy
-        # the last ~20s, but the re-encode touches all frames. CRF sets the
-        # quality floor, so raise it to 18 (matches the caption burn; any
-        # finer is wasted because the caption pass re-encodes at 18 anyway).
-        # Preset stays ultrafast — CRF does not affect encode speed, so the
-        # Actions timeout risk is unchanged.
+        # the last ~20s, but the re-encode touches all frames.
+        # IMPORTANT (quality): this re-encode is LOSSY, so it must stay
+        # near-transparent or the final file inherits its softness. The old
+        # CRF 18 + ultrafast capped the whole video at that quality. Now
+        # CRF 15 + veryfast keeps the overlay pass from degrading the CRF 15
+        # background. (The caption burn that follows is CRF 18 slow — fine,
+        # the preset's motion estimation matters more than the last CRF step.)
         cmd_ending = [
             'ffmpeg', '-y', *inputs,
             '-filter_complex', filter_script,
             '-map', '[vout]', '-map', '[aout]',
-            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18',
+            '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '15',
             '-pix_fmt', 'yuv420p',
             '-c:a', 'aac', '-b:a', '128k',
             '-movflags', '+faststart',
@@ -912,9 +919,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         ]
         try:
             # Whole-video re-encode: 600s is fine for shorts but a long
-            # full-story video needs more headroom. 1200s (20 min) keeps the
-            # subscribe/like overlay from being dropped on long videos.
-            run_ffmpeg(cmd_ending, timeout=1200, label="ending video overlay")
+            # full-story video needs more headroom. veryfast is slower than
+            # the old ultrafast, so 1800s (30 min) keeps the subscribe/like
+            # overlay from being dropped on long videos.
+            run_ffmpeg(cmd_ending, timeout=1800, label="ending video overlay")
         except Exception as e:
             print(f"   ⚠️ Ending overlay failed: {e}")
             print("   Continuing without ending overlay...")
