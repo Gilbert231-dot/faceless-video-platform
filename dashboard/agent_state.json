@@ -4,8 +4,8 @@
     "buffy": {
       "name": "Buffy",
       "color": "#a78bfa",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
     },
     "bro": {
       "name": "Bro",
@@ -21,6 +21,42 @@
     }
   },
   "log": [
+    {
+      "t": "12:03:08 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "12:03:07 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "10:54:34 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "10:54:33 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "10:54:32 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "10:54:32 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
     {
       "t": "09:06:36 UTC",
       "who": "Buffy",
@@ -164,53 +200,10 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "18:21:53 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
-    },
-    {
-      "t": "18:21:53 UTC",
-      "who": "Buffy",
-      "station": "LAPTOP",
-      "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "17:34:27 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "17:34:27 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "17:34:27 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "17:34:26 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-09-08T09:06:36Z",
+  "updated_at": "2026-09-08T12:03:08Z",
   "stories": [
-    {
-      "subreddit": "ProRevenge",
-      "title": "Phone calls for the previous owner, who turned out to be my shitty manager",
-      "score": 6259,
-      "comments": 0,
-      "url": "https://reddit.com/r/ProRevenge/comments/1eay1tl/phone_calls_for_the_previous_owner_who_turned_out/"
-    },
     {
       "subreddit": "pettyrevenge",
       "title": "I signed my ex-boss up for notifications regarding a donation in honor of a guy he wrote u",
@@ -224,6 +217,13 @@
       "score": 5479,
       "comments": 0,
       "url": "https://reddit.com/r/ProRevenge/comments/1cw56x4/401k_with_a_side_of_revenge/"
+    },
+    {
+      "subreddit": "ProRevenge",
+      "title": "Woman takes revenge against car dealership",
+      "score": 5330,
+      "comments": 0,
+      "url": "https://reddit.com/r/ProRevenge/comments/1mek0t7/woman_takes_revenge_against_car_dealership/"
     }
   ]
 }
