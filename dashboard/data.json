@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-08T12:03:08Z",
+  "generated_at": "2026-09-09T07:34:58Z",
   "total_stories": 367,
-  "unused_stories": 326,
-  "used_stories": 41,
+  "unused_stories": 325,
+  "used_stories": 42,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 163,
+  "days_of_stories": 162,
   "runway_date": "2027-02-18",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -27,11 +27,6 @@
       "unused": 24
     },
     {
-      "name": "TalesFromTheFrontDesk",
-      "total": 24,
-      "unused": 24
-    },
-    {
       "name": "offmychest",
       "total": 24,
       "unused": 24
@@ -45,6 +40,11 @@
       "name": "tifu",
       "total": 24,
       "unused": 24
+    },
+    {
+      "name": "TalesFromTheFrontDesk",
+      "total": 23,
+      "unused": 23
     },
     {
       "name": "unpopularopinion",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 70
+    "next_index": 71
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-09T03:00:00Z",
-      "2026-09-10T03:00:00Z"
+      "2026-09-09T15:00:00Z",
+      "2026-09-10T15:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1788937810_ending_captioned_1788938163.mp4",
+      "title": "[FULL STORY] CHATGPT. DOESN'T. KNOW. SHIT",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1294568283740871",
+      "url": "https://www.facebook.com/1272041649331476/videos/1294568283740871",
+      "posted_at": "2026-09-09T07:34:57Z",
+      "hook_score": 0,
+      "publish_at": "2026-09-09T15:00:00Z"
+    },
+    {
+      "video_file": "output_1788937810_ending_captioned_1788938163.mp4",
+      "title": "[FULL STORY] CHATGPT. DOESN'T. KNOW. SHIT",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "78_eW0vOBek",
+      "url": "https://youtu.be/78_eW0vOBek",
+      "posted_at": "2026-09-09T07:32:30Z",
+      "hook_score": 0,
+      "publish_at": "2026-09-09T15:00:00Z"
+    },
     {
       "video_file": "output_1788867984_ending_captioned_1788868094.mp4",
       "title": "[TEST] Am I the jerk My girlfriend's sister wants to move in and I won't change my mind.",
@@ -191,30 +215,6 @@
       "url": "https://youtu.be/tEMEl4JWM9I",
       "posted_at": "2026-08-30T17:04:57Z",
       "hook_score": 39
-    },
-    {
-      "video_file": "output_1788043457_ending_captioned_1788043524.mp4",
-      "title": "Professional photographer knew better than three ophthalmologists. It cost him €750.",
-      "subreddit": "MaliciousCompliance",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122106357405447442",
-      "url": "https://www.facebook.com/reel/2611113199308227",
-      "posted_at": "2026-08-29T22:52:54Z",
-      "hook_score": 1,
-      "publish_at": "2026-08-30T15:00:00Z"
-    },
-    {
-      "video_file": "output_1788040945_ending_captioned_1788041029.mp4",
-      "title": "Teammates were annoying so I made them the best brownies of their life",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122106357303447442",
-      "url": "https://www.facebook.com/reel/1406912581577041",
-      "posted_at": "2026-08-29T22:52:35Z",
-      "hook_score": 26,
-      "publish_at": "2026-08-30T03:00:00Z"
     }
   ]
 }
