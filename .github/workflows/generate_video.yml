@@ -11,6 +11,15 @@ on:
         required: true
         default: '0'
         type: string
+      # Set ONLY by the previous batch's chain step. It is what lets a
+      # dispatched run (Batch 2/3/4) chain onward to the next batch — a
+      # manual dispatch leaves it 'false', so a hand-started production
+      # batch never silently fires three more runs behind your back.
+      chained:
+        description: 'Internal: true = dispatched by the previous batch (do not set by hand)'
+        required: false
+        default: 'false'
+        type: string
 
 permissions:
   contents: write   # needed to push videos/state back to the repo
@@ -660,16 +669,37 @@ jobs:
           df -h
 
 
+      # CHAIN FIX (why only 2 of the 4 daily videos were being made):
+      # only Batch 1 fires from cron; it used to chain to Batch 2, and Batch 2
+      # then STOPPED — because the old guard ended with
+      # `github.event_name != 'workflow_dispatch'`, and every chained batch
+      # (2, 3, 4) IS a workflow_dispatch run. So the chain died one hop in and
+      # Batches 3 + 4 never ran (verified in the run history: each daily
+      # scheduled run produces exactly one bot-dispatched run, and then
+      # nothing).
+      # Now the chain continues when the run is EITHER the scheduled Batch 1
+      # OR a batch dispatched by the previous batch (`chained=true`), and the
+      # batch-number gate lives in the shell where BATCH_NUM is a plain
+      # environment variable — so a test run (batch 0) and the final Batch 4
+      # can never chain, whatever the event type is.
       - name: "🔗 Trigger next batch (chain)"
-        if: success() && env.BATCH_NUM != '0' && env.BATCH_NUM != '4' && github.event_name != 'workflow_dispatch'
+        if: success() && (github.event_name == 'schedule' || inputs.chained == 'true')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          case "$BATCH_NUM" in
+            1|2|3) ;;
+            *)
+              echo "ℹ️ BATCH_NUM='$BATCH_NUM' — nothing to chain (0=test, 4=last batch of the day)."
+              exit 0
+              ;;
+          esac
           NEXT_BATCH=$((BATCH_NUM + 1))
           echo "⏰ Waiting 30 minutes before triggering Batch $NEXT_BATCH..."
           sleep 1800
           echo "🔗 Triggering Batch $NEXT_BATCH..."
           gh workflow run generate_video.yml \
             --ref main \
-            -f batch="$NEXT_BATCH"
+            -f batch="$NEXT_BATCH" \
+            -f chained=true
           echo "✅ Batch $NEXT_BATCH triggered!"
