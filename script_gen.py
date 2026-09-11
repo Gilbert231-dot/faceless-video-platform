@@ -125,7 +125,12 @@ def get_gen_z_style(include_hook=True):
     - Example of a good single hook: "I thought it was over. It wasn't."
     
     LEVEL 3 — STAKES (make the audience CARE):
-    - Highlight what's at stake: "If this didn't work, I'd lose everything"
+    - Show what's at stake through the story's OWN concrete facts — what
+      they stood to lose, and why it mattered — in your own words
+    - NEVER reuse a stock stakes sentence between scripts. If a conditional
+      like "if this didn't work..." fits the moment, use it AT MOST ONCE per
+      script, and only where the story is actually showing them try something
+      with something real on the line. If it doesn't fit, leave it out.
     - Connect to relatable pain: "Imagine your own family doing this to you"
     - Show emotional cost: "I couldn't eat. I couldn't sleep."
     - Make the viewer feel the weight: "This wasn't just about money anymore"
@@ -226,6 +231,49 @@ def strip_hype_intro(script, max_sentences=3):
 
 
 # ===========================
+# ===========================
+# STOCK STAKE LINE DE-DUPLICATION (safety net)
+# ===========================
+# Stakes should come from the story's own facts, in fresh words each time.
+# The model's favourite shortcut is a generic conditional sentence bolted on
+# ("If this didn't work, I'd lose everything") — and once it lands on one it
+# likes, it reuses it across scripts, sometimes twice in the same script, and
+# often where the moment doesn't call for it. Removing the literal example
+# from the style prompt fixes the root cause; this safety net keeps at most
+# ONE such sentence so a repeat can never reach the narrator.
+# Only standalone sentences that START with the formula are touched, so a stake
+# woven into a real sentence ("I knew that if this didn't work, I'd have to
+# sell the house") is never altered.
+_STOCK_STAKE_RE = re.compile(
+    r"^\s*if\s+(?:this|that|it)\s+(?:didn'?t|doesn'?t|don'?t|did\s+not|does\s+not)\s+work\b",
+    re.IGNORECASE,
+)
+
+
+def dedupe_stock_stakes(script, max_keep=1):
+    """Keep at most `max_keep` standalone "If this didn't work..." stake
+    sentences and drop the extras. The dropped sentences are pure formula —
+    they carry no story facts — so removing them never loses information."""
+    if not script:
+        return script
+    parts = re.split(r"((?<=[.!?])\s+)", script.strip())
+    kept, out = 0, []
+    for i in range(0, len(parts), 2):
+        sentence = parts[i]
+        separator = parts[i + 1] if i + 1 < len(parts) else ""
+        if _STOCK_STAKE_RE.match(sentence):
+            kept += 1
+            if kept > max_keep:
+                continue
+        out.append(sentence)
+        if separator:
+            out.append(separator)
+    if kept <= max_keep:
+        return script
+    return "".join(out).strip()
+
+
+# ===========================
 # REDDIT STORY ADAPTATION (FIXED)
 # ===========================
 
@@ -273,7 +321,7 @@ IMPORTANT RULES:
 - **DO NOT include "Part 1" or any part labels in the spoken script.**
 - **Use MAX 2 micro-hooks TOTAL. Pick from variety: "but here's the thing", "then it hit me", "but wait — it gets worse", "and honestly?". NEVER repeat the same phrase. Space them far apart.**
 - **BUILD TENSION WAVES: short punchy lines during drama, longer during reflection. End each paragraph with a mini-hook.**
-- **HIGHLIGHT STAKES: show what's at risk — "If this didn't work, I'd lose everything", "This wasn't just about money anymore"**
+- **HIGHLIGHT STAKES with the story's own concrete details (what they stood to lose and why). NEVER copy a stock stakes phrase from these instructions. If a line like "if this didn't work..." fits the moment, use it AT MOST ONCE per script — and if it doesn't make sense where it lands, CUT IT.**
 
 The goal is to make the story feel fresh, personal, and engaging."""
 
@@ -300,6 +348,7 @@ The goal is to make the story feel fresh, personal, and engaging."""
 
     # Single part — no split parsing needed; strip hype intro (safety net)
     script_text = strip_hype_intro(script_text)
+    script_text = dedupe_stock_stakes(script_text)
 
     # --- NO FORCED ENDING — let the story end naturally (cliffhanger) ---
     # Remove any explicit "end of story" cues the LLM might add
