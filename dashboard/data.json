@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-11T08:11:42Z",
+  "generated_at": "2026-09-11T10:47:41Z",
   "total_stories": 367,
-  "unused_stories": 322,
-  "used_stories": 45,
+  "unused_stories": 321,
+  "used_stories": 46,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 161,
-  "runway_date": "2027-02-19",
+  "days_of_stories": 160,
+  "runway_date": "2027-02-18",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -83,25 +83,48 @@
     },
     {
       "name": "ProRevenge",
-      "total": 11,
-      "unused": 11
+      "total": 10,
+      "unused": 10
     }
   ],
   "schedule": {
-    "next_index": 74
+    "next_index": 75
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
-      "2026-09-11T12:00:00Z",
-      "2026-09-11T18:00:00Z"
+      "2026-09-11T23:00:00Z",
+      "2026-09-12T23:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789121958_ending_captioned_1789122358.mp4",
+      "title": "[FULL STORY] You want special treatment? I would love to!",
+      "subreddit": "ProRevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1439171761402713",
+      "url": "https://www.facebook.com/1272041649331476/videos/1439171761402713",
+      "posted_at": "2026-09-11T10:47:41Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-11T23:00:00Z"
+    },
+    {
+      "video_file": "output_1789121958_ending_captioned_1789122358.mp4",
+      "title": "[FULL STORY] You want special treatment? I would love to!",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ye9J2aQ0IVg",
+      "url": "https://youtu.be/ye9J2aQ0IVg",
+      "posted_at": "2026-09-11T10:44:47Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-11T23:00:00Z"
+    },
     {
       "video_file": "output_1789113397_ending_captioned_1789113592.mp4",
       "title": "[FULL STORY] I finally had enough",
@@ -197,28 +220,6 @@
       "posted_at": "2026-09-09T07:32:30Z",
       "hook_score": 0,
       "publish_at": "2026-09-09T15:00:00Z"
-    },
-    {
-      "video_file": "output_1788867984_ending_captioned_1788868094.mp4",
-      "title": "[TEST] Am I the jerk My girlfriend's sister wants to move in and I won't change my mind.",
-      "subreddit": "AmItheAsshole",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122109930549447442",
-      "url": "https://www.facebook.com/reel/2088507905097843",
-      "posted_at": "2026-09-08T12:03:07Z",
-      "hook_score": 21
-    },
-    {
-      "video_file": "output_1788867984_ending_captioned_1788868094.mp4",
-      "title": "[TEST] Am I the jerk My girlfriend's sister wants to move in and I won't change my mind.",
-      "subreddit": "AmItheAsshole",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "q4BFMdGHWu8",
-      "url": "https://youtu.be/q4BFMdGHWu8",
-      "posted_at": "2026-09-08T12:01:20Z",
-      "hook_score": 21
     }
   ]
 }
