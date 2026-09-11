@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-10T08:16:38Z",
+  "generated_at": "2026-09-11T06:25:58Z",
   "total_stories": 367,
-  "unused_stories": 324,
-  "used_stories": 43,
+  "unused_stories": 323,
+  "used_stories": 44,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 162,
+  "days_of_stories": 161,
   "runway_date": "2027-02-19",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -63,8 +63,8 @@
     },
     {
       "name": "confession",
-      "total": 22,
-      "unused": 22
+      "total": 21,
+      "unused": 21
     },
     {
       "name": "EntitledPeople",
@@ -88,20 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 72
+    "next_index": 73
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-10T12:00:00Z",
-      "2026-09-10T18:00:00Z"
+      "2026-09-11T15:00:00Z",
+      "2026-09-12T15:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789107354_ending_captioned_1789107503.mp4",
+      "title": "[FULL STORY] No one knows I stopped taking my life-saving medication a month ago.",
+      "subreddit": "confession",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122110803315447442",
+      "url": "https://www.facebook.com/reel/1627940542228521",
+      "posted_at": "2026-09-11T06:25:58Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-11T15:00:00Z"
+    },
+    {
+      "video_file": "output_1789107354_ending_captioned_1789107503.mp4",
+      "title": "[FULL STORY] No one knows I stopped taking my life-saving medication a month ago.",
+      "subreddit": "confession",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "TB98f4WawzM",
+      "url": "https://youtu.be/TB98f4WawzM",
+      "posted_at": "2026-09-11T06:25:36Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-11T15:00:00Z"
+    },
     {
       "video_file": "output_1789023236_ending_captioned_1789023552.mp4",
       "title": "[FULL STORY] Respect time off and don't 'stress' you on your days off? Sure. Works both ways.",
@@ -195,29 +218,6 @@
       "posted_at": "2026-09-02T05:14:43Z",
       "hook_score": 0,
       "publish_at": "2026-09-25T21:00:00Z"
-    },
-    {
-      "video_file": "output_1788323538_ending_captioned_1788323908.mp4",
-      "title": "A lawyer's pro revenge on a landlord",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "Ra37C28g8q8",
-      "url": "https://youtu.be/Ra37C28g8q8",
-      "posted_at": "2026-09-02T05:09:14Z",
-      "hook_score": 0,
-      "publish_at": "2026-09-25T21:00:00Z"
-    },
-    {
-      "video_file": "output_1788246864_ending_captioned_1788247062.mp4",
-      "title": "[TEST] I Lied About Finding a Wallet So I Could Keep the Cash Inside",
-      "subreddit": "confession",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1831956041582315",
-      "url": "https://www.facebook.com/1272041649331476/videos/1831956041582315",
-      "posted_at": "2026-09-01T07:34:50Z",
-      "hook_score": 39
     }
   ]
 }
