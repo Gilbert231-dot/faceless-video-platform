@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-11T06:25:58Z",
+  "generated_at": "2026-09-11T08:09:17Z",
   "total_stories": 367,
-  "unused_stories": 323,
-  "used_stories": 44,
+  "unused_stories": 322,
+  "used_stories": 45,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 161,
@@ -73,8 +73,8 @@
     },
     {
       "name": "pettyrevenge",
-      "total": 20,
-      "unused": 19
+      "total": 19,
+      "unused": 18
     },
     {
       "name": "MaliciousCompliance",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 73
+    "next_index": 74
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
-      "2026-09-11T15:00:00Z",
-      "2026-09-12T15:00:00Z"
+      "2026-09-11T21:00:00Z",
+      "2026-09-12T21:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789113397_ending_captioned_1789113592.mp4",
+      "title": "[FULL STORY] I finally had enough",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122110819221447442",
+      "url": "https://www.facebook.com/reel/1093899976549540",
+      "posted_at": "2026-09-11T08:09:17Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-11T21:00:00Z"
+    },
+    {
+      "video_file": "output_1789113397_ending_captioned_1789113592.mp4",
+      "title": "[FULL STORY] I finally had enough",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "LI4YHt6id6Q",
+      "url": "https://youtu.be/LI4YHt6id6Q",
+      "posted_at": "2026-09-11T08:08:54Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-11T21:00:00Z"
+    },
     {
       "video_file": "output_1789107354_ending_captioned_1789107503.mp4",
       "title": "[FULL STORY] No one knows I stopped taking my life-saving medication a month ago.",
@@ -194,30 +218,6 @@
       "url": "https://youtu.be/q4BFMdGHWu8",
       "posted_at": "2026-09-08T12:01:20Z",
       "hook_score": 21
-    },
-    {
-      "video_file": "output_1788860970_ending_captioned_1788861065.mp4",
-      "title": "[TEST] I (18 year old male) ended my relationship with my girlfriend (18 year old female) due to her sexual expectations.",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "failed",
-      "video_id": "",
-      "url": "",
-      "posted_at": "2026-09-08T10:01:49Z",
-      "hook_score": 47,
-      "error": "YouTube upload failed unexpectedly: ('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})"
-    },
-    {
-      "video_file": "output_1788323538_ending_captioned_1788323908.mp4",
-      "title": "A lawyer's pro revenge on a landlord",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1547141366587825",
-      "url": "https://www.facebook.com/1272041649331476/videos/1547141366587825",
-      "posted_at": "2026-09-02T05:14:43Z",
-      "hook_score": 0,
-      "publish_at": "2026-09-25T21:00:00Z"
     }
   ]
 }
