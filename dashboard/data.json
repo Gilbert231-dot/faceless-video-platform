@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-12T10:26:33Z",
+  "generated_at": "2026-09-12T12:18:03Z",
   "total_stories": 367,
-  "unused_stories": 318,
-  "used_stories": 49,
+  "unused_stories": 317,
+  "used_stories": 50,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 159,
-  "runway_date": "2027-02-18",
+  "days_of_stories": 158,
+  "runway_date": "2027-02-17",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -83,24 +83,48 @@
     },
     {
       "name": "ProRevenge",
-      "total": 9,
-      "unused": 9
+      "total": 8,
+      "unused": 8
     }
   ],
   "schedule": {
-    "next_index": 78
+    "next_index": 79
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "23:00"
+      "03:00"
     ],
     "next_publish_utc": [
-      "2026-09-12T23:00:00Z",
-      "2026-09-13T23:00:00Z"
+      "2026-09-13T03:00:00Z",
+      "2026-09-14T03:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789214481_ending_captioned_1789214735.mp4",
+      "title": "[FULL STORY] Oh I played the long game ",
+      "subreddit": "ProRevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122111138361447442",
+      "url": "https://www.facebook.com/reel/4537007196524071",
+      "posted_at": "2026-09-12T12:18:03Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-13T03:00:00Z"
+    },
+    {
+      "video_file": "output_1789214481_ending_captioned_1789214735.mp4",
+      "title": "[FULL STORY] Oh I played the long game ",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "WPZe8u9WRQQ",
+      "url": "https://youtu.be/WPZe8u9WRQQ",
+      "posted_at": "2026-09-12T12:17:14Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-13T03:00:00Z"
+    },
     {
       "video_file": "output_1789207676_ending_captioned_1789207943.mp4",
       "title": "[FULL STORY] Brag about how you’ll just outbid me? Fine, I’ll just outplay you.",
@@ -196,30 +220,6 @@
       "posted_at": "2026-09-11T10:44:47Z",
       "hook_score": 26,
       "publish_at": "2026-09-11T23:00:00Z"
-    },
-    {
-      "video_file": "output_1789113397_ending_captioned_1789113592.mp4",
-      "title": "[FULL STORY] I finally had enough",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122110819221447442",
-      "url": "https://www.facebook.com/reel/1093899976549540",
-      "posted_at": "2026-09-11T08:09:17Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-11T21:00:00Z"
-    },
-    {
-      "video_file": "output_1789113397_ending_captioned_1789113592.mp4",
-      "title": "[FULL STORY] I finally had enough",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "LI4YHt6id6Q",
-      "url": "https://youtu.be/LI4YHt6id6Q",
-      "posted_at": "2026-09-11T08:08:54Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-11T21:00:00Z"
     }
   ]
 }
