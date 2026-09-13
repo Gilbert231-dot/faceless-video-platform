@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-12T12:18:03Z",
+  "generated_at": "2026-09-13T06:53:43Z",
   "total_stories": 367,
-  "unused_stories": 317,
-  "used_stories": 50,
+  "unused_stories": 316,
+  "used_stories": 51,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 158,
-  "runway_date": "2027-02-17",
+  "runway_date": "2027-02-18",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -68,8 +68,8 @@
     },
     {
       "name": "EntitledPeople",
-      "total": 19,
-      "unused": 19
+      "total": 18,
+      "unused": 18
     },
     {
       "name": "pettyrevenge",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 79
+    "next_index": 80
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-13T03:00:00Z",
-      "2026-09-14T03:00:00Z"
+      "2026-09-13T15:00:00Z",
+      "2026-09-14T15:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789281529_ending_captioned_1789281758.mp4",
+      "title": "[FULL STORY] That's My Table!",
+      "subreddit": "EntitledPeople",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122111314827447442",
+      "url": "https://www.facebook.com/reel/1453986630121767",
+      "posted_at": "2026-09-13T06:53:43Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-13T15:00:00Z"
+    },
+    {
+      "video_file": "output_1789281529_ending_captioned_1789281758.mp4",
+      "title": "[FULL STORY] That's My Table!",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "uI7dJtkpcfw",
+      "url": "https://youtu.be/uI7dJtkpcfw",
+      "posted_at": "2026-09-13T06:53:21Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-13T15:00:00Z"
+    },
     {
       "video_file": "output_1789214481_ending_captioned_1789214735.mp4",
       "title": "[FULL STORY] Oh I played the long game ",
@@ -196,30 +220,6 @@
       "posted_at": "2026-09-11T12:38:18Z",
       "hook_score": 0,
       "publish_at": "2026-09-12T03:00:00Z"
-    },
-    {
-      "video_file": "output_1789121958_ending_captioned_1789122358.mp4",
-      "title": "[FULL STORY] You want special treatment? I would love to!",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1439171761402713",
-      "url": "https://www.facebook.com/1272041649331476/videos/1439171761402713",
-      "posted_at": "2026-09-11T10:47:41Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-11T23:00:00Z"
-    },
-    {
-      "video_file": "output_1789121958_ending_captioned_1789122358.mp4",
-      "title": "[FULL STORY] You want special treatment? I would love to!",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "ye9J2aQ0IVg",
-      "url": "https://youtu.be/ye9J2aQ0IVg",
-      "posted_at": "2026-09-11T10:44:47Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-11T23:00:00Z"
     }
   ]
 }
