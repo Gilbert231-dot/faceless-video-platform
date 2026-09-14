@@ -22,6 +22,42 @@
   },
   "log": [
     {
+      "t": "08:48:15 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Refreshing the dashboard data"
+    },
+    {
+      "t": "08:48:15 UTC",
+      "who": "Buffy",
+      "station": "LAPTOP",
+      "activity": "Uploading the finished videos"
+    },
+    {
+      "t": "07:52:29 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "07:52:27 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "07:52:27 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "07:52:27 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
+    {
       "t": "07:18:52 UTC",
       "who": "Buffy",
       "station": "PROJECT FOLDER",
@@ -164,45 +200,9 @@
       "who": "Buffy",
       "station": "PROJECT FOLDER",
       "activity": "Kicking off a new story run"
-    },
-    {
-      "t": "07:21:07 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
-    },
-    {
-      "t": "07:21:07 UTC",
-      "who": "Buffy",
-      "station": "LAPTOP",
-      "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "05:27:18 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "05:27:17 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "05:27:17 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "05:27:17 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-09-14T07:18:52Z",
+  "updated_at": "2026-09-14T08:48:15Z",
   "stories": [
     {
       "subreddit": "pettyrevenge",
@@ -219,11 +219,11 @@
       "url": "https://reddit.com/r/ProRevenge/comments/1cw56x4/401k_with_a_side_of_revenge/"
     },
     {
-      "subreddit": "ProRevenge",
-      "title": "Woman takes revenge against car dealership",
-      "score": 5330,
+      "subreddit": "MaliciousCompliance",
+      "title": "“You need a doctor’s note”",
+      "score": 5288,
       "comments": 0,
-      "url": "https://reddit.com/r/ProRevenge/comments/1mek0t7/woman_takes_revenge_against_car_dealership/"
+      "url": "https://reddit.com/r/MaliciousCompliance/comments/1v49qq4/you_need_a_doctors_note/"
     }
   ]
 }
