@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-14T10:08:46Z",
+  "generated_at": "2026-09-14T11:39:24Z",
   "total_stories": 367,
-  "unused_stories": 313,
-  "used_stories": 54,
+  "unused_stories": 312,
+  "used_stories": 55,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 156,
@@ -78,8 +78,8 @@
     },
     {
       "name": "MaliciousCompliance",
-      "total": 15,
-      "unused": 15
+      "total": 14,
+      "unused": 14
     },
     {
       "name": "ProRevenge",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 83
+    "next_index": 84
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "23:00"
+      "03:00"
     ],
     "next_publish_utc": [
-      "2026-09-14T23:00:00Z",
-      "2026-09-15T23:00:00Z"
+      "2026-09-15T03:00:00Z",
+      "2026-09-16T03:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789385220_ending_captioned_1789385411.mp4",
+      "title": "[FULL STORY] Have you ever used malicious compliance to deal with ridiculous work rules? How did it turn out?",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122111674941447442",
+      "url": "https://www.facebook.com/reel/1065506582882982",
+      "posted_at": "2026-09-14T11:39:24Z",
+      "hook_score": 0,
+      "publish_at": "2026-09-15T03:00:00Z"
+    },
+    {
+      "video_file": "output_1789385220_ending_captioned_1789385411.mp4",
+      "title": "[FULL STORY] Have you ever used malicious compliance to deal with ridiculous work rules? How did it turn out?",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "APQA3O-imZM",
+      "url": "https://youtu.be/APQA3O-imZM",
+      "posted_at": "2026-09-14T11:38:55Z",
+      "hook_score": 0,
+      "publish_at": "2026-09-15T03:00:00Z"
+    },
     {
       "video_file": "output_1789379900_ending_captioned_1789380057.mp4",
       "title": "[FULL STORY] He didn’t believe that I would do anything when I found out he was cheating.",
@@ -196,30 +220,6 @@
       "posted_at": "2026-09-13T06:53:21Z",
       "hook_score": 13,
       "publish_at": "2026-09-13T15:00:00Z"
-    },
-    {
-      "video_file": "output_1789214481_ending_captioned_1789214735.mp4",
-      "title": "[FULL STORY] Oh I played the long game ",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122111138361447442",
-      "url": "https://www.facebook.com/reel/4537007196524071",
-      "posted_at": "2026-09-12T12:18:03Z",
-      "hook_score": 13,
-      "publish_at": "2026-09-13T03:00:00Z"
-    },
-    {
-      "video_file": "output_1789214481_ending_captioned_1789214735.mp4",
-      "title": "[FULL STORY] Oh I played the long game ",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "WPZe8u9WRQQ",
-      "url": "https://youtu.be/WPZe8u9WRQQ",
-      "posted_at": "2026-09-12T12:17:14Z",
-      "hook_score": 13,
-      "publish_at": "2026-09-13T03:00:00Z"
     }
   ]
 }
