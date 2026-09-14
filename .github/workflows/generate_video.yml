@@ -683,7 +683,13 @@ jobs:
       # environment variable — so a test run (batch 0) and the final Batch 4
       # can never chain, whatever the event type is.
       - name: "🔗 Trigger next batch (chain)"
-        if: success() && (github.event_name == 'schedule' || inputs.chained == 'true')
+        # !cancelled() instead of success(): a batch that dies mid-run (TTS error,
+        # render timeout, upload failure) must NOT wipe out the rest of the day's
+        # slots — every batch is an independent run that would still make its own
+        # video. Cancelling a run by hand is how the chain is stopped on purpose.
+        # (A skipped `generate` job — AUTOMATION_PAUSED — runs no steps at all,
+        # so the pause switch is unaffected.)
+        if: ${{ !cancelled() && (github.event_name == 'schedule' || inputs.chained == 'true') }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -694,12 +700,78 @@ jobs:
               exit 0
               ;;
           esac
+
           NEXT_BATCH=$((BATCH_NUM + 1))
+          WF=generate_video.yml
+          REF=main
+          API="https://api.github.com/repos/$GITHUB_REPOSITORY/actions/workflows/$WF"
+
           echo "⏰ Waiting 30 minutes before triggering Batch $NEXT_BATCH..."
           sleep 1800
-          echo "🔗 Triggering Batch $NEXT_BATCH..."
-          gh workflow run generate_video.yml \
-            --ref main \
-            -f batch="$NEXT_BATCH" \
-            -f chained=true
-          echo "✅ Batch $NEXT_BATCH triggered!"
+
+          # Has a dispatch already landed in the last 15 minutes? A dispatch can
+          # succeed while its HTTP response never comes back — retrying that
+          # would queue a DUPLICATE run (an extra video consuming a story and
+          # API quota for the next slot). This check makes the retry idempotent.
+          already_queued() {
+            curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+                 -H "Accept: application/vnd.github+json" \
+                 "$API/runs?event=workflow_dispatch&per_page=5" 2>/dev/null \
+            | python -c "import json,sys,datetime; d=json.load(sys.stdin); cut=datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(minutes=15); print('yes' if any(datetime.datetime.strptime(r['created_at'],'%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=datetime.timezone.utc)>=cut for r in d.get('workflow_runs',[])) else 'no')" 2>/dev/null | grep -q yes
+          }
+
+          # The old chain called `gh workflow run` exactly once. A single failed
+          # call at the very LAST step of a 2-hour run silently cost the rest of
+          # the day's videos (Batch 2's dispatch of Batch 3 failed on 2026-09-13
+          # — the video itself had already been made and uploaded fine). Now a
+          # transient API/CLI failure is retried, with a second path that does
+          # not depend on the gh CLI at all.
+          dispatch_gh() {
+            gh workflow run "$WF" \
+              --repo "$GITHUB_REPOSITORY" \
+              --ref "$REF" \
+              -f batch="$NEXT_BATCH" \
+              -f chained=true
+          }
+
+          # REST API fallback: returns HTTP 204 (empty body) on a successful
+          # dispatch, so --fail-with-body makes the exit status a clean signal.
+          dispatch_api() {
+            curl -sS --fail-with-body -o /dev/null -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "$API/dispatches" \
+              -d "{\"ref\":\"$REF\",\"inputs\":{\"batch\":\"$NEXT_BATCH\",\"chained\":\"true\"}}"
+          }
+
+          for attempt in 1 2 3; do
+            echo "🔗 Triggering Batch $NEXT_BATCH (attempt $attempt)..."
+            if dispatch_gh; then
+              echo "✅ Batch $NEXT_BATCH triggered (gh)."
+              exit 0
+            fi
+            echo "⚠️  gh dispatch failed — trying the REST API directly..."
+            if dispatch_api; then
+              echo "✅ Batch $NEXT_BATCH triggered (REST API)."
+              exit 0
+            fi
+            echo "⚠️  Both dispatch paths failed on attempt $attempt."
+            if already_queued; then
+              echo "✅ A run was queued in the last 15 minutes — the dispatch actually landed. Not retrying."
+              exit 0
+            fi
+            sleep $((attempt * 30))
+          done
+
+          # Loud and actionable: never lose a batch silently again.
+          {
+            echo "### ⚠️ Batch $NEXT_BATCH was NOT triggered"
+            echo ""
+            echo "Both dispatch paths (gh CLI and the REST API) failed 3 times."
+            echo "Today's later batch(es) will not run automatically."
+            echo "Trigger it by hand: Actions → Generate Faceless Videos → Run workflow"
+            echo "→ batch = \`$NEXT_BATCH\`, chained = \`true\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "❌ Could not trigger Batch $NEXT_BATCH after 3 attempts."
+          exit 1
