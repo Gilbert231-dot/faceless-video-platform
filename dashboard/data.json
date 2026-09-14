@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-14T09:08:15Z",
+  "generated_at": "2026-09-14T10:08:46Z",
   "total_stories": 367,
-  "unused_stories": 314,
-  "used_stories": 53,
+  "unused_stories": 313,
+  "used_stories": 54,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 157,
-  "runway_date": "2027-02-18",
+  "days_of_stories": 156,
+  "runway_date": "2027-02-17",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -73,8 +73,8 @@
     },
     {
       "name": "pettyrevenge",
-      "total": 18,
-      "unused": 17
+      "total": 17,
+      "unused": 16
     },
     {
       "name": "MaliciousCompliance",
@@ -88,20 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 82
+    "next_index": 83
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
-      "2026-09-14T12:00:00Z",
-      "2026-09-14T18:00:00Z"
+      "2026-09-14T23:00:00Z",
+      "2026-09-15T23:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789379900_ending_captioned_1789380057.mp4",
+      "title": "[FULL STORY] He didn’t believe that I would do anything when I found out he was cheating.",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122111657253447442",
+      "url": "https://www.facebook.com/reel/1793331608525265",
+      "posted_at": "2026-09-14T10:08:46Z",
+      "hook_score": 34,
+      "publish_at": "2026-09-14T23:00:00Z"
+    },
+    {
+      "video_file": "output_1789379900_ending_captioned_1789380057.mp4",
+      "title": "[FULL STORY] He didn’t believe that I would do anything when I found out he was cheating.",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "LT0tg_aJvdo",
+      "url": "https://youtu.be/LT0tg_aJvdo",
+      "posted_at": "2026-09-14T10:08:27Z",
+      "hook_score": 34,
+      "publish_at": "2026-09-14T23:00:00Z"
+    },
     {
       "video_file": "output_1789374976_ending_captioned_1789375156.mp4",
       "title": "[FULL STORY] Woman takes revenge against car dealership",
@@ -197,30 +220,6 @@
       "posted_at": "2026-09-12T12:17:14Z",
       "hook_score": 13,
       "publish_at": "2026-09-13T03:00:00Z"
-    },
-    {
-      "video_file": "output_1789207676_ending_captioned_1789207943.mp4",
-      "title": "[FULL STORY] Brag about how you’ll just outbid me? Fine, I’ll just outplay you.",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "1787186092410406",
-      "url": "https://www.facebook.com/1272041649331476/videos/1787186092410406",
-      "posted_at": "2026-09-12T10:26:32Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-12T23:00:00Z"
-    },
-    {
-      "video_file": "output_1789207676_ending_captioned_1789207943.mp4",
-      "title": "[FULL STORY] Brag about how you’ll just outbid me? Fine, I’ll just outplay you.",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "ExrqoxhJ4Og",
-      "url": "https://youtu.be/ExrqoxhJ4Og",
-      "posted_at": "2026-09-12T10:24:36Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-12T23:00:00Z"
     }
   ]
 }
