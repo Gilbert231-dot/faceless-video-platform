@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-13T08:26:56Z",
+  "generated_at": "2026-09-14T07:18:52Z",
   "total_stories": 367,
-  "unused_stories": 316,
-  "used_stories": 51,
+  "unused_stories": 315,
+  "used_stories": 52,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 158,
+  "days_of_stories": 157,
   "runway_date": "2027-02-18",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -78,8 +78,8 @@
     },
     {
       "name": "MaliciousCompliance",
-      "total": 16,
-      "unused": 16
+      "total": 15,
+      "unused": 15
     },
     {
       "name": "ProRevenge",
@@ -88,20 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 80
+    "next_index": 81
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-13T12:00:00Z",
-      "2026-09-13T18:00:00Z"
+      "2026-09-14T15:00:00Z",
+      "2026-09-15T15:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789369166_ending_captioned_1789369452.mp4",
+      "title": "[FULL STORY] Stop being so friendly",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "2230461434352594",
+      "url": "https://www.facebook.com/1272041649331476/videos/2230461434352594",
+      "posted_at": "2026-09-14T07:18:52Z",
+      "hook_score": 0,
+      "publish_at": "2026-09-14T15:00:00Z"
+    },
+    {
+      "video_file": "output_1789369166_ending_captioned_1789369452.mp4",
+      "title": "[FULL STORY] Stop being so friendly",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "AJyTVnAj5l0",
+      "url": "https://youtu.be/AJyTVnAj5l0",
+      "posted_at": "2026-09-14T07:16:55Z",
+      "hook_score": 0,
+      "publish_at": "2026-09-14T15:00:00Z"
+    },
     {
       "video_file": "output_1789281529_ending_captioned_1789281758.mp4",
       "title": "[FULL STORY] That's My Table!",
@@ -197,30 +220,6 @@
       "posted_at": "2026-09-12T07:18:31Z",
       "hook_score": 26,
       "publish_at": "2026-09-12T15:00:00Z"
-    },
-    {
-      "video_file": "output_1789129355_ending_captioned_1789129605.mp4",
-      "title": "[FULL STORY] Cable company kept calling to recharge even after disconnecting service, booked tech support to fix non-existent TV box.",
-      "subreddit": "ProRevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122110884285447442",
-      "url": "https://www.facebook.com/reel/1785841319516504",
-      "posted_at": "2026-09-11T12:40:11Z",
-      "hook_score": 0,
-      "publish_at": "2026-09-12T03:00:00Z"
-    },
-    {
-      "video_file": "output_1789129355_ending_captioned_1789129605.mp4",
-      "title": "[FULL STORY] Cable company kept calling to recharge even after disconnecting service, booked tech support to fix non-existent TV box.",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "Rx5eivlFfNY",
-      "url": "https://youtu.be/Rx5eivlFfNY",
-      "posted_at": "2026-09-11T12:38:18Z",
-      "hook_score": 0,
-      "publish_at": "2026-09-12T03:00:00Z"
     }
   ]
 }
