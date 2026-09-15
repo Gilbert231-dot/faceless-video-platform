@@ -4,8 +4,8 @@
     "buffy": {
       "name": "Buffy",
       "color": "#a78bfa",
-      "station": "PROJECT FOLDER",
-      "activity": "Refreshing the dashboard data"
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
     },
     "bro": {
       "name": "Bro",
@@ -21,6 +21,30 @@
     }
   },
   "log": [
+    {
+      "t": "10:22:46 UTC",
+      "who": "Buffy",
+      "station": "STUDIO",
+      "activity": "Rendering 4K stories (CRF 15, veryslow)"
+    },
+    {
+      "t": "10:22:45 UTC",
+      "who": "Bro",
+      "station": "BRO'S DESK",
+      "activity": "Standing by, ready to help"
+    },
+    {
+      "t": "10:22:45 UTC",
+      "who": "You",
+      "station": "LOUNGE",
+      "activity": "Watching the room come alive"
+    },
+    {
+      "t": "10:22:45 UTC",
+      "who": "Buffy",
+      "station": "PROJECT FOLDER",
+      "activity": "Kicking off a new story run"
+    },
     {
       "t": "09:49:57 UTC",
       "who": "Buffy",
@@ -176,33 +200,9 @@
       "who": "Buffy",
       "station": "LAPTOP",
       "activity": "Uploading the finished videos"
-    },
-    {
-      "t": "09:22:03 UTC",
-      "who": "Buffy",
-      "station": "STUDIO",
-      "activity": "Rendering 4K stories (CRF 15, veryslow)"
-    },
-    {
-      "t": "09:21:59 UTC",
-      "who": "Bro",
-      "station": "BRO'S DESK",
-      "activity": "Standing by, ready to help"
-    },
-    {
-      "t": "09:21:59 UTC",
-      "who": "You",
-      "station": "LOUNGE",
-      "activity": "Watching the room come alive"
-    },
-    {
-      "t": "09:21:59 UTC",
-      "who": "Buffy",
-      "station": "PROJECT FOLDER",
-      "activity": "Kicking off a new story run"
     }
   ],
-  "updated_at": "2026-09-15T09:49:57Z",
+  "updated_at": "2026-09-15T10:22:46Z",
   "stories": [
     {
       "subreddit": "pettyrevenge",
