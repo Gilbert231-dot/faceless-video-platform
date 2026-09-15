@@ -112,7 +112,7 @@ The Facebook step mirrors the YouTube step exactly:
 | Mode | What happens on Facebook |
 |---|---|
 | **Test run** (`test_mode=true` in the dispatch) | posts a **DRAFT** — only you (page admin) can see it. Review it on the Page, exactly like a private YouTube video |
-| **Production + public** (normal cron) | posts **PUBLISHED** at the **same slots as YouTube** (12:00 / 20:00 UTC, 8h apart) — one scheduling decision per run, both platforms go live together |
+| **Production + public** (normal cron) | posts **PUBLISHED** at the **same slot as YouTube for that batch** (15:00 / 21:00 / 23:00 / 03:00 UTC — one slot per batch) — one scheduling decision per run, so both platforms go live together |
 | **Production + private** (YOUTUBE_PRIVACY=private) | posts PUBLISHED immediately (FB has no "private" visibility; draft is test-only) |
 
 So: keep `FACEBOOK_ENABLED=false` while you're reviewing content, and only
@@ -141,6 +141,11 @@ live on Facebook automatically.
   the app** from your account (Settings → Apps and websites). If that ever
   happens, just re-run `facebook_setup.py` and update the
   `FB_PAGE_ACCESS_TOKEN` secret — nothing else changes.
+- Because that invalidation gives no warning, every run now starts with a
+  **credential preflight** (`verify_posting_credentials.py`) that does a
+  read-only `GET /{page_id}?fields=name` with this token BEFORE anything is
+  rendered. A revoked token therefore fails the day in ~3 minutes instead of
+  after a ~1.5 h render that produces nothing.
 
 ---
 

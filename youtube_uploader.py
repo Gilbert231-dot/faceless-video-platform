@@ -216,4 +216,18 @@ def upload_to_youtube(
                 f"YouTube upload failed (HTTP {status}): {e.reason}"
             ) from e
         except Exception as e:
+            text = str(e)
+            if "invalid_grant" in text or "expired or revoked" in text:
+                # A dead refresh token is deterministic — retrying cannot help, and
+                # this message is the only clue left on the run page (it is also
+                # what lands in video_history.json), so it says what to DO.
+                # verify_posting_credentials.py is meant to catch this before a
+                # render ever starts; if this fires, that preflight was skipped.
+                raise RuntimeError(
+                    "YouTube auth is dead: the refresh token expired or was revoked. "
+                    "Mint a new one with `python youtube_setup.py` and update the "
+                    "YOUTUBE_REFRESH_TOKEN secret. (Google expires these tokens 7 days "
+                    "after they are minted while the OAuth app's publishing status is "
+                    "'Testing' — publish the app to 'In production' to stop that cycle.)"
+                ) from e
             raise RuntimeError(f"YouTube upload failed unexpectedly: {e}") from e

@@ -2,8 +2,17 @@ name: Generate Faceless Videos
 
 on:
   schedule:
-    # Only Batch 1 triggers via cron — it chains to Batches 2, 3, 4 automatically
-    - cron: "0 1 * * *"    # Batch 1 — 1 AM UTC
+    # Only Batch 1 triggers via cron — it chains to Batches 2, 3, 4 automatically.
+    # ⚠️ GitHub's cron is BEST-EFFORT: this expression is when the run is DUE, not
+    # when it starts. Measured on this repo: the 01:00 UTC cron has actually been
+    # starting 05:15–05:49 UTC every day (and a 22:00 cron started ~22:20). GitHub
+    # creates the run late by a variable amount, and the api-driven chain batches
+    # therefore also start late — that is expected, not a misconfiguration.
+    # Nothing downstream depends on the start hour: each batch's publish slot is
+    # recomputed as the next occurrence of its slot at least 1 h away, so the four
+    # videos still go public in the intended order. The measured delay is printed
+    # by the "Calculate publish schedule" step and its run summary.
+    - cron: "0 1 * * *"    # Batch 1 — DUE 01:00 UTC (starts ~05:30 UTC in practice)
   workflow_dispatch:
     inputs:
       batch:
@@ -17,6 +26,15 @@ on:
       # batch never silently fires three more runs behind your back.
       chained:
         description: 'Internal: true = dispatched by the previous batch (do not set by hand)'
+        required: false
+        default: 'false'
+        type: string
+      # Escape hatch for a failed credential preflight: render anyway so the
+      # finished video can be downloaded from the run's Artifacts and posted by
+      # hand. Leave it 'false' — a normal run must never spend ElevenLabs
+      # credits and a story on a video that cannot be uploaded.
+      force_render:
+        description: 'Internal: true = skip the credential preflight and render anyway'
         required: false
         default: 'false'
         type: string
@@ -157,27 +175,61 @@ jobs:
               echo "🎬 BATCH 1: Afternoon post"
               echo "YOUTUBE_SCHEDULE_TIMES=15:00" >> $GITHUB_ENV
               echo "TIKTOK_SCHEDULE_TIMES=14:00" >> $GITHUB_ENV
-              echo "BATCH_NAME=Batch 1 (3PM)" >> $GITHUB_ENV
+              # Named by its PUBLISH slot, not by the hour the run happens to
+              # start — GitHub's cron can start this batch ~4.5 h late.
+              echo "BATCH_NAME=Batch 1 (15:00 UTC slot)" >> $GITHUB_ENV
               ;;
             2)
               echo "🎬 BATCH 2: Evening post"
               echo "YOUTUBE_SCHEDULE_TIMES=21:00" >> $GITHUB_ENV
               echo "TIKTOK_SCHEDULE_TIMES=18:00" >> $GITHUB_ENV
-              echo "BATCH_NAME=Batch 2 (7PM)" >> $GITHUB_ENV
+              echo "BATCH_NAME=Batch 2 (21:00 UTC slot)" >> $GITHUB_ENV
               ;;
             3)
               echo "🎬 BATCH 3: Late night post"
               echo "YOUTUBE_SCHEDULE_TIMES=23:00" >> $GITHUB_ENV
               echo "TIKTOK_SCHEDULE_TIMES=22:00" >> $GITHUB_ENV
-              echo "BATCH_NAME=Batch 3 (11PM)" >> $GITHUB_ENV
+              echo "BATCH_NAME=Batch 3 (23:00 UTC slot)" >> $GITHUB_ENV
               ;;
             *)
               echo "🎬 BATCH 4: Night owl post"
               echo "YOUTUBE_SCHEDULE_TIMES=03:00" >> $GITHUB_ENV
               echo "TIKTOK_SCHEDULE_TIMES=02:00" >> $GITHUB_ENV
-              echo "BATCH_NAME=Batch 4 (3AM)" >> $GITHUB_ENV
+              echo "BATCH_NAME=Batch 4 (03:00 UTC slot)" >> $GITHUB_ENV
               ;;
           esac
+
+      # ── CREDENTIAL PREFLIGHT (fail fast) ─────────────────────────────────
+      # Runs BEFORE the story is picked and before the ~1.5 h render, so a dead
+      # posting credential costs ~3 minutes instead of a full render + TTS
+      # credits + one story. That is what run #260 lost (2026-09-15): YouTube
+      # answered `invalid_grant: Token has been expired or revoked` at the LAST
+      # step and the finished video died with the ephemeral runner.
+      # Checks YouTube + Facebook + TikTok, SKIPs any platform whose gate file
+      # (FACEBOOK_ENABLED / TIKTOK_ENABLED) is off, and treats a transient
+      # network blip as a warning so it can never cost a day's videos.
+      #   Dead YouTube token → `python youtube_setup.py`, then update the
+      #   YOUTUBE_REFRESH_TOKEN secret. Google expires these tokens 7 days after
+      #   they are minted while the OAuth app's publishing status is "Testing" —
+      #   publishing the app to "In production" stops that weekly cycle.
+      # Skipped in LOCAL_UPLOAD_MODE (that path uploads from your laptop) and
+      # when force_render=true.
+      - name: Verify posting credentials (fail fast)
+        if: ${{ !vars.LOCAL_UPLOAD_MODE && inputs.force_render != 'true' }}
+        env:
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+          FB_APP_ID: ${{ secrets.FB_APP_ID }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+          TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+          TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+          # Optional: the TikTok check can only persist a rotated refresh token
+          # when this PAT is present.
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: python verify_posting_credentials.py
 
       # The story bank now lives directly in the repo as reddit_stories/ (the
       # old reddit_stories.zip was 146 MB unpacked, mostly raw comment dumps
@@ -355,7 +407,70 @@ jobs:
           with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
               f.write(f"PUBLISH_TIMES={times_str}\n")
               f.write(f"YOUTUBE_PRIVACY_VALUE={privacy}\n")
+          # --- Cron drift readout -------------------------------------------
+          # GitHub's schedule trigger is best-effort: the run is created LATE by
+          # a variable amount, so the cron says when the run is DUE, not when it
+          # starts. Measured on this repo: the 01:00 UTC cron starts 05:15–05:49
+          # UTC. Printing the real delay every run makes a growing drift visible
+          # instead of silent. Nothing below depends on it — each slot is
+          # recomputed as the next occurrence at least MIN_AHEAD (1 h) away.
+          import datetime
+          now = datetime.datetime.now(datetime.timezone.utc)
+          cron = "${{ github.event.schedule }}".strip()
+          summary = []
+          if cron:
+              fields = cron.split()
+              if len(fields) >= 2 and fields[0].isdigit() and fields[1].isdigit():
+                  due = now.replace(hour=int(fields[1]), minute=int(fields[0]),
+                                    second=0, microsecond=0)
+                  minutes = int((now - due).total_seconds() // 60)
+                  delay = f"+{minutes // 60}h{minutes % 60:02d}m" if minutes >= 0 else f"{minutes}m"
+                  print(f"⏱️  Cron '{cron}' was due {due:%H:%M} UTC — this run started "
+                        f"{now:%H:%M} UTC ({delay} late).")
+                  summary.append(
+                      f"Cron `{cron}` was due {due:%H:%M} UTC; the run started "
+                      f"{now:%H:%M} UTC (**{delay} late**). GitHub's cron is "
+                      f"best-effort — see the note at the top of the workflow file."
+                  )
+
           print(f"📅 Schedule: privacy={privacy}, times={times_str}, videos={count}")
+
+          # Where the slot actually landed, relative to the run's own day.
+          # A slot "tomorrow" is NORMAL, not a fault: by the time the night-owl
+          # batch renders, its 03:00 slot has already gone by, so the slot
+          # resolves to the next occurrence — that is the designed behaviour
+          # (see youtube_schedule.next_publish_times). A warning is reserved for
+          # a slot MORE THAN A DAY out, which means something is genuinely wrong
+          # (the video would sit an extra day — the old Sep-25 bug where slots
+          # marched weeks into the future).
+          if times_str:
+              landed = []
+              for slot in times_str.split(","):
+                  if not slot:
+                      continue
+                  try:
+                      when = datetime.datetime.strptime(slot, "%Y-%m-%dT%H:%M:%SZ").replace(
+                          tzinfo=datetime.timezone.utc)
+                  except ValueError:
+                      landed.append(slot)
+                      continue
+                  hours = (when - now).total_seconds() / 3600.0
+                  if when.date() == now.date():
+                      landed.append(f"{slot} (today, in {hours:.1f} h)")
+                  else:
+                      landed.append(f"{slot} (in {hours:.1f} h)")
+                  if hours > 26:
+                      print(f"⚠️  Publish slot {slot} is {hours / 24:.1f} days away — "
+                            f"expected at most ~1 day. Check YOUTUBE_SCHEDULE_TIMES "
+                            f"and the schedule state file.")
+              print(f"🗓️  Publish slot(s): {'; '.join(landed)}")
+              summary.append("Publish slot(s): " + "; ".join(landed))
+
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary and summary_path:
+              with open(summary_path, "a", encoding="utf-8") as f:
+                  f.write("\n### 📅 Schedule\n\n"
+                          + "\n".join(f"- {line}" for line in summary) + "\n")
           PY
 
       # LOCAL UPLOAD MODE: When LOCAL_UPLOAD_MODE=true, skip the YouTube upload
@@ -471,11 +586,18 @@ jobs:
               meta = json.load(open(metadata)) if os.path.exists(metadata) else {}
               caption = build_caption(meta)
               print(f"📱 Uploading {os.path.basename(video)} to TikTok ({privacy})...")
+              # access_token=… : the credential preflight already refreshed and
+              # persisted the token this run. Passing it here avoids a SECOND
+              # refresh, which would rotate the refresh token again and leave
+              # this call holding one the preflight already superseded.
+              # (Empty when the preflight was skipped — then this refreshes as
+              # before, exactly like a normal TikTok post.)
               result = publish_tiktok(
                   video,
                   title=caption,
                   privacy_level=privacy,
                   on_new_refresh_token=save_refresh_token_via_gh,
+                  access_token=os.environ.get("TIKTOK_ACCESS_TOKEN") or None,
               )
               print(f"✅ TikTok publish complete: {result}")
           PY
@@ -632,6 +754,11 @@ jobs:
       # retention — fine for faceless story videos, but worth knowing while
       # content is still in the review stage.
       - name: Download original videos (artifacts)
+        # !cancelled() (not plain success()): if any LATER step fails — a dead
+        # Facebook/TikTok token, an upload error — the finished video must still
+        # be downloadable so it can be posted by hand. Before this, run #260's
+        # fully-rendered video was thrown away with the ephemeral runner.
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: videos-${{ github.run_id }}

@@ -6,6 +6,12 @@ Flow per video:
      (Access tokens last 24 h; refresh tokens last 365 days, so every run
      refreshes first. The refresh token may rotate — see
      save_refresh_token_via_gh().)
+     EXCEPTION: when the workflow's credential preflight
+     (verify_posting_credentials.py) already refreshed this run, it hands the
+     fresh access token over as TIKTOK_ACCESS_TOKEN and this module reuses it
+     via publish_tiktok(access_token=...). That is deliberate — TikTok rotates
+     the refresh token on EVERY refresh, so refreshing a second time here would
+     use a token the first call already superseded.
   2. Query creator info -> privacy_level_options, max duration.
   3. POST /video/init/  ->  publish_id + upload_url
   4. PUT the mp4 to upload_url (single streaming PUT with Content-Range).
@@ -286,15 +292,28 @@ def publish_tiktok(
     privacy_level="SELF_ONLY",
     max_attempts=3,
     on_new_refresh_token=None,
+    access_token=None,
 ):
-    """Upload + publish one video to TikTok. Returns a result dict."""
+    """Upload + publish one video to TikTok. Returns a result dict.
+
+    access_token: an access token already obtained (and whose rotation was
+    already persisted) by the credential preflight. When given, this function
+    does NOT refresh — see the module docstring for why a second refresh in the
+    same run is unsafe.
+    """
     client_key, client_secret, refresh_token = _secrets()
 
-    token_payload = refresh_access_token(client_key, client_secret, refresh_token)
-    access_token = token_payload["access_token"]
-    new_refresh = token_payload.get("refresh_token")
-    if new_refresh and new_refresh != refresh_token and on_new_refresh_token:
-        on_new_refresh_token(new_refresh)
+    if access_token:
+        logger.info(
+            "Using the access token from the credential preflight — no second "
+            "refresh (TikTok rotates the refresh token on every refresh)."
+        )
+    else:
+        token_payload = refresh_access_token(client_key, client_secret, refresh_token)
+        access_token = token_payload["access_token"]
+        new_refresh = token_payload.get("refresh_token")
+        if new_refresh and new_refresh != refresh_token and on_new_refresh_token:
+            on_new_refresh_token(new_refresh)
 
     info = query_creator_info(access_token)
     options = info.get("privacy_level_options") or []

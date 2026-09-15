@@ -120,8 +120,10 @@ a kill switch for the **entire** pipeline (generation + YouTube + TikTok):
   the trash icon → commit).
 
 When paused:
-- The daily 2 AM UTC cron still fires, but the **generate job is skipped** —
-  zero ElevenLabs credits spent, zero stories consumed, nothing posted.
+- The daily cron still fires (its expression is due 01:00 UTC, though GitHub's
+  best-effort scheduler actually starts it around 05:30 UTC), but the **generate
+  job is skipped** — zero ElevenLabs credits spent, zero stories consumed,
+  nothing posted.
 - The run shows green in Actions with "generate skipped" and a message saying
   it's paused.
 
@@ -161,6 +163,12 @@ as AI-generated content — that's the required disclosure for this content.
   you when this is pending).
 - If posting ever fails with `access_token_invalid`, re-run `tiktok_setup.py`
   and update the `TIKTOK_REFRESH_TOKEN` secret.
+- Every run now starts with a **credential preflight**
+  (`verify_posting_credentials.py`) that refreshes this token once, persists the
+  rotation and passes the access token to the upload step — so a dead token
+  fails the day in ~3 minutes instead of after a ~1.5 h render. It refreshes
+  ONLY once on purpose: TikTok rotates the token on every refresh, so a second
+  refresh in the same run would use one the first call already superseded.
 
 ---
 
