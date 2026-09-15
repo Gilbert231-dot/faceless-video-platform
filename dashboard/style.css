@@ -1,14 +1,17 @@
 :root {
-    --bg: #0d1117;
-    --panel: #161b22;
-    --border: #30363d;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --accent: #2563eb;
+    /* Graphite + white — matches the public site (index.html). */
+    --bg: #0b0b0c;
+    --panel: #141417;
+    --border: #2a2a2e;
+    --text: #ededf0;
+    --muted: #9a9aa2;
+    --accent: #e4e4e7;
+    /* Semantic colours are intentionally left alone: green/red/yellow carry
+       meaning (success, failure, warning) and must not change with the theme. */
     --green: #3fb950;
     --red: #f85149;
     --yellow: #d29922;
-    --blue: #58a6ff;
+    --blue: #8ab4ff;
 }
 
 * { box-sizing: border-box; }

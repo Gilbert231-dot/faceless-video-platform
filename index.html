@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <meta name="theme-color" content="#7c3aed">
+    <meta name="theme-color" content="#0b0b0c">
     <link rel="manifest" href="./site.webmanifest">
     <meta property="og:title" content="Faceless Video Creator poster">
     <meta property="og:description" content="AI-powered Reddit story video generator">
@@ -19,13 +19,17 @@
     <meta name="description" content="Faceless Video Creator poster turns Reddit stories into narrated, captioned videos with AI voiceovers and posts them to YouTube, TikTok and Facebook automatically." />
     <style>
         :root {
-            --bg: #0d1117;
-            --bg-soft: #161b22;
-            --border: #30363d;
-            --text: #e6edf3;
-            --muted: #8b949e;
-            --accent: #7c5cff;
-            --accent-2: #22d3ee;
+            --bg: #0b0b0c;
+            --bg-soft: #141417;
+            --border: #2a2a2e;
+            --text: #ededf0;
+            --muted: #9a9aa2;
+            --accent: #e4e4e7;
+            --accent-2: #8ab4ff;
+            --btn-from: #c4c4c7;
+            --btn-to: #e4e4e7;
+            --btn-text: #0b0b0c;
+            --glow: rgba(255, 255, 255, 0.16);
             --radius: 12px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,7 +50,7 @@
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
-            background: rgba(13, 17, 23, 0.9);
+            background: rgba(11, 11, 12, 0.9);
             backdrop-filter: blur(8px);
             z-index: 10;
         }
@@ -78,8 +82,8 @@
             text-align: center;
             padding: 90px 5% 70px;
             background:
-                radial-gradient(ellipse at top, rgba(124, 92, 255, 0.18), transparent 55%),
-                radial-gradient(ellipse at bottom, rgba(34, 211, 238, 0.10), transparent 55%);
+                radial-gradient(ellipse at top, rgba(255, 255, 255, 0.07), transparent 55%),
+                radial-gradient(ellipse at bottom, rgba(138, 180, 255, 0.10), transparent 55%);
         }
         .hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -0.02em; }
         .hero h1 em { font-style: normal; color: var(--accent-2); }
@@ -99,7 +103,7 @@
             transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
         .btn:hover { transform: translateY(-2px); text-decoration: none; }
-        .btn-primary { background: linear-gradient(135deg, var(--accent), #9b5cff); color: #fff; box-shadow: 0 8px 24px rgba(124, 92, 255, 0.35); }
+        .btn-primary { background: linear-gradient(135deg, var(--btn-from), var(--btn-to)); color: var(--btn-text); box-shadow: 0 8px 24px var(--glow); }
         .btn-ghost { border: 1px solid var(--border); color: var(--text); }
         .btn-ghost:hover { border-color: var(--accent-2); }
 
@@ -117,9 +121,10 @@
         .step .num {
             width: 34px; height: 34px;
             display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            background: linear-gradient(135deg, var(--btn-from), var(--btn-to));
             border-radius: 50%;
             font-weight: 700; font-size: 0.95rem;
+            color: var(--btn-text);
             margin-bottom: 14px;
         }
         .step h3 { font-size: 1.05rem; margin-bottom: 6px; }
@@ -264,7 +269,7 @@
                 loop
                 preload="metadata"
                 poster="/faceless-video-platform/assets/demo/real_poster.jpg"
-                style="width:100%;border-radius:24px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(124,92,255,0.25);aspect-ratio:9/16;object-fit:cover;background:#000;">
+                style="width:100%;border-radius:24px;border:1px solid var(--border);box-shadow:0 20px 60px var(--glow);aspect-ratio:9/16;object-fit:cover;background:#000;">
                 <source src="/faceless-video-platform/assets/demo/real_demo.mp4" type="video/mp4" />
                 Your browser does not support embedded video.
             </video>
