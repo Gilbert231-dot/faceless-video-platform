@@ -118,11 +118,19 @@ def get_gen_z_style(include_hook=True):
     STORY LADDER TECHNIQUES (Kallaway Framework — bake these into EVERY story):
     
     LEVEL 2 — MICRO-HOOKS (pattern interrupts — use SPARINGLY, max 2 total per script):
-    - Never force a hook phrase — let one land naturally at a real twist, not every few sentences
-    - Vary the phrasing each time — NEVER reuse the same hook phrase twice in one script
-    - Prefer subtle transitions ("but wait", "then it hit me", "and honestly?") over recycled catchphrases
+    - A micro-hook is ONE short line at a genuine twist that breaks the pattern
+      and makes people keep watching — built from what is actually happening in
+      that moment, in your own fresh words for THIS story
+    - Never force one — most stories need none at all, and a story that needs
+      one needs one or two, never one every few sentences
+    - NEVER reuse the same hook wording twice in one script
+    - Do NOT reach for these stock lines — they have been used to death, so
+      copying them is exactly what makes a story sound fake: "then it hit me",
+      "wait, it gets worse", "it gets worse", "but here's the thing",
+      "and honestly?"
+    - The best hook lands on the twist itself — the second half of the line
+      flips the first. Write that flip yourself.
     - Most paragraphs should flow naturally with NO hook at all
-    - Example of a good single hook: "I thought it was over. It wasn't."
     
     LEVEL 3 — STAKES (make the audience CARE):
     - Show what's at stake through the story's OWN concrete facts — what
@@ -136,10 +144,13 @@ def get_gen_z_style(include_hook=True):
     - Make the viewer feel the weight: "This wasn't just about money anymore"
     
     LEVEL 4 — OPEN LOOPS & TENSION WAVES:
-    - Open a loop early: "Little did I know, this was just the beginning"
+    - Open a loop early — a quiet line hinting that something the narrator could
+      not see yet is coming (never the stock opener "little did I know")
     - Create tension waves: build up, release, build up BIGGER
     - At ONE key turning point (at most), a twist phrase is okay — but make it fresh, not "and that's when everything changed"
-    - End on a moment of tension or surprise WITHOUT announcing it — no "what happened next" or "cliffhanger" wording
+    - Let the story END where the story ends — on its own real resolution,
+      naturally. No forced cliffhanger, no "what happened next" tease, and no
+      announcing that it is over
     - Vary pacing: short punchy lines during tension, longer during reflection
     
     LEVEL 5 — CLARITY & METAPHORS:
@@ -274,6 +285,81 @@ def dedupe_stock_stakes(script, max_keep=1):
 
 
 # ===========================
+# STOCK MICRO-HOOK DE-DUPLICATION (safety net)
+# ===========================
+# Micro-hooks are supposed to be a fresh line written for the moment, but the
+# model's shortcut is to reuse the exact stock lines it used to be shown as
+# examples ("then it hit me", "wait, it gets worse", "but here's the thing",
+# "and honestly?") — often the same one twice in one script, and in almost
+# every video. Removing the literal examples from the style prompt fixes the
+# root cause; this safety net keeps at most `max_keep` of them per script and
+# never lets the SAME stock line appear twice, so a recycled catchphrase can
+# never reach the narrator.
+# Only PURE interjections are dropped — a sentence whose whole content is the
+# stock phrase. A hook that carries story content ("Then it hit me that the
+# door was unlocked") is counted but never altered, so nothing factual is lost.
+_STOCK_HOOK_RES = (
+    ("gets worse", re.compile(
+        r"^(?:(?:but|and)\s+)?(?:wait|now|hold\s+on)?[,\s\u2014\u2013-]*"
+        r"(?:it\s+)?(?:just\s+)?gets?\s+(?:even\s+|much\s+)?worse\b",
+        re.IGNORECASE)),
+    ("it hit me", re.compile(
+        r"^(?:(?:but|and)\s+)?(?:then\s+|so\s+|that'?s\s+when\s+)?it\s+"
+        r"(?:(?:just|finally|suddenly|then)\s+)*hit\s+me\b",
+        re.IGNORECASE)),
+    ("here's the thing", re.compile(
+        r"^(?:(?:but|and|so)\s+)?here'?s\s+the\s+thing\b",
+        re.IGNORECASE)),
+    ("and honestly", re.compile(
+        r"^(?:(?:but|and)\s+)?honestly\s*\?",
+        re.IGNORECASE)),
+    ("little did i know", re.compile(
+        r"^little\s+did\s+(?:i|we|they)\s+know\b",
+        re.IGNORECASE)),
+)
+
+_STOCK_HOOK_REMAINDER_RE = re.compile(r"^[\s.,!?;:\u2014\u2013-]*$")
+
+
+def _match_stock_hook(sentence):
+    """Return (key, match) for the first stock micro-hook the sentence opens
+    with, or (None, None) if it opens with none of them."""
+    for key, pattern in _STOCK_HOOK_RES:
+        match = pattern.match(sentence)
+        if match:
+            return key, match
+    return None, None
+
+
+def diversify_stock_hooks(script, max_keep=2):
+    """Keep at most `max_keep` stock micro-hook interjections in a script and
+    never the same one twice. Only removes interjections whose whole content is
+    the stock phrase ("But wait — it gets worse."); lines where the phrase
+    carries story content are counted but left untouched."""
+    if not script:
+        return script
+    parts = re.split(r"((?<=[.!?])\s+)", script.strip())
+    kept, seen, out, dropped = 0, set(), [], 0
+    for i in range(0, len(parts), 2):
+        sentence = parts[i]
+        separator = parts[i + 1] if i + 1 < len(parts) else ""
+        key, match = _match_stock_hook(sentence)
+        if key is not None:
+            pure = bool(_STOCK_HOOK_REMAINDER_RE.match(sentence[match.end():]))
+            if pure and (key in seen or kept >= max_keep):
+                dropped += 1
+                continue
+            seen.add(key)
+            kept += 1
+        out.append(sentence)
+        if separator:
+            out.append(separator)
+    if not dropped:
+        return script
+    return "".join(out).strip()
+
+
+# ===========================
 # REDDIT STORY ADAPTATION (FIXED)
 # ===========================
 
@@ -315,12 +401,12 @@ IMPORTANT RULES:
 - If the story is unfinished, COMPLETE IT with a natural ending.
 - Write in first-person ("I", "my", "me").
 - START DIRECTLY with the story's first event — never open with hype or meta-commentary (no "Oh my god bestie", "you won't believe", "let me tell you", "I'm about to spill"). The title is spoken separately before the narration.
-- **The ending should feel UNFINISHED — stop mid-thought or at a moment of tension. Never summarize or conclude.**
+- **END THE STORY NATURALLY. When the story reaches its own ending, stop there — the real aftermath, the consequence, or the narrator's honest final thought. Do NOT force a cliffhanger, do NOT stop mid-thought for effect, and do NOT announce that the story is over.**
 - **NEVER use the words "cliffhanger", "to be continued", or "that's the end" in the narration.**
 - **DO NOT include the title in the narration—it will be spoken separately.**
 - **DO NOT include "Part 1" or any part labels in the spoken script.**
-- **Use MAX 2 micro-hooks TOTAL. Pick from variety: "but here's the thing", "then it hit me", "but wait — it gets worse", "and honestly?". NEVER repeat the same phrase. Space them far apart.**
-- **BUILD TENSION WAVES: short punchy lines during drama, longer during reflection. End each paragraph with a mini-hook.**
+- **Use AT MOST 2 micro-hooks in the whole script — and most stories need none. Do NOT copy stock wordings, they have been used to death and are what makes narration sound fake: "then it hit me", "wait, it gets worse", "but here's the thing", "and honestly?". If the story genuinely turns, write the transition in fresh words from that exact moment. NEVER repeat the same wording twice. Space them far apart.**
+- **BUILD TENSION WAVES: short punchy lines during drama, longer during reflection. Do NOT end every paragraph with a hook — the momentum comes from the story itself, not from a repeated catchphrase.**
 - **HIGHLIGHT STAKES with the story's own concrete details (what they stood to lose and why). NEVER copy a stock stakes phrase from these instructions. If a line like "if this didn't work..." fits the moment, use it AT MOST ONCE per script — and if it doesn't make sense where it lands, CUT IT.**
 
 The goal is to make the story feel fresh, personal, and engaging."""
@@ -349,14 +435,18 @@ The goal is to make the story feel fresh, personal, and engaging."""
     # Single part — no split parsing needed; strip hype intro (safety net)
     script_text = strip_hype_intro(script_text)
     script_text = dedupe_stock_stakes(script_text)
+    script_text = diversify_stock_hooks(script_text)
 
-    # --- NO FORCED ENDING — let the story end naturally (cliffhanger) ---
-    # Remove any explicit "end of story" cues the LLM might add
+    # --- NO FORCED ENDING — the story ends naturally on its own resolution ---
+    # Remove any explicit "end of story" / cliffhanger-tease cues the LLM might add
     ending_patterns = [
         r'\s*And that\'?s? (?:the end of )?the story\.?\s*$',
         r'\s*That\'?s? (?:the )?end\.?\s*$',
         r'\s*The end\.?\s*$',
         r'\s*And that\'?s? how (?:the )?story (?:ended|ends)\.?\s*$',
+        r'\s*To be continued\.?\s*$',
+        r'\s*But that\'?s? (?:a |another )?story for another (?:time|day)\.?\s*$',
+        r'\s*And that\'?s? (?:where|when) (?:it|this|the story) (?:ended|all ended|ends)\.?\s*$',
     ]
     for pat in ending_patterns:
         script_text = re.sub(pat, '', script_text, flags=re.IGNORECASE)
@@ -392,8 +482,9 @@ STRUCTURE (8 phases):
 5. RETROSPECTIVE WARNING SIGNS
 6. ESCALATION
 7. EVIDENCE COLLECTION
-8. DELAYED REVENGE/CLIFFHANGER
+8. CONSEQUENCES AND A NATURAL RESOLUTION
 
+END THE STORY NATURALLY at its own resolution — no cliffhanger, no tease.
 COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.
 Keep the script 500-700 words."""
     
@@ -410,6 +501,7 @@ Keep the script 500-700 words."""
     script = response.choices[0].message.content
     script = normalize_slang(script)
     script = strip_hype_intro(script)
+    script = diversify_stock_hooks(script)
     
     # --- CHECK FOR INCOMPLETE SENTENCES ---
     if script and not script.endswith(('.', '!', '?')):
