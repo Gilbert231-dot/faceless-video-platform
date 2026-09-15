@@ -28,7 +28,7 @@ filled from files already in this repo:
 
 | Form field | What to enter |
 |---|---|
-| App name | Must match the site. Use **Faceless Video Creator Poster** (the ToS/privacy pages already use this name) |
+| App name | **`Faceless Video Creator poster`** — exactly this string (capital F/V/C, lowercase `poster`). The site now shows it verbatim in the home-page tab title, the nav brand, and the Privacy/Terms page titles. Any other casing/spacing reads as a name mismatch and fails review. |
 | App icon | Download **`app_icon.png`** from the repo (repo root) and upload it — already 1024×1024, ready to go |
 | App description | Paste: *"AI turns Reddit stories into narrated, captioned shorts. Creators connect their TikTok to auto-publish them."* — use public-service framing only; wording like "posts to my/your own account" reads as personal use and gets the app rejected. |
 | Category | **Developer tools** or **Entertainment** (either is fine) |

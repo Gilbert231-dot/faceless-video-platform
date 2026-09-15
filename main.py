@@ -12,7 +12,7 @@ app.mount("/output", StaticFiles(directory=OUTPUT_DIR), name="output")
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to your Faceless Video Platform!"}
+    return {"message": "Faceless Video Creator poster — API is running."}
 
 @app.get("/generate")
 def start_generation(topic: str):
