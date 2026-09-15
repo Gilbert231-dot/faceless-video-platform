@@ -20,7 +20,7 @@ AI turns Reddit stories into narrated, captioned shorts. Creators connect their 
 Limit: **1000 characters**.
 
 ```
-Faceless Video Creator poster is a web platform that lets creators turn Reddit stories into original short-form videos: AI narration, word-synced captions, 1080x1920 render, published on a schedule. Any user signs up, connects their TikTok, and posts videos directly to their own profile.
+Faceless Video Creator poster is a web platform that lets creators turn Reddit stories into original short-form videos: AI narration, word-synced captions, 1080x1920 render, published on a schedule. A creator connects their TikTok account in the workspace, and the app then posts their finished videos directly to that account's own profile.
 
 The app name "Faceless Video Creator poster" is displayed as the browser-tab title and the header of the website home page, and as the page title of both the Privacy Policy and the Terms of Service pages.
 
@@ -74,7 +74,9 @@ That exact string is now the displayed name on the site:
 | Home page — browser tab | `Faceless Video Creator poster` |
 | Home page — header/nav brand | `Faceless Video Creator poster` (spaces included) |
 | Privacy Policy — browser tab | `Faceless Video Creator poster Privacy Policy` |
+| Privacy Policy — visible page heading | `Faceless Video Creator poster Privacy Policy` |
 | Terms of Service — browser tab | `Faceless Video Creator poster Terms of Service` |
+| Terms of Service — visible page heading | `Faceless Video Creator poster Terms of Service` |
 | Dashboard — browser tab | `Faceless Video Creator poster Dashboard` |
 | Privacy page text / Terms page text / site footer | `Faceless Video Creator poster` |
 | Web app manifest (`name`) | `Faceless Video Creator poster` |
@@ -90,4 +92,5 @@ without the trailing word. The portal **App name** field must be this exact stri
 2. Remove the `video.upload` scope (section 3).
 3. Upload the new demo recording — mp4/mov, under 50 MB (record with `tiktok_sandbox_demo.py`).
 4. Paste section 1 into App description and section 2 into the App review textarea.
-5. Submit for review.
+5. Confirm the demo video was recorded on the same domain shown in the Web/Desktop URL field — the reviewer compares the address bar in the video against the URL you submit.
+6. Submit for review.
