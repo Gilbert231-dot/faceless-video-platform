@@ -1,17 +1,18 @@
 :root {
-    /* Graphite + white — matches the public site (index.html). */
-    --bg: #0b0b0c;
-    --panel: #141417;
-    --border: #2a2a2e;
-    --text: #ededf0;
-    --muted: #9a9aa2;
-    --accent: #e4e4e7;
-    /* Semantic colours are intentionally left alone: green/red/yellow carry
-       meaning (success, failure, warning) and must not change with the theme. */
-    --green: #3fb950;
-    --red: #f85149;
-    --yellow: #d29922;
-    --blue: #8ab4ff;
+    /* Lime Fresh — matches the public site (index.html). */
+    --bg: #f8fdf0;
+    --panel: #ffffff;
+    --border: #e3f0c9;
+    --text: #1b2606;
+    --muted: #5a6b2c;
+    --accent: #4d7c0f;
+    /* Semantic colours keep their meaning (green=success, red=failure,
+       yellow=warning, blue=informational); only the shades are darkened so
+       they stay readable on the light surface. */
+    --green: #166534;
+    --red: #b91c1c;
+    --yellow: #8a5305;
+    --blue: #1d4ed8;
 }
 
 * { box-sizing: border-box; }
@@ -66,7 +67,7 @@ main { max-width: 1000px; margin: 0 auto; }
 .alert {
     background: rgba(210, 153, 34, 0.12);
     border: 1px solid rgba(210, 153, 34, 0.5);
-    color: #e3b341;
+    color: var(--yellow);
     border-radius: 10px;
     padding: 14px 18px;
     margin: 18px 0;
@@ -221,13 +222,13 @@ main { max-width: 1000px; margin: 0 auto; }
 
 .perf-badge.perf-good {
     background: rgba(46, 211, 130, 0.12);
-    color: #2ed382;
+    color: var(--green);
     border-color: rgba(46, 211, 130, 0.45);
 }
 
 .perf-badge.perf-bad {
     background: rgba(248, 81, 73, 0.12);
-    color: #f85149;
+    color: var(--red);
     border-color: rgba(248, 81, 73, 0.45);
 }
 
