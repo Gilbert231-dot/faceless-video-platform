@@ -217,12 +217,27 @@ def upload_to_youtube(
             ) from e
         except Exception as e:
             text = str(e)
-            if "invalid_grant" in text or "expired or revoked" in text:
-                # A dead refresh token is deterministic — retrying cannot help, and
+            lowered = text.lower()
+            if "invalid_grant" in lowered or "expired or revoked" in lowered:
+                # A bad refresh token is deterministic — retrying cannot help, and
                 # this message is the only clue left on the run page (it is also
                 # what lands in video_history.json), so it says what to DO.
                 # verify_posting_credentials.py is meant to catch this before a
                 # render ever starts; if this fires, that preflight was skipped.
+                #
+                # Google uses one error code for TWO opposite problems, so the
+                # remedy has to be picked by the description: "Bad Request" means
+                # the stored string is unparseable (a typo or stray whitespace —
+                # re-minting will not help), whereas "expired or revoked" means
+                # the token is genuinely dead. Verified against the live endpoint
+                # 2026-09-16.
+                if "bad request" in lowered:
+                    raise RuntimeError(
+                        "YouTube auth failed: the refresh token is MALFORMED, not "
+                        "expired (invalid_grant: Bad Request). Re-copy "
+                        "YOUTUBE_REFRESH_TOKEN as one unbroken string with no spaces "
+                        "or line breaks — minting a new token will not fix a bad paste."
+                    ) from e
                 raise RuntimeError(
                     "YouTube auth is dead: the refresh token expired or was revoked. "
                     "Mint a new one with `python youtube_setup.py` and update the "

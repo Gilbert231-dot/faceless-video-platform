@@ -105,6 +105,44 @@ def _is_transient(text, exc_name=""):
     return any(marker in blob for marker in TRANSIENT_MARKERS)
 
 
+def _classify_youtube_grant_error(exc):
+    """Tell Google's two `invalid_grant` cases apart.
+
+    They need OPPOSITE remedies, and reporting both as "expired or revoked"
+    sends you to re-mint a token that was never broken:
+
+      * description "Token has been expired or revoked." -> genuinely dead
+        (re-mint).
+      * description "Bad Request" -> the stored string is not parseable, i.e. a
+        typo, stray space or line break from a hand-paste. Re-minting does
+        nothing; the value has to be re-copied.
+
+    Measured 2026-09-16 against the live endpoint: corrupting ONE character of a
+    valid token reproduces "Bad Request" exactly, while a token from the Testing
+    era yields "Token has been expired or revoked".
+
+    Returns 'malformed' | 'dead' | 'client' | 'other_grant' | None.
+    """
+    # RefreshError keeps the provider body: args[1] is normally the error dict.
+    detail = ""
+    for arg in getattr(exc, "args", ()) or ():
+        if isinstance(arg, dict):
+            detail = str(arg.get("error_description") or arg.get("error") or "")
+            break
+
+    blob = f"{exc} {detail}".lower()
+    # A mismatched client is its own problem, and its remedy is not a re-mint.
+    if "invalid_client" in blob or "unauthorized_client" in blob:
+        return "client"
+    if "bad request" in blob:
+        return "malformed"
+    if "expired or revoked" in blob or "revoked" in blob:
+        return "dead"
+    if "invalid_grant" in blob:
+        return "other_grant"
+    return None
+
+
 def mask(value):
     """Never print a secret: first/last 4 characters plus its length."""
     if not value:
@@ -233,7 +271,26 @@ def check_youtube():
         response = youtube.channels().list(part="snippet", mine=True).execute()
     except RefreshError as exc:
         text = str(exc)
-        if "invalid_grant" in text or "expired or revoked" in text:
+        kind = _classify_youtube_grant_error(exc)
+        # Always report WHICH token was checked, so a stale local_config.json can
+        # never be mistaken for a dead GitHub secret.
+        identifiers = {
+            "YOUTUBE_REFRESH_TOKEN": mask(refresh_token),
+            "credentials from": source,
+        }
+        if kind == "malformed":
+            return result(
+                FAIL,
+                "refresh token is MALFORMED, not expired — Google could not parse it "
+                "(invalid_grant: Bad Request). Minting another one will NOT help: the "
+                "stored value is wrong, so re-copy YOUTUBE_REFRESH_TOKEN as ONE "
+                "unbroken string (no spaces, no line breaks) and save it again. "
+                f"The value in use is {mask(refresh_token)} — a wrong length is a "
+                "giveaway, but swapping one character keeps the length identical, so "
+                "re-copy from the source instead of re-typing it.",
+                identifiers,
+            )
+        if kind == "dead":
             return result(
                 FAIL,
                 "refresh token is EXPIRED or REVOKED — mint a new one with "
@@ -241,8 +298,18 @@ def check_youtube():
                 "Google expires these tokens 7 days after they are minted while the "
                 "OAuth app's publishing status is 'Testing' — publish it to 'In "
                 "production' to stop the weekly cycle.",
+                identifiers,
             )
-        return result(FAIL, f"token refresh failed: {text[:300]}")
+        if kind == "client":
+            return result(
+                FAIL,
+                "Google rejected the OAuth client, not the token "
+                "(invalid_client / unauthorized_client) — YOUTUBE_CLIENT_ID and "
+                "YOUTUBE_CLIENT_SECRET must come from the SAME OAuth client that "
+                "minted the refresh token.",
+                identifiers,
+            )
+        return result(FAIL, f"token refresh failed: {text[:300]}", identifiers)
     except Exception as exc:
         text = str(exc)
         name = type(exc).__name__
