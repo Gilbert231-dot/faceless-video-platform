@@ -156,13 +156,27 @@ jobs:
           # slower encode are fine.
           echo "VIDEO_CRF=15" >> $GITHUB_ENV
           echo "VIDEO_PRESET=veryslow" >> $GITHUB_ENV
-          # CAPTION burn quality (caption_utils.py) is SEPARATE and cheaper:
-          # FIXED — burning at veryslow + CRF 15 timed out on every 30s
-          # segment of a 2-core runner (>600s each), silently fell back to
-          # caption-less copies, and the leftover partial files failed the
-          # whole caption pass (Errno 39) — every veryslow run went up
-          # WITHOUT captions. CRF 18 + slow keeps the text crisp while each
-          # segment finishes in ~2 min (also trims the file size a bit).
+          # THE ONLY PERMITTED DEGRADATION. Everything that produces delivered
+          # pixels is CRF 15 + veryslow; a segment that fails outright is
+          # retried once at CRF 18 + slow. (The old fallback was the ultrafast
+          # preset, which is WORSE quality than 18/slow — it traded away
+          # exactly what we were paying for.)
+          echo "VIDEO_FALLBACK_CRF=18" >> $GITHUB_ENV
+          echo "VIDEO_FALLBACK_PRESET=slow" >> $GITHUB_ENV
+          # Mild post-upscale sharpening in the render chain (no extra encode).
+          # A 9:16 crop of a 4K landscape frame is 1215x2160, so it is still
+          # upscaled 1.19x to reach 1440x2560. Set to "off" to disable.
+          echo "VIDEO_UNSHARP=5:5:0.6:5:5:0.0" >> $GITHUB_ENV
+          # FOOTAGE_MODE=direct (default) renders straight from the downloaded
+          # source and burns the captions in the same pass, so the footage is
+          # encoded exactly ONCE at CRF 15 veryslow. FOOTAGE_MODE=staged is the
+          # legacy rollback: 4K 60s batches, then a whole-footage normalizer
+          # re-encode, then a SEPARATE caption re-encode of the finished video
+          # (which capped the delivered file at CRF 18 slow).
+          echo "FOOTAGE_MODE=direct" >> $GITHUB_ENV
+          # CAPTION burn settings for the FALLBACK caption pass only
+          # (caption_utils.py). Captions are normally burned inside the render
+          # above; this separate pass runs only if that failed.
           echo "CAPTION_CRF=18" >> $GITHUB_ENV
           echo "CAPTION_PRESET=slow" >> $GITHUB_ENV
           # compile_video()/caption_utils read OUTPUT_DIR from the environment.

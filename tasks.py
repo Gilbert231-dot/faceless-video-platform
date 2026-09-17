@@ -9,13 +9,14 @@ import subprocess
 from celery import Celery
 from voiceover import generate_voiceover
 from gender_detector import GenderDetector
-from drive_clip_manager import get_next_segment
+from drive_clip_manager import get_next_segment, plan_footage
 from broll_fetcher import fetch_gameplay_footage
-from caption_utils import add_subtitles_to_video
+from caption_utils import add_subtitles_to_video, build_caption_track
 from generate_reddit_frame import generate_frame
 from tts_clean import clean_for_tts
 from reddit_story_loader import RedditStoryLoader
-from video_compile import compile_video, get_duration, EXTRACT_FACTOR
+from video_compile import (compile_video, get_duration, EXTRACT_FACTOR,
+                           FOOTAGE_MODE)
 from reddit_fetcher import get_reddit_story_with_fallback
 from script_gen import generate_story_script, adapt_reddit_story
 from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED, platform_tags
@@ -339,22 +340,49 @@ def generate_single_video(title, script, part_label=None, topic=None,
     print(f"🎙️ Voiceover saved to: {audio_path}")
 
     audio_duration = get_duration(audio_path)
-    # FIXED: compile_video() extracts EXTRACT_FACTOR x the audio length of
-    # footage. Supplying only 1x meant the sped-up video ended BEFORE the
-    # narration and -shortest cut the last ~30% of every story. Supply the
-    # exact amount the compiler needs (same constant, always in sync).
-    segment_path = get_next_segment(audio_duration * EXTRACT_FACTOR)
-    print(f"🎬 Using segment: {segment_path}")
+
+    # --- CAPTION TRACK (built BEFORE the render) ---
+    # The background render burns the captions inside its own single encode,
+    # so the SRT has to exist first. Same whisper transcription the separate
+    # caption pass used to run — just earlier, and the delivered file keeps
+    # the render's CRF 15 veryslow quality instead of being re-encoded after.
+    caption_srt = None
+    if USE_CAPTIONS:
+        print("\n📝 Building caption track...")
+        caption_srt = build_caption_track(
+            audio_path=audio_path,
+            whisper_model="base",   # more accurate word-by-word captions
+            speed_factor=VOICE_SPEED,
+        )
+
+    # FIXED: compile_video() uses EXTRACT_FACTOR x the audio length of footage.
+    # Supplying only 1x meant the sped-up video ended BEFORE the narration and
+    # -shortest cut the last ~30% of every story. Supply the exact amount the
+    # compiler needs (same constant, always in sync).
+    footage_spans = None
+    if FOOTAGE_MODE == "staged":
+        # Explicit rollback to the legacy 4K batched extraction.
+        segment_path = get_next_segment(audio_duration * EXTRACT_FACTOR)
+        print(f"🎬 Using staged segment: {segment_path}")
+        video_paths = [segment_path]
+    else:
+        print("\n🎞️ Planning footage (no re-encode)...")
+        footage = plan_footage(audio_duration * EXTRACT_FACTOR)
+        footage_spans = footage["spans"]
+        video_paths = [s["path"] for s in footage_spans]
 
     final_video_path, final_audio_path = compile_video(
-        video_paths=[segment_path],
+        video_paths=video_paths,
         audio_path=audio_path,
         script=full_script,
-        subtitle_path=None,
+        subtitle_path=caption_srt,
         intro_frame=intro_frame,
         title=title,
         part_label=part_label,
-        voice_id=voice_id
+        voice_id=voice_id,
+        footage_spans=footage_spans,
+        burn_captions=USE_CAPTIONS,
+        output_name_captioned=bool(caption_srt),
     )
     
     # Returns (video, raw_voiceover, final_audio_track). The final audio is
@@ -627,8 +655,16 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
         print(f"✅ Video ready: {video_path_1}")
         
         # ----- ADD CAPTIONS -----
-        if USE_CAPTIONS:
-            print("\n🎬 ADDING CAPTIONS...")
+        # Normally the captions are ALREADY burned inside the background render
+        # (see compile_video): when it burns them it names the output
+        # "*_captioned_*", and re-encoding the finished video again here would
+        # undo the CRF 15 veryslow quality we just paid for. This separate pass
+        # survives only as a fallback for when the in-render burn failed.
+        if USE_CAPTIONS and "_captioned_" in os.path.basename(video_path_1):
+            print("\n💬 Captions already burned inside the render "
+                  "— skipping the separate caption pass")
+        elif USE_CAPTIONS:
+            print("\n🎬 ADDING CAPTIONS (fallback pass — the in-render burn did not run)...")
             try:
                 captioned_path = add_subtitles_to_video(
                     video_path=video_path_1,

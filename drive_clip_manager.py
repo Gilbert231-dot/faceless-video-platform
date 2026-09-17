@@ -141,7 +141,171 @@ def get_footage_files():
     return [{"id": fid, "name": f"video_{i}.mp4"} for i, fid in enumerate(DRIVE_URLS)]
 
 # ================================
-# MAIN FUNCTION: get_next_segment
+# SOURCE PROBE
+# ================================
+def _probe_source(path):
+    """Return {codec, width, height, fps} for a footage file, or {} on failure."""
+    import json as _json
+    try:
+        r = subprocess.run(
+            ['ffprobe', '-v', 'error', '-select_streams', 'v:0',
+             '-show_entries', 'stream=codec_name,width,height,avg_frame_rate',
+             '-of', 'json', path],
+            capture_output=True, text=True, timeout=30,
+        )
+        streams = (_json.loads(r.stdout or '{}').get('streams') or [])
+        if not streams:
+            return {}
+        s = streams[0]
+        return {
+            "codec": (s.get('codec_name') or '').lower(),
+            "width": int(s.get('width') or 0),
+            "height": int(s.get('height') or 0),
+            "fps": s.get('avg_frame_rate') or '?',
+        }
+    except Exception:
+        return {}
+
+
+# Codecs we are happy to decode directly during the render. VP9/AV1 4K
+# decode is expensive on a 2-core runner, so those sources fall back to the
+# staged path automatically (per file, not globally).
+_DIRECT_SAFE_CODECS = {"h264", "hevc"}
+
+
+# ================================
+# FOOTAGE PLANNING (no re-encode)
+# ================================
+def plan_footage(duration_needed):
+    """Plan which source footage to use WITHOUT re-encoding any of it.
+
+    Returns {"spans": [...], "force_staged": bool}. Each span is
+      {"path", "start", "duration", "file_id", "codec", "width", "height"}
+
+    The renderer then decodes straight from these sources in ONE pass, so the
+    footage is compressed exactly once at the final settings instead of being
+    re-encoded at 4K first (see FOOTAGE_MODE in video_compile.py).
+
+    Rotation semantics are identical to get_next_segment(): the offset
+    advances through each file in name order, moves to the next file when one
+    is exhausted, loops back to the first, and clip_state.json stays the
+    single source of truth.
+
+    NOTE: the walk below intentionally mirrors get_next_segment() rather than
+    sharing code with it. That function is the STAGED path and is left
+    byte-for-byte unchanged, so FOOTAGE_MODE=staged stays a true rollback.
+    """
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    files = get_footage_files()
+    state = load_state()
+    current_id = state.get("video_id", "")
+    offset = state["offset"]
+
+    current_pos = 0
+    for i, f in enumerate(files):
+        if f["id"] == current_id:
+            current_pos = i
+            break
+    else:
+        offset = 0.0
+
+    spans = []
+    taken = 0.0
+    force_staged = False
+    # Guard against an infinite loop if every file in the folder is tiny.
+    guard_iterations = 0
+    max_iterations = max(len(files), 1) * 200
+
+    def _advance(pos):
+        return (pos + 1) % len(files)
+
+    def _load(pos):
+        """Download + probe the file at `pos`; returns (path, duration, info)."""
+        fid = files[pos]["id"]
+        path = os.path.join(CACHE_DIR, f"video_{fid}.mp4")
+        if not os.path.exists(path):
+            download_file(fid, path)
+        try:
+            dur = get_video_duration(path)
+        except RuntimeError as e:
+            print(f"[drive] Downloaded file is invalid ({e}); re-downloading")
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+            download_file(fid, path)
+            dur = get_video_duration(path)
+        return path, dur, _probe_source(path)
+
+    cache_path, duration, info = _load(current_pos)
+    file_mb = os.path.getsize(cache_path) / (1024 * 1024) if os.path.exists(cache_path) else 0
+    print(f"[drive] Cached video: {os.path.basename(cache_path)} ({file_mb:.1f} MB)")
+    if info:
+        print(f"[drive] Source video: {info.get('codec','?')} "
+              f"{info.get('width','?')}x{info.get('height','?')} "
+              f"fps={info.get('fps','?')} ({os.path.basename(cache_path)})")
+        if info.get("codec") and info["codec"] not in _DIRECT_SAFE_CODECS:
+            print(f"[drive] ⚠️ Source codec '{info['codec']}' is expensive to decode at 4K "
+                  f"— using the staged (re-encode) path for this file")
+            force_staged = True
+
+    while taken < duration_needed - 0.05:
+        guard_iterations += 1
+        if guard_iterations > max_iterations:
+            raise RuntimeError(
+                f"[drive] Could not assemble {duration_needed:.1f}s of footage after "
+                f"{guard_iterations} attempts — are the folder's files extremely short?"
+            )
+
+        remaining_in_file = duration - offset
+        if remaining_in_file <= 0:
+            current_pos = _advance(current_pos)
+            offset = 0.0
+            cache_path, duration, info = _load(current_pos)
+            if info and info.get("codec") and info["codec"] not in _DIRECT_SAFE_CODECS:
+                force_staged = True
+            continue
+
+        take = min(remaining_in_file, duration_needed - taken)
+        spans.append({
+            "path": cache_path,
+            "start": float(offset),
+            "duration": float(take),
+            "file_id": files[current_pos]["id"],
+            "codec": (info or {}).get("codec", ""),
+            "width": (info or {}).get("width", 0),
+            "height": (info or {}).get("height", 0),
+        })
+        offset += take
+        taken += take
+
+        if offset >= duration - 0.1:
+            current_pos = _advance(current_pos)
+            offset = 0.0
+            if taken < duration_needed - 0.05:
+                cache_path, duration, info = _load(current_pos)
+                if info and info.get("codec") and info["codec"] not in _DIRECT_SAFE_CODECS:
+                    force_staged = True
+
+    new_offset = offset
+    if new_offset >= duration - 0.1:
+        current_pos = _advance(current_pos)
+        new_offset = 0.0
+    state["video_id"] = files[current_pos]["id"]
+    state["offset"] = new_offset
+    save_state(state)
+
+    total = sum(s["duration"] for s in spans)
+    print(f"[drive] Planned {len(spans)} footage span(s) totalling {total:.1f}s "
+          f"across {len({s['file_id'] for s in spans})} file(s) — no re-encode")
+    for s in spans:
+        print(f"[drive]    {os.path.basename(s['path'])} @ {s['start']:.1f}s for {s['duration']:.1f}s")
+
+    return {"spans": spans, "force_staged": force_staged}
+
+
+# ================================
+# MAIN FUNCTION: get_next_segment (STAGED path)
 # ================================
 def get_next_segment(duration_needed):
     """

@@ -40,8 +40,53 @@ OUTPUT_FPS = 60
 # phones, fixing the "lower quality on my phone" complaint. H.264 level 5.1
 # is required for 1440x2560@60 (level 5.0 caps below 1440p60; level 4.0
 # caps at ~1080p frame sizes).
+#
+# IMPORTANT: the 1.19x figure only holds for TRUE 4K sources. The resolution
+# is deliberately NOT chosen per-source (output stays 1440x2560 always) but
+# the renderer now measures and reports the real upscale factor, and warns
+# loudly when a source cannot fill the frame — a soft background is a source
+# problem, and silently rendering it smaller would only hide that.
 OUTPUT_W = 1440
 OUTPUT_H = 2560
+
+# --- HOW THE FOOTAGE REACHES THE RENDERER ---
+# direct (default): the renderer decodes straight from the downloaded source and
+#   applies crop/scale/speed/captions/overlays in ONE encode. Everything that
+#   produces pixels is CRF 15 + veryslow, and nothing is encoded twice.
+# staged: the legacy path — 4K 60s batches re-encoded, then a whole-footage
+#   normalizer re-encode, then the segment render. Kept working as a rollback:
+#   set FOOTAGE_MODE=staged in the workflow env to restore the old behaviour.
+FOOTAGE_MODE = os.environ.get("FOOTAGE_MODE", "direct").strip().lower()
+
+# The ONLY permitted degradation. CRF 15 + veryslow is the primary setting for
+# every pass; a segment that fails is retried at CRF 18 + slow. (The old
+# fallback was ultrafast preset, which is WORSE quality than 18/slow — it
+# traded quality for speed when quality was the whole point.)
+CRF_VALUE = int(os.environ.get("VIDEO_CRF", "15"))
+FALLBACK_CRF = int(os.environ.get("VIDEO_FALLBACK_CRF", "18"))
+FALLBACK_PRESET = os.environ.get("VIDEO_FALLBACK_PRESET", "slow")
+
+# The STAGED intermediate (FOOTAGE_MODE=staged, or a VP9/AV1 source) exists
+# only to normalize a source into clean, densely-keyframed H.264 the renderer
+# can decode. It is a WORKING file, not the delivered pixels — the segment
+# render still encodes the delivered video at VIDEO_CRF/VIDEO_PRESET. It stays
+# on a fast preset on purpose: x264 veryslow on 4K across 2 cores needs ~70+
+# minutes per 60s of footage, which cannot fit the job timeout. FOOTAGE_MODE=
+# direct (the default) removes this pass entirely, which is what makes
+# "everything CRF 15 veryslow" achievable.
+STAGED_CRF = int(os.environ.get("STAGED_CRF", "15"))
+STAGED_PRESET = os.environ.get("STAGED_PRESET", "veryfast")
+
+# Mild post-upscale sharpening. A 9:16 crop of a 4K landscape frame is
+# 1215x2160, so it is still upscaled 1.19x to reach 1440x2560 and a plain
+# lanczos upscale reads slightly soft. This recovers perceived crispness
+# without an extra encode. Set VIDEO_UNSHARP=off to disable.
+VIDEO_UNSHARP = os.environ.get("VIDEO_UNSHARP", "5:5:0.6:5:5:0.0").strip()
+
+# Caption burn style (burned inside the render — see compile_video).
+CAPTION_FONT_SIZE = int(os.environ.get("CAPTION_FONT_SIZE", "16"))
+CAPTION_MARGIN_V = int(os.environ.get("CAPTION_MARGIN_V", "90"))
+CAPTION_ALIGNMENT = int(os.environ.get("CAPTION_ALIGNMENT", "10"))
 # How much footage to grab relative to the narration: the background plays at
 # SPEED_FACTOR x and the voice is sped to VOICE_SPEED x, so to cover the whole
 # narration (with 10% slack) we need:
@@ -156,6 +201,290 @@ def probe_video(media_path: str):
         return None
 
 
+def _escape_filter_path(path: str) -> str:
+    """Return `path` in a form the ffmpeg filtergraph parser can actually take.
+
+    Two rules, both learned the hard way by testing the filter directly:
+
+    1. FORWARD SLASHES ONLY. A backslash inside a quoted filter argument is
+       consumed by the filter parser, so a Windows path like
+       `output\\caption_segments_1\\shifted_0000.srt` silently loses its
+       separators and ffmpeg reports a file that looks like
+       `outputcaption_segments_1shifted_0000.srt`.
+    2. RELATIVE WHEN POSSIBLE. An absolute Windows path contains a `:`, and
+       the filter option parser reads that as an option separator —
+       `subtitles=C:/dir/x.srt` fails with the baffling
+       `Unable to parse "original_size" option value`. Quoting does not help.
+       A path relative to the process cwd has no colon and just works.
+
+    Only the quote character needs escaping inside the surrounding quotes.
+    """
+    p = os.path.abspath(path).replace("\\", "/")
+    try:
+        rel = os.path.relpath(p, os.getcwd()).replace("\\", "/")
+    except ValueError:      # different drive on Windows
+        rel = None
+    if rel and not rel.startswith(".."):
+        return rel.replace("'", "\\'")
+    return p.replace("'", "\\'")
+
+
+def _plan_render_segments(spans, extract_duration, segment_duration, speed_factor):
+    """Turn footage spans into the list of render jobs.
+
+    A segment NEVER crosses a span boundary (spans come from different source
+    files, so a crossing segment could not be a single input). Within one span
+    the footage is split evenly by _segment_plan(), which also avoids the
+    degenerate sub-second tail that used to crash the encoder.
+
+    Returns [{"src", "src_start", "footage", "out_dur"}]; out_start is filled
+    in by _annotate_plan() so it stays consistent if a boundary is moved.
+    """
+    plan = []
+    remaining = extract_duration
+    for span in spans:
+        take_total = min(span["duration"], remaining)
+        if take_total <= 1e-3:
+            break
+        local = 0.0
+        for _, dur in _segment_plan(take_total, segment_duration):
+            plan.append({
+                "src": span["path"],
+                "src_start": span["start"] + local,
+                "footage": dur,
+                "out_dur": dur / speed_factor,
+                "out_start": 0.0,
+            })
+            local += dur
+        remaining -= take_total
+    _annotate_plan(plan, speed_factor)
+    return plan
+
+
+def _annotate_plan(plan, speed_factor):
+    """(Re)compute out_start/out_dur from each job's footage."""
+    t = 0.0
+    for job in plan:
+        job["out_dur"] = job["footage"] / speed_factor
+        job["out_start"] = t
+        t += job["out_dur"]
+
+
+def _keep_overlays_whole(plan, overlays, speed_factor):
+    """Move segment boundaries so no boundary cuts an overlay animation in half.
+
+    Each overlay is (name, abs_start, duration) on the FINAL timeline. If a
+    boundary falls strictly inside an overlay's window, the boundary is pulled
+    back to the overlay's start — the previous segment gives up that slice and
+    the next one takes it. Boundaries already at or outside an overlay's start
+    are left alone.
+
+    A boundary that cannot move (different source file, or it would leave a
+    degenerate segment) is skipped; the overlay is then clamped to the segment
+    it starts in, which is logged at render time.
+    """
+    if not overlays or not plan:
+        return plan
+    for name, ov_start, ov_dur in overlays:
+        if ov_dur <= 0:
+            continue
+        ov_end = ov_start + ov_dur
+        for i in range(1, len(plan)):
+            b = plan[i]["out_start"]
+            if not (ov_start < b < ov_end):
+                continue
+            prev, cur = plan[i - 1], plan[i]
+            if cur["src"] != prev["src"]:
+                print(f"   ⚠️ Cannot move a segment boundary for the '{name}' overlay "
+                      f"(boundary falls at a source change) — clamping instead")
+                break
+            cut = b - ov_start
+            if prev["footage"] - cut < 1.0:
+                print(f"   ⚠️ Cannot move a segment boundary for the '{name}' overlay "
+                      f"(would leave a sub-second segment) — clamping instead")
+                break
+            prev["footage"] -= cut
+            cur["footage"] += cut
+            cur["src_start"] -= cut
+            print(f"   🎯 Moved segment {i} boundary back {cut:.2f}s so the '{name}' "
+                  f"overlay stays in one piece")
+            _annotate_plan(plan, speed_factor)
+            break
+    _annotate_plan(plan, speed_factor)
+    return plan
+
+
+def _crop_width(src_w, src_h):
+    """Width of the 9:16 centre-crop taken from a source of this size.
+
+    Mirrors the render filter exactly: crop=min(iw,ih*9/16):ih
+    """
+    if not src_w or not src_h:
+        return 0
+    return int(min(src_w, src_h * 9.0 / 16.0))
+
+
+def _report_source_quality(spans):
+    """Print (and warn about) the real upscale factor for the footage in use.
+
+    A background that is soft because its source cannot fill 1440x2560 is a
+    SOURCE problem and no encoder setting can fix it, so this is reported
+    loudly rather than silently compensated for.
+    """
+    seen = []
+    for s in spans or []:
+        if s.get("path") in [p for p, _ in seen]:
+            continue
+        seen.append((s.get("path"), s))
+    if not seen:
+        return
+    print("   🔎 Background source quality:")
+    for path, s in seen:
+        w, h = s.get("width") or 0, s.get("height") or 0
+        crop_w = _crop_width(w, h)
+        if not crop_w:
+            print(f"      {os.path.basename(path)}: resolution unknown (probe failed)")
+            continue
+        upscale = OUTPUT_W / crop_w
+        note = "✅ native-quality" if upscale <= 1.25 else (
+            "⚠️ upscaled" if upscale <= 2.0 else "⚠️ HEAVILY upscaled")
+        print(f"      {os.path.basename(path)}: {w}x{h} → crop {crop_w}x{h} → "
+              f"output {OUTPUT_W}x{OUTPUT_H} → upscale {upscale:.2f}x  {note}")
+        if upscale > 1.25:
+            print(f"      ⚠️ WEAK SOURCE: this file cannot fill {OUTPUT_W}x{OUTPUT_H} "
+                  f"({crop_w}px of real width for a {OUTPUT_W}px frame). The background "
+                  f"will look soft no matter the CRF or preset — replace it with a "
+                  f"true 4K file for a sharp result.")
+
+
+def _stage_footage(source_video, extract_duration, output_dir):
+    """STAGED PATH: re-encode the needed duration to clean H.264 first.
+
+    Kept for FOOTAGE_MODE=staged (the rollback) and for sources whose codec is
+    too expensive to decode directly at 4K on a 2-core runner (VP9/AV1).
+
+    FIXED (exit-234 crash): the old -c:v copy preserved the source's original
+    codec (VP9, AV1, ...) and container metadata — with sparse keyframes or a
+    non-H.264 codec (common with Google Drive's re-encoded uploads) the copy-cut
+    produced a file that passed ffprobe but failed when ffmpeg decoded frames
+    for the filter chain. Re-encoding normalizes ANY input to clean H.264
+    yuv420p with dense keyframes — the format the segment renderer expects.
+
+    NOTE (quality): this re-encode is LOSSY, and removing it is precisely what
+    FOOTAGE_MODE=direct does. Here the footage is compressed once at 4K and
+    then AGAIN by the segment renderer, so it can never be as clean as the
+    direct path.
+    """
+    gameplay_segment = os.path.join(output_dir, f"gameplay_segment_{int(time.time())}.mp4")
+    cmd_extract = [
+        'ffmpeg', '-y',
+        '-i', source_video,
+        '-t', str(extract_duration),
+        '-c:v', 'libx264',
+        '-preset', STAGED_PRESET,
+        '-crf', str(STAGED_CRF),
+        '-pix_fmt', 'yuv420p',
+        '-movflags', '+faststart',
+        '-an',
+        gameplay_segment
+    ]
+
+    # Timeout scales with footage length: full-story videos can need 700+s of
+    # footage, and this whole-duration re-encode at veryfast runs at roughly
+    # 1-1.5x realtime on a 2-core runner. 2400s (40 min) covers the worst case.
+    try:
+        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=2400)
+        print(f"   ✅ Extracted {extract_duration:.2f}s segment (re-encoded to H.264).")
+    except Exception as e:
+        raise Exception(f"Segment extraction failed: {e}")
+
+    # POST-EXTRACTION VALIDATION: verify the extracted segment is playable.
+    probe_video(gameplay_segment)
+    if not os.path.exists(gameplay_segment) or os.path.getsize(gameplay_segment) < 1024:
+        raise Exception(
+            f"Extraction produced invalid output "
+            f"({os.path.getsize(gameplay_segment) if os.path.exists(gameplay_segment) else 0} bytes). "
+            f"Source: {source_video} — check if the source video is corrupt or has an unsupported codec."
+        )
+    try:
+        subprocess.run(
+            ['ffprobe', '-v', 'error', '-select_streams', 'v:0',
+             '-show_entries', 'stream=codec_name,width,height',
+             '-of', 'json', gameplay_segment],
+            check=True, capture_output=True, timeout=30
+        )
+    except Exception as e:
+        raise Exception(
+            f"Extracted segment is not decodable: {e}. "
+            f"The source video may have a codec that libx264 cannot decode (e.g., VP9/AV1). "
+            f"Source: {source_video}"
+        )
+
+    # DISK FIX: in staged mode the extracted segment replaces the huge source,
+    # so the source can be deleted immediately. (Direct mode keeps the source
+    # on disk until its last segment has rendered — see the render loop.)
+    try:
+        src_size = os.path.getsize(source_video) / (1024 * 1024)
+        os.unlink(source_video)
+        print(f"   🧹 Deleted source video ({src_size:.0f} MB freed)")
+    except Exception:
+        pass  # non-critical — log but don't abort
+
+    return gameplay_segment
+
+
+def _stage_spans(spans, output_dir):
+    """STAGED fallback for an already-planned footage list.
+
+    Re-encodes each planned window to clean H.264 and concatenates the pieces.
+    Used when a source's codec is too expensive to decode directly (VP9/AV1 at
+    4K on a 2-core runner) — the footage plan itself is unchanged, so this
+    consumes exactly the same footage the direct path would have.
+
+    See _stage_footage() for why the re-encode exists and what it costs.
+    """
+    pieces = []
+    stamp = int(time.time())
+    for i, s in enumerate(spans):
+        piece = os.path.join(output_dir, f"stage_piece_{i}_{stamp}.mp4")
+        cmd = [
+            'ffmpeg', '-y',
+            '-ss', str(s["start"]),
+            '-t', str(s["duration"]),
+            '-i', s["path"],
+            '-c:v', 'libx264',
+            '-preset', STAGED_PRESET,
+            '-crf', str(STAGED_CRF),
+            '-pix_fmt', 'yuv420p',
+            '-an',
+            piece,
+        ]
+        run_ffmpeg(cmd, timeout=2400, label=f"stage piece {i + 1}/{len(spans)}")
+        pieces.append(piece)
+
+    if len(pieces) == 1:
+        return pieces[0]
+
+    concat_file = os.path.join(output_dir, f"stage_concat_{stamp}.txt")
+    with open(concat_file, 'w') as f:
+        for p in pieces:
+            f.write(f"file '{os.path.abspath(p)}'\n")
+    staged = os.path.join(output_dir, f"gameplay_segment_{stamp}.mp4")
+    run_ffmpeg(
+        ['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', concat_file,
+         '-c', 'copy', '-an', staged],
+        timeout=300, label="stage concat",
+    )
+    for p in pieces:
+        try:
+            os.unlink(p)
+        except OSError:
+            pass
+    os.unlink(concat_file)
+    print(f"   ✅ Staged {len(spans)} span(s) into one H.264 file")
+    return staged
+
+
 def _segment_plan(duration, max_seg):
     """Return [(start_sec, dur_sec), ...] — evenly-sized segments.
 
@@ -218,10 +547,24 @@ def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
 
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None,
-                  voice_id=None):
+                  voice_id=None, footage_spans=None, burn_captions=True,
+                  output_name_captioned=False):
     """
     Compile video with segmented rendering.
     Now outputs YouTube-compatible format (yuv420p, faststart, aac audio).
+
+    footage_spans: when given (FOOTAGE_MODE=direct) the segments are rendered
+        straight from these source files — crop/scale/speed/captions/overlays
+        all happen in ONE encode, so the footage is never re-encoded at 4K
+        first. When None the legacy staged path runs (4K normalizer, then the
+        segment render).
+    subtitle_path: caption .srt (built by caption_utils.build_caption_track)
+        to burn inside the render. When set, no separate caption pass is
+        needed and the delivered file keeps the render's CRF 15 veryslow
+        quality instead of being re-encoded afterwards.
+    output_name_captioned: when True the output is named
+        output_<ts>_captioned_<ts>.mp4 so the uploaders/globs that look for
+        "*_captioned_*" keep working unchanged.
     """
     print("🎬 Starting video compilation (SEGMENTED, HIGH QUALITY)...")
     
@@ -247,13 +590,14 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   🎙️ Female narrator boost: +{FEMALE_VOICE_BOOST_DB:.1f} dB (Sarah louder)")
     
     # --- OTHER SETTINGS ---
-    # Uniform CRF for the WHOLE background video (was 18/20/22 per segment).
-    # CRF controls quality; the preset controls encode speed. CRF 15 is
-    # near-visually-lossless and preset=veryslow gives the best motion
-    # estimation — videos upload straight to YouTube, so the slower encode
-    # and bigger files are fine.
-    CRF_VALUE = int(os.environ.get("VIDEO_CRF", "15"))
-    PRESET = os.environ.get("VIDEO_PRESET", "slow")
+    # Uniform CRF for the WHOLE background video. CRF controls quality; the
+    # preset controls encode speed. CRF 15 + veryslow is near-visually-lossless
+    # and gives the best motion estimation, and the footage is uploaded
+    # straight to YouTube, so the slower encode and bigger files are fine.
+    # CRF_VALUE / FALLBACK_CRF / FALLBACK_PRESET / VIDEO_UNSHARP come from the
+    # module-level block above so every pass reads them from one place.
+    PRESET = os.environ.get("VIDEO_PRESET", "veryslow")
+    unsharp = VIDEO_UNSHARP if VIDEO_UNSHARP.lower() not in ("", "off", "none", "false") else None
     
     print(f"   🎙️ Voice target: {voice_target:.0f} LUFS (auto-gained per narration)")
     print(f"   🎙️ Voice speed: {VOICE_SPEED}x")
@@ -300,6 +644,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     # divided by VOICE_SPEED (same math as the caption timestamps).
     overlay_filter = None
     frame_input = None
+    title_x_expr = None
+    title_frame_top = None
     if intro_frame and os.path.exists(intro_frame) and TITLE_INTRO:
         total_words = len((script or "").split())
         title_words = len(title.split()) if title else 0
@@ -328,6 +674,11 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 f"[1:v]scale={OUTPUT_W}:-1:flags=lanczos[card];"
                 f"[bg][card]overlay=x='{x_expr}':y={frame_top}:eval=frame"
             )
+            # The render loop builds segment 0's filtergraph itself (it may also
+            # carry an ending overlay), so it needs the card's geometry, not
+            # just the pre-baked filter string.
+            title_x_expr = x_expr
+            title_frame_top = frame_top
             frame_input = intro_frame
             print(f"   ✨ Reddit frame intro: {os.path.basename(intro_frame)} "
                   f"({title_secs:.1f}s on screen)")
@@ -337,88 +688,50 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   ⚠️ Frame intro skipped (intro frame not found: {intro_frame})")
     
     extract_duration = audio_duration * EXTRACT_FACTOR
-    print(f"   ⏱️ Extracting {extract_duration:.2f}s of footage (will be sped up {SPEED_FACTOR}x)")
-    
-    gameplay_segment = os.path.join(output_dir, f"gameplay_segment_{int(time.time())}.mp4")
-    source_video = video_paths[0]
-    
-    if not os.path.exists(source_video):
-        raise Exception(f"Source video not found: {source_video}")
-    
-    # FIXED (exit-234 crash): the old -c:v copy preserved the source's
-    # original codec (VP9, AV1, etc.) and container metadata — when the
-    # source had sparse keyframes or a non-H.264 codec (common with
-    # Google Drive's re-encoded uploads), the copy-cut produced a file
-    # that passed ffprobe but failed when ffmpeg decoded frames for the
-    # filter chain. Re-encoding normalizes ANY input to clean H.264
-    # yuv420p with dense keyframes — the format the segment renderer
-    # expects.
-    # IMPORTANT (quality): this re-encode is LOSSY — the segment renderer
-    # encodes FROM this file and cannot recover detail thrown away here.
-    # The old ultrafast + CRF 18 visibly degraded fast-moving gameplay
-    # (the source is already a lossy re-encode from drive_clip_manager's
-    # get_next_segment). CRF 15 + veryfast keeps this intermediate
-    # near-transparent so the final CRF 15 veryslow render actually
-    # delivers CRF 15 quality.
-    cmd_extract = [
-        'ffmpeg', '-y',
-        '-i', source_video,
-        '-t', str(extract_duration),
-        '-c:v', 'libx264',
-        '-preset', 'veryfast',
-        '-crf', '15',
-        '-pix_fmt', 'yuv420p',
-        '-movflags', '+faststart',
-        '-an',
-        gameplay_segment
-    ]
-    
-    # Timeout scales with footage length: full-story videos can need 700+s
-    # of footage, and this whole-duration re-encode at veryfast runs at
-    # roughly 1-1.5x realtime on a 2-core runner. 2400s (40 min) covers the
-    # worst case the adapter can produce with room to spare.
-    try:
-        subprocess.run(cmd_extract, check=True, capture_output=True, timeout=2400)
-        print(f"   ✅ Extracted {extract_duration:.2f}s segment (re-encoded to H.264).")
-    except Exception as e:
-        raise Exception(f"Segment extraction failed: {e}")
-    
-    # POST-EXTRACTION VALIDATION: verify the extracted segment is playable.
-    # A copy-cut from a corrupt or non-H.264 source can produce a file that
-    # passes ffprobe (metadata is fine) but fails when ffmpeg decodes frames.
-    probe_video(gameplay_segment)
-    if not os.path.exists(gameplay_segment) or os.path.getsize(gameplay_segment) < 1024:
-        raise Exception(
-            f"Extraction produced invalid output "
-            f"({os.path.getsize(gameplay_segment) if os.path.exists(gameplay_segment) else 0} bytes). "
-            f"Source: {source_video} — check if the source video is corrupt or has an unsupported codec."
-        )
-    # Verify the segment is actually decodable (not just metadata-valid)
-    try:
-        subprocess.run(
-            ['ffprobe', '-v', 'error', '-select_streams', 'v:0',
-             '-show_entries', 'stream=codec_name,width,height',
-             '-of', 'json', gameplay_segment],
-            check=True, capture_output=True, timeout=30
-        )
-    except Exception as e:
-        raise Exception(
-            f"Extracted segment is not decodable: {e}. "
-            f"The source video may have a codec that libx264 cannot decode (e.g., VP9/AV1). "
-            f"Source: {source_video}"
-        )
-    
-    # DISK FIX: delete the cached source video immediately after extraction.
-    # The 483 MB+ source sits on disk while segments render — on the GitHub
-    # runner that eats headroom and triggers ffmpeg exit-234 (I/O write failure)
-    # before the first segment even starts encoding. We only need the extracted
-    # segment from here on, so the source is safe to discard.
-    try:
-        src_size = os.path.getsize(source_video) / (1024 * 1024)
-        os.unlink(source_video)
-        print(f"   🧹 Deleted source video ({src_size:.0f} MB freed)")
-    except Exception:
-        pass  # non-critical — log but don't abort
+    print(f"   ⏱️ Using {extract_duration:.2f}s of footage (background plays at {SPEED_FACTOR}x)")
+
+    gameplay_segment = None
+    render_plan = None
+    video_duration = 0.0
+    source_video = video_paths[0] if video_paths else None
+
+    # Decode the footage directly only when we were handed a plan AND the
+    # sources use codecs we can afford to decode at 4K on a 2-core runner.
+    # (Sourced from the spans themselves, so this is correct even if the plan
+    # was built before a codec was known.)
+    span_codecs = {(s.get("codec") or "").lower() for s in (footage_spans or [])}
+    heavy_codecs = {c for c in span_codecs if c and c not in ("h264", "hevc")}
+    direct_mode = bool(footage_spans) and FOOTAGE_MODE == "direct" and not heavy_codecs
+
+    if heavy_codecs:
+        print(f"   ⚠️ Source codec(s) {sorted(heavy_codecs)} are costly to decode "
+              f"directly — staging to H.264 first (one extra re-encode)")
+
+    if direct_mode:
+        print("   🎞️ FOOTAGE_MODE=direct — rendering straight from the source "
+              "(footage is encoded exactly once; no 4K intermediate passes)")
+        _report_source_quality(footage_spans)
+        render_plan = _plan_render_segments(footage_spans, extract_duration,
+                                            SEGMENT_DURATION, SPEED_FACTOR)
+        if not render_plan:
+            raise Exception("Footage plan is empty — nothing to render")
+        video_duration = sum(j["footage"] for j in render_plan)
+        print(f"   📊 Footage: {video_duration:.2f}s across {len(render_plan)} segment(s) "
+              f"from {len({j['src'] for j in render_plan})} source file(s)")
+    elif footage_spans:
+        # FOOTAGE_MODE=staged with a plan, or a codec we won't decode directly.
+        # The plan is honoured exactly — same footage, same rotation state.
+        print("   🎞️ Staging the planned footage (FOOTAGE_MODE=staged)")
+        _report_source_quality(footage_spans)
+        gameplay_segment = _stage_spans(footage_spans, output_dir)
+        video_duration = get_duration(gameplay_segment)
+        print(f"   📊 Video duration: {video_duration:.2f}s")
+    else:
+        # Legacy rollback: a single already-extracted file was handed in.
+        if not source_video or not os.path.exists(source_video):
+            raise Exception(f"Source video not found: {source_video}")
+        gameplay_segment = _stage_footage(source_video, extract_duration, output_dir)
+        video_duration = get_duration(gameplay_segment)
     
     # DISK CHECK: log free space so exit-234 errors can be correlated.
     try:
@@ -430,123 +743,258 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception:
         pass
     
-    video_duration = get_duration(gameplay_segment)
-    print(f"   📊 Video duration: {video_duration:.2f}s")
-    
-    # SINGLE-FRAME DECODE TEST: verify the gameplay segment is actually
-    # decodable before starting the expensive segment rendering loop.
-    # A file can pass ffprobe (metadata is valid) but still have corrupt
-    # frame data that crashes the decoder during filter-chain rendering.
-    try:
-        subprocess.run(
-            ['ffmpeg', '-y', '-i', gameplay_segment,
-             '-frames:v', '1', '-f', 'null', '-'],
-            check=True, capture_output=True, timeout=60
-        )
-        print(f"   ✅ Single-frame decode test passed")
-    except Exception as e:
-        print(f"   ❌ Single-frame decode test FAILED: {e}")
-        print(f"   💡 The gameplay segment is not decodable — the source video may be corrupt")
-        raise Exception(
-            f"Gameplay segment is not decodable. The source video may be corrupt "
-            f"or have a codec issue. File: {gameplay_segment}"
-        )
-    
-    seg_plan = _segment_plan(video_duration, SEGMENT_DURATION)
-    if not seg_plan:
+    # STAGED ONLY: the extracted segment must be decodable before the
+    # expensive render loop starts (a file can pass ffprobe and still hold
+    # corrupt frame data). Direct mode decodes the source itself, per segment.
+    if not direct_mode:
+        try:
+            subprocess.run(
+                ['ffmpeg', '-y', '-i', gameplay_segment,
+                 '-frames:v', '1', '-f', 'null', '-'],
+                check=True, capture_output=True, timeout=60
+            )
+            print(f"   ✅ Single-frame decode test passed")
+        except Exception as e:
+            print(f"   ❌ Single-frame decode test FAILED: {e}")
+            print(f"   💡 The gameplay segment is not decodable — the source video may be corrupt")
+            raise Exception(
+                f"Gameplay segment is not decodable. The source video may be corrupt "
+                f"or have a codec issue. File: {gameplay_segment}"
+            )
+
+    # --- ENDING OVERLAYS (subscribe + like) ---
+    # Baked into the segments that contain them, instead of being applied as a
+    # separate whole-video pass. That pass re-encoded EVERY frame at veryfast
+    # just to draw two small buttons in the last ~29s, which capped the whole
+    # video at veryfast quality — the opposite of "everything CRF 15 veryslow".
+    ANIM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "animations")
+    OVERLAY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "overlays")
+    SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_capcut.mov")
+    if not os.path.exists(SUBSCRIBE_MOV):
+        SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_with_shadow.mov")
+    if not os.path.exists(SUBSCRIBE_MOV):
+        SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_chroma.mov")
+    LIKE_MOV = os.path.join(OVERLAY_DIR, "like_with_shadow.mov")
+    if not os.path.exists(LIKE_MOV):
+        LIKE_MOV = os.path.join(OVERLAY_DIR, "like_chroma.mov")
+
+    # Times are on the FINAL timeline (the mux trims to the narration length
+    # with -shortest), which is exactly the render's own output timeline.
+    final_timeline_dur = audio_duration / VOICE_SPEED
+    ending_overlays = []   # (name, mov_path, abs_start, duration)
+    ending_baked = False
+    if os.path.exists(SUBSCRIBE_MOV) and os.path.exists(LIKE_MOV):
+        subscribe_start = max(final_timeline_dur - 20.0, 0.0)
+        ending_overlays = [
+            ("subscribe", SUBSCRIBE_MOV, subscribe_start, 6.0),
+            ("like", LIKE_MOV, subscribe_start + 6.0, 2.74),
+        ]
+    else:
+        print("   ⚠️ Subscribe/like animations not found — run prepare_animations.py")
+    # Everything built from here on renders these overlays INTO the segments,
+    # so the separate whole-video pass below must not run.
+    ending_baked = bool(ending_overlays)
+
+    # --- BUILD THE RENDER JOBS (uniform shape for both modes) ---
+    if direct_mode:
+        job_sources = [dict(j) for j in render_plan]
+    else:
+        job_sources = []
+        for start, dur in _segment_plan(video_duration, SEGMENT_DURATION):
+            if dur <= 0:
+                continue
+            job_sources.append({
+                "src": gameplay_segment,
+                "src_start": start,
+                "footage": dur,
+                "out_start": start / SPEED_FACTOR,
+                "out_dur": dur / SPEED_FACTOR,
+            })
+    if not job_sources:
         raise Exception(f"Video has no playable duration ({video_duration:.2f}s) — nothing to render")
-    total_segments = len(seg_plan)
-    print(f"   📦 Splitting into {total_segments} segments of ~{seg_plan[0][1]:.1f}s each (even split — no degenerate tail)")
-    print(f"   📊 Quality: uniform CRF {CRF_VALUE}, preset {PRESET} (same quality for every segment)")
-    
-    pbar = tqdm(total=total_segments, desc="🎬 Rendering segments", unit="segment")
-    
-    jobs = []
-    for i, (start_time, segment_duration) in enumerate(seg_plan):
-        if segment_duration <= 0:
-            break
-        
-        # The portrait filter chain applied to EVERY segment. FIXED
-        # (mixed-resolution concat bug): the old <5s path stream-copied the
-        # raw LANDSCAPE source segment — a different resolution than the
-        # other segments — which corrupted the final concat (and at 4K
-        # sources it would be 3840x2160 against 1440x2560). setsar=1 keeps
-        # square pixels (the odd 1215px crop width can make ffmpeg emit a
-        # 1214:1215 SAR that YouTube dislikes).
-        vf_chain = (
+
+    # Keep each ending animation inside ONE segment: a boundary through an
+    # overlay would play it half in one segment and half in the next.
+    if direct_mode and ending_overlays:
+        _keep_overlays_whole(job_sources,
+                             [(n, s, d) for n, _, s, d in ending_overlays],
+                             SPEED_FACTOR)
+
+    print(f"   📦 Rendering {len(job_sources)} segment(s), fixed {SEGMENT_DURATION}s grid")
+    print(f"   📊 Quality: CRF {CRF_VALUE} + preset {PRESET} "
+          f"(only fallback: CRF {FALLBACK_CRF} + {FALLBACK_PRESET})")
+    if ending_overlays:
+        print("   🔔 Ending overlays baked into the render: "
+              + ", ".join(f"{n}@{s:.1f}s" for n, _, s, _ in ending_overlays))
+
+    # Caption SRTs, shifted per segment. caption_utils.shift_srt_for_segment
+    # is the SAME maths the old separate caption pass used, so the burned-in
+    # timings are unchanged — only WHERE the burn happens has moved.
+    srt_abs = None
+    caption_temp_dir = None
+    if burn_captions and subtitle_path and os.path.exists(subtitle_path):
+        from caption_utils import shift_srt_for_segment
+        srt_abs = os.path.abspath(subtitle_path)
+        caption_temp_dir = os.path.join(output_dir, f"caption_segments_{int(time.time())}")
+        os.makedirs(caption_temp_dir, exist_ok=True)
+        print(f"   💬 Burning captions inside the render "
+              f"(font {round(CAPTION_FONT_SIZE * OUTPUT_H / 1920)}px, "
+              f"{os.path.basename(srt_abs)})")
+    else:
+        def shift_srt_for_segment(*_a, **_k):  # pragma: no cover - unused
+            raise RuntimeError("captions disabled")
+
+    eff_font = round(CAPTION_FONT_SIZE * OUTPUT_H / 1920)
+    SUB_W, SUB_H = 400, 404
+    SUB_X, SUB_Y = 520, 1450
+    LIKE_W, LIKE_H = 175, 163
+    LIKE_X, LIKE_Y = 634, 1600
+    quality_label = f"CRF {CRF_VALUE} ({PRESET})"
+
+    def _base_chain(i, out_start):
+        """crop → scale → fps → speed → [sharpen] → [captions].
+
+        Format/setsar are appended by the job builder: RGBA when an overlay
+        needs to composite onto it, yuv420p otherwise.
+        """
+        chain = (
             f'crop=min(iw\\,ih*9/16):ih:(iw-min(iw\\,ih*9/16))/2:0,'
             f'scale={OUTPUT_W}:{OUTPUT_H}:flags=lanczos,'
             f'fps={OUTPUT_FPS},'
-            f'setpts={1/SPEED_FACTOR}*PTS,'
-            f'format=yuv420p,setsar=1'
+            f'setpts={1/SPEED_FACTOR}*PTS'
         )
-        # Uniform CRF for every segment (removed the 18/20/22 quality tiers).
-        segment_crf = CRF_VALUE
-        segment_preset = PRESET
-        quality_label = f"CRF {CRF_VALUE} ({PRESET})"
-        
-        print(f"   📌 Segment {i+1}/{total_segments}: {quality_label} ({segment_duration:.1f}s)")
-        
+        if unsharp:
+            chain += f',unsharp={unsharp}'
+        if srt_abs:
+            seg_srt = os.path.join(caption_temp_dir, f"shifted_{i:04d}.srt")
+            shift_srt_for_segment(srt_abs, out_start, seg_srt)
+            chain += (
+                f",subtitles='{_escape_filter_path(seg_srt)}':force_style='"
+                f"FontName=Arial,FontSize={eff_font},Bold=1,"
+                f"Alignment={CAPTION_ALIGNMENT},MarginV={CAPTION_MARGIN_V},"
+                f"Outline=2,"
+                f"PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000'"
+            )
+        return chain
+
+    jobs = []
+    for i, job in enumerate(job_sources):
+        seg_out_start = job["out_start"]
+        seg_out_end = seg_out_start + job["out_dur"]
+        chain = _base_chain(i, seg_out_start)
+
+        # Which ending overlays fall inside this segment's window?
+        seg_overlays = []
+        for name, mov, abs_start, dur in ending_overlays:
+            if abs_start < seg_out_end - 0.05 and abs_start + dur > seg_out_start + 0.05:
+                local = abs_start - seg_out_start
+                if local < -0.05:
+                    print(f"   ⚠️ '{name}' overlay starts before segment {i+1} — clamping")
+                    local = 0.0
+                seg_overlays.append((name, mov, max(local, 0.0), dur))
+
+        # Title card: segment 0 only (its whole animation is in the first ~12s).
+        use_title = (i == 0 and overlay_filter is not None)
+
+        print(f"   📌 Segment {i+1}/{len(job_sources)}: {quality_label} "
+              f"({job['footage']:.1f}s from {os.path.basename(job['src'])})"
+              + (f" + {len(seg_overlays)} overlay(s)" if seg_overlays else "")
+              + (" + title card" if use_title else ""))
+
         segment_output = os.path.join(output_dir, f"segment_processed_{i}_{int(time.time())}.mp4")
-        
-        # FIXED (exit-234 crash): segments used to be pre-cut from
-        # gameplay_segment with `-ss … -t … -c:v copy`, which starts output
-        # at a KEYFRAME — when the cut window contained no keyframe (the
-        # old sub-second "tail", or any sparse-keyframe source), the cut
-        # came back EMPTY and the encode died with "Invalid argument" (exit
-        # 234 on GitHub Actions' ffmpeg). Now `-ss` and `-t` go BEFORE `-i`
-        # (output seeking): ffmpeg decodes and starts exactly at start_time,
-        # frame-accurate and keyframe-independent — a segment can never be
-        # empty. This also removes the intermediate file (less disk) and
-        # makes segment boundaries exact (the copy-cut could overlap/gap by
-        # keyframe offsets).
-        # IMPORTANT: `-t` must stay BEFORE `-i`. As an output option it
-        # defeats the setpts speed-up — the segment renders at 1x (verified
-        # empirically: same chain, 33 frames/1.10s vs 25 frames/0.83s).
-        # The animated frame intro (if any) is only on segment 0 — the
-        # fade/hold/fade-out all happen inside the first ~12s. It needs a
-        # 2-input filter_complex (gameplay + the card PNG).
-        use_overlay = (i == 0 and overlay_filter is not None)
+
+        # `-ss`/`-t` BEFORE `-i` = input seeking: frame-accurate and
+        # keyframe-independent, so a segment can never come back empty (the
+        # old copy-cut could). `-t` MUST stay before `-i` — as an output
+        # option it defeats the setpts speed-up.
         cmd_process = [
             'ffmpeg', '-y',
-            '-ss', str(start_time),
-            '-t', str(segment_duration),
-            '-i', gameplay_segment,
+            '-ss', str(job["src_start"]),
+            '-t', str(job["footage"]),
+            '-i', job["src"],
         ]
-        if use_overlay:
-            # The base chain must stay RGBA so the card's alpha composites
-            # correctly; yuv420p is applied AFTER the overlay.
-            # IMPORTANT: `-loop 1` on the PNG input — without it the card is
-            # a SINGLE frame at t=0, and the fade-in (st=0.35) blanks that
-            # only frame, so the card would never be visible. Looped, the
-            # card streams continuously and the fades/overlay work. The loop
-            # MUST be duration-bounded (-t 15): an unbounded image loop never
-            # EOFs and the overlay runs forever (hung the render). 15s covers
-            # the longest title intro (12s max + fade); after that the card
-            # is fully faded out, so repeating its last (invisible) frame is
-            # harmless.
-            base = vf_chain.replace("format=yuv420p,setsar=1", "format=rgba,setsar=1")
-            fc = f"[0:v]{base}[bg];{overlay_filter},format=yuv420p,setsar=1[v]"
-            cmd_process += ['-loop', '1', '-t', '15', '-i', frame_input,
-                            '-filter_complex', fc, '-map', '[v]']
+
+        if use_title or seg_overlays:
+            # TWO independent counters, and conflating them was a real bug:
+            #
+            #   `n_in`  = the next ffmpeg INPUT index. It must advance by
+            #             exactly one per `-i` actually appended, in the same
+            #             order. A filtergraph pad is NOT an input: with two
+            #             ending overlays the old code emitted `[4:v]` for the
+            #             second one while only inputs 0..2 existed, and
+            #             ffmpeg died with the opaque
+            #             `Invalid file index 4 in filtergraph description`
+            #             — then the CRF 18 fallback retried the same broken
+            #             graph and the segment failed outright. It only ever
+            #             "worked" when a segment happened to contain a single
+            #             overlay, which is why it survived casual testing.
+            #   `nxt`   = the next filtergraph PAD number, which advances by
+            #             one per overlay and two per composited overlay.
+            extra_inputs = []
+            parts = [f"[0:v]{chain},format=rgba,setsar=1[v0]"]
+            label = "v0"
+            n_in = 1      # input 0 is the source itself
+            nxt = 1
+            if use_title:
+                # `-loop 1 -t 15`: without the loop the card is a SINGLE frame
+                # at t=0; an unbounded loop never EOFs and hangs the render.
+                # 15s covers the longest title intro (12s max + fade).
+                extra_inputs += ['-loop', '1', '-t', '15', '-i', frame_input]
+                card_idx = n_in
+                n_in += 1
+                card_pad = nxt
+                nxt += 1
+                parts.append(f"[{card_idx}:v]scale={OUTPUT_W}:-1:flags=lanczos[card]")
+                parts.append(
+                    f"[{label}][card]overlay=x='{title_x_expr}':"
+                    f"y={title_frame_top}:eval=frame[v{card_pad}]"
+                )
+                label = f"v{card_pad}"
+            for name, mov, local, dur in seg_overlays:
+                extra_inputs += ['-i', mov]
+                ov_idx = n_in
+                n_in += 1
+                ov_pad = nxt
+                nxt += 1
+                out_pad = nxt
+                nxt += 1
+                if name == "subscribe":
+                    ov_w, ov_h, ov_x, ov_y = SUB_W, SUB_H, SUB_X, SUB_Y
+                else:
+                    ov_w, ov_h, ov_x, ov_y = LIKE_W, LIKE_H, LIKE_X, LIKE_Y
+                parts.append(
+                    f"[{ov_idx}:v]setpts=PTS-STARTPTS+{local:.3f}/TB,"
+                    f"scale={ov_w}:{ov_h},format=rgba[ov{ov_pad}]"
+                )
+                parts.append(
+                    f"[{label}][ov{ov_pad}]overlay=x={ov_x}:y={ov_y}:format=auto:"
+                    f"eof_action=pass:enable='between(t,{local:.3f},{local + dur:.3f})'[v{out_pad}]"
+                )
+                label = f"v{out_pad}"
+            parts.append(f"[{label}]format=yuv420p,setsar=1[v]")
+            cmd_process += extra_inputs + [
+                '-filter_complex', ';'.join(parts), '-map', '[v]'
+            ]
         else:
-            cmd_process += ['-vf', vf_chain]
+            cmd_process += ['-vf', f"{chain},format=yuv420p,setsar=1"]
+
         cmd_process += [
             '-sws_flags', 'lanczos',
             '-c:v', 'libx264',
-            '-preset', segment_preset,
-            '-crf', str(segment_crf),
+            '-preset', PRESET,
+            '-crf', str(CRF_VALUE),
             '-profile:v', 'high',
             '-level', '5.1',
             '-an',
             '-movflags', '+faststart',
             segment_output
         ]
-        
+
         jobs.append((i, segment_output, cmd_process))
     
     # DISK CHECK before rendering: log free space so exit-234 I/O errors
-    # can be correlated with disk pressure on the runner.
+    # can be correlated with disk pressure on the runner. Direct mode holds
+    # the full 4K source on disk while it renders, so this matters more.
     try:
         disk = shutil.disk_usage(output_dir)
         free_gb = disk.free / (1024 ** 3)
@@ -556,29 +1004,34 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception:
         pass
     
-    # FIXED (60fps timeout): segments are independent ffmpeg encodes — run
-    # two at a time (the runner has 2 cores) so the veryslow 1440x2560@60
-    # render stays inside the job timeout. Every worker keeps the SAME
-    # CRF 15 and only falls back to a faster preset if its primary times
-    # out. Results are stored by segment index so the concat stays ordered.
+    # Segments are independent ffmpeg encodes. Every worker keeps the SAME
+    # CRF 15 + veryslow; the ONLY permitted degradation is CRF 18 + slow for a
+    # segment that failed outright. Results are stored by index so the concat
+    # stays ordered.
     from concurrent.futures import ThreadPoolExecutor, as_completed
-    
+
+    # DO NOT delete the sources here. In direct mode a "source" is the 4K
+    # file drive_clip_manager cached at cached_videos/video_<id>.mp4, and that
+    # file is SHARED: plan_footage() reuses an already-downloaded file for every
+    # later video in the same batch, and only downloads when the path is
+    # missing. Deleting it after its last segment would turn video 2/3 of a
+    # batch into a fresh multi-GB Drive download (and a brand-new way for the
+    # batch to fail on a transient download error). The old pipeline never
+    # deleted it either — the runner has ~80 GB free against ~1.6-4.1 GB per
+    # source — so holding it keeps disk use at parity with before.
     def _run_segment(job):
         i, segment_output, cmd_process = job
         try:
-            run_ffmpeg(cmd_process, timeout=1500, label=f"segment {i+1} render")
+            run_ffmpeg(cmd_process, timeout=1800, label=f"segment {i+1} render")
             return i, segment_output, False
         except Exception as e:
             print(f"   ⚠️ Segment {i+1} failed: {e}")
-            print(f"   🔄 Using fallback for segment {i+1}...")
-            # FALLBACK: same filter chain and CRF 15 (quality is set by
-            # CRF, not the preset), but ultrafast preset (5-10x faster than
-            # slow) so a segment that failed on slow can still finish. Also
-            # drops to 1080x1920 to halve pixel work if ultrafast still fails.
+            print(f"   🔄 Retrying segment {i+1} at the fallback setting "
+                  f"(CRF {FALLBACK_CRF} + {FALLBACK_PRESET})...")
             cmd_fallback = list(cmd_process)
-            cmd_fallback[cmd_fallback.index('-preset') + 1] = 'ultrafast'
-            cmd_fallback[cmd_fallback.index('-crf') + 1] = str(CRF_VALUE)
-            run_ffmpeg(cmd_fallback, timeout=1500, label=f"segment {i+1} fallback")
+            cmd_fallback[cmd_fallback.index('-preset') + 1] = FALLBACK_PRESET
+            cmd_fallback[cmd_fallback.index('-crf') + 1] = str(FALLBACK_CRF)
+            run_ffmpeg(cmd_fallback, timeout=1800, label=f"segment {i+1} fallback")
             return i, segment_output, True
     
     segment_files = [None] * len(jobs)
@@ -589,7 +1042,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             i, out, used_fallback = fut.result()
             segment_files[i] = out
             pbar.update(1)
-            print(f"   ✅ Segment {i+1}/{total_segments} complete"
+            print(f"   ✅ Segment {i+1}/{len(jobs)} complete"
                   + (" (fallback)" if used_fallback else f" ({quality_label})"))
     pbar.close()
     segment_files = [s for s in segment_files if s]
@@ -704,74 +1157,97 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             print(f"   ⚠️ Music mixing failed: {e}")
             print("   Continuing without music...")
     
-    # --- SOUND EFFECTS (ding at start, whoosh on card exit) ---
-    # Add the ding sound at 0:00 when the card appears
-    # Add the whoosh sound when the card exits (at t3)
-    if TITLE_INTRO and os.path.exists(DING_SOUND_PATH) and os.path.exists(WHOOSH_SOUND_PATH):
-        print("🔊 Adding sound effects (ding + whoosh)...")
-        audio_with_sfx = os.path.join(output_dir, f"audio_with_sfx_{int(time.time())}.mp3")
-        
-        # Get the timing for the whoosh sound (card exit time)
-        # t3 is when the card starts fading out and sliding left
-        if intro_frame and os.path.exists(intro_frame):
-            # Calculate t3 from the overlay timing (same logic as in the overlay filter)
-            total_words = len((script or "").split())
-            title_words = len(title.split()) if title else 0
-            if total_words and title_words:
-                title_secs = (audio_duration * title_words / total_words) / VOICE_SPEED
-                title_secs = title_secs + TITLE_HOLD_SEC
-                final_dur = audio_duration / VOICE_SPEED
-                title_secs = min(max(title_secs, TITLE_MIN_SEC), TITLE_MAX_SEC, max(final_dur - 0.5, 1.0))
-                t4 = title_secs
-                t3 = max(t4 - TITLE_FADE_SEC, 0.0)
-                
-                # Create a complex filter to add both sound effects
-                # ding at 0:00 (soft, attention-grab), whoosh at t3 (card slide start)
-                # NOTE: no narration delay — captions are timed to the original audio,
-                # so shifting the voice would desync them. The ding is short enough
-                # to coexist with the first word of narration.
-                filter_complex = (
-                    f"[0:a]volume=1.0[voice];"
-                    f"[1:a]volume=0.45,adelay=0|0[d];"  # ding at 0:00, soft (0.45) so it doesn't overpower narration
-                    f"[2:a]silenceremove=start_periods=1:start_threshold=-40dB:start_silence=0,volume=0.7,adelay={int(t3*1000)}|{int(t3*1000)}[w];"  # whoosh: strip leading silence, play at t3
-                    f"[voice][d][w]amix=inputs=3:duration=first:normalize=0"
-                )
-                
-                cmd_sfx = [
-                    'ffmpeg', '-y',
-                    '-i', final_audio,
-                    '-i', DING_SOUND_PATH,
-                    '-i', WHOOSH_SOUND_PATH,
-                    '-filter_complex', filter_complex,
-                    '-t', str(get_duration(final_audio)),
-                    '-ac', '2',
-                    '-acodec', 'mp3',
-                    '-b:a', '192k',
-                    audio_with_sfx
-                ]
-                
-                try:
-                    subprocess.run(cmd_sfx, check=True, capture_output=True, timeout=120)
-                    print(f"   ✅ Sound effects added (ding at 0:00, whoosh at {t3:.1f}s)")
-                    if final_audio != audio_path and os.path.exists(final_audio):
-                        os.unlink(final_audio)
-                    final_audio = audio_with_sfx
-                except Exception as e:
-                    print(f"   ⚠️ Sound effects failed: {e}")
-                    print("   Continuing without sound effects...")
-            else:
-                print("   ⚠️ Sound effects skipped (empty title or script)")
+    # --- SOUND EFFECTS + ENDING ANIMATION AUDIO ---
+    # ding at 0:00 (card appears), whoosh at t3 (card slides out), plus the
+    # subscribe/like sounds for the ending animations.
+    #
+    # IMPORTANT: the ending animations are baked into the RENDER, which carries
+    # no audio, so their sound is mixed here instead of in a separate pass over
+    # the finished video. NOTE: no narration delay — captions are timed to the
+    # original audio, so shifting the voice would desync them.
+    sfx_inputs = []   # (path, volume, delay_seconds, strip_leading_silence)
+    if TITLE_INTRO and os.path.exists(DING_SOUND_PATH):
+        sfx_inputs.append((DING_SOUND_PATH, 0.45, 0.0, False))
+    if TITLE_INTRO and os.path.exists(WHOOSH_SOUND_PATH) \
+            and intro_frame and os.path.exists(intro_frame):
+        total_words = len((script or "").split())
+        title_words = len(title.split()) if title else 0
+        if total_words and title_words:
+            title_secs = (audio_duration * title_words / total_words) / VOICE_SPEED
+            title_secs = title_secs + TITLE_HOLD_SEC
+            final_dur = audio_duration / VOICE_SPEED
+            title_secs = min(max(title_secs, TITLE_MIN_SEC), TITLE_MAX_SEC, max(final_dur - 0.5, 1.0))
+            whoosh_at = max(title_secs - TITLE_FADE_SEC, 0.0)
+            sfx_inputs.append((WHOOSH_SOUND_PATH, 0.7, whoosh_at, True))
+            print(f"   🔊 Whoosh scheduled at {whoosh_at:.1f}s (card exit)")
+
+    for name, _mov, abs_start, _dur in ending_overlays:
+        if name == "subscribe":
+            src = os.path.join(OVERLAY_DIR, "subscribe_audio.wav")
+            if not os.path.exists(src):
+                src = os.path.join(ANIM_DIR, "subscribe_green.weba")
         else:
-            print("   ⚠️ Sound effects skipped (no intro frame)")
+            src = os.path.join(OVERLAY_DIR, "like_audio.wav")
+            if not os.path.exists(src):
+                src = os.path.join(ANIM_DIR, "like_green.m4a")
+        if os.path.exists(src):
+            sfx_inputs.append((src, 1.2, abs_start, False))
+        else:
+            print(f"   ⚠️ {name} animation audio not found ({os.path.basename(src)})")
+
+    if sfx_inputs:
+        print(f"🔊 Mixing {len(sfx_inputs)} extra audio track(s)...")
+        audio_with_sfx = os.path.join(output_dir, f"audio_with_sfx_{int(time.time())}.mp3")
+        parts = ["[0:a]volume=1.0[voice]"]
+        mix_labels = "[voice]"
+        for n, (path, vol, delay, strip) in enumerate(sfx_inputs, start=1):
+            chain = ""
+            if strip:
+                chain += ("silenceremove=start_periods=1:start_threshold=-40dB:"
+                          "start_silence=0,")
+            chain += f"volume={vol},adelay={int(delay * 1000)}|{int(delay * 1000)}[x{n}]"
+            parts.append(f"[{n}:a]{chain}")
+            mix_labels += f"[x{n}]"
+        parts.append(f"{mix_labels}amix=inputs={len(sfx_inputs) + 1}:"
+                     f"duration=first:normalize=0[aout]")
+        cmd_sfx = ['ffmpeg', '-y', '-i', final_audio]
+        for path, _v, _d, _s in sfx_inputs:
+            cmd_sfx += ['-i', path]
+        cmd_sfx += [
+            '-filter_complex', ';'.join(parts),
+            '-map', '[aout]',
+            '-t', str(get_duration(final_audio)),
+            '-ac', '2',
+            '-acodec', 'mp3',
+            '-b:a', '192k',
+            audio_with_sfx
+        ]
+        try:
+            subprocess.run(cmd_sfx, check=True, capture_output=True, timeout=180)
+            print("   ✅ Extra audio mixed: "
+                  + ", ".join(f"{os.path.basename(p)}@{d:.1f}s" for p, _v, d, _s in sfx_inputs))
+            if final_audio != audio_path and os.path.exists(final_audio):
+                os.unlink(final_audio)
+            final_audio = audio_with_sfx
+        except Exception as e:
+            print(f"   ⚠️ Extra audio mixing failed: {e}")
+            print("   Continuing without extra audio...")
     else:
-        print("   ⚠️ Sound effects skipped (missing files or TITLE_INTRO disabled)")
+        print("   ⚠️ No ding/whoosh/animation audio to mix")
     
     # --- FINAL VIDEO COMPILATION (YouTube-Compatible) ---
     print("⚡ Adding audio to video...")
-    final_output = os.path.join(output_dir, f"output_{int(time.time())}.mp4")
-    # FIXED: mux with -c:v copy instead of re-encoding. The segments were
-    # already encoded at CRF 18, so this second full encode of the whole video
-    # was pure wasted CPU and a major cause of the GitHub Actions timeouts.
+    _ts = int(time.time())
+    if output_name_captioned and srt_abs:
+        # Captions were burned inside the render, so THIS is the delivered
+        # file. The "_captioned_" name is kept so the TikTok/Facebook/YouTube
+        # uploaders and verify_youtube_compat (which glob for it) keep working.
+        final_output = os.path.join(output_dir, f"output_{_ts}_captioned_{_ts}.mp4")
+    else:
+        final_output = os.path.join(output_dir, f"output_{_ts}.mp4")
+    # FIXED: mux with -c:v copy instead of re-encoding. The segments are
+    # already encoded at the final setting, so a second full encode of the
+    # whole video would be pure wasted CPU and a major timeout cause.
     cmd_audio = [
         'ffmpeg', '-y',
         '-i', video_combined,
@@ -793,14 +1269,18 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     except Exception as e:
         os.rename(video_combined, final_output)
     
-    os.unlink(gameplay_segment)
+    if gameplay_segment and os.path.exists(gameplay_segment):
+        os.unlink(gameplay_segment)
     
     final_size = os.path.getsize(final_output) / (1024 * 1024)
     final_duration = get_duration(final_output)
     
     print(f"✅ Video compiled successfully: {final_output}")
     print(f"   📊 Video info:")
-    print(f"      - Resolution: {OUTPUT_W}x{OUTPUT_H} (9:16, from 4K background)")
+    print(f"      - Resolution: {OUTPUT_W}x{OUTPUT_H} (9:16, "
+          f"{'single-pass from source' if direct_mode else 'staged 4K intermediate'})")
+    print(f"      - Captions: {'✅ burned in this encode' if srt_abs else '❌ none'}")
+    print(f"      - Ending overlay: {'✅ baked into this encode' if ending_baked else '❌ none'}")
     print(f"      - Video codec: H.264 (High Profile)")
     print(f"      - Audio codec: AAC 192kbps")
     print(f"      - Video speed: {SPEED_FACTOR}x")
@@ -849,23 +1329,16 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         except Exception as e:
             print(f"   ⚠️ Failed to add part number overlay: {e}")
     
-    # --- SUBSCRIBE / LIKE ENDING OVERLAY ---
-    # Uses apply_ending_overlay.py logic: -itsoffset for video, separate audio mix.
-    OVERLAY_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "overlays")
-    ANIM_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "animations")
-
-    # Find best subscribe animation (capcut > with_shadow > chroma)
-    SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_capcut.mov")
-    if not os.path.exists(SUBSCRIBE_MOV):
-        SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_with_shadow.mov")
-    if not os.path.exists(SUBSCRIBE_MOV):
-        SUBSCRIBE_MOV = os.path.join(OVERLAY_DIR, "subscribe_chroma.mov")
-    LIKE_MOV = os.path.join(OVERLAY_DIR, "like_with_shadow.mov")
-    if not os.path.exists(LIKE_MOV):
-        LIKE_MOV = os.path.join(OVERLAY_DIR, "like_chroma.mov")
-
-    if os.path.exists(SUBSCRIBE_MOV) and os.path.exists(LIKE_MOV):
-        print("\n🔔 Adding subscribe/like ending overlay...")
+    # --- SUBSCRIBE / LIKE ENDING OVERLAY (FALLBACK PATH ONLY) ---
+    # Normally baked into the render (see the render loop), so this whole-video
+    # re-encode runs only when the overlays could NOT be baked. It is kept as a
+    # working fallback, NOT as the primary path: it re-encodes every frame of
+    # the finished video just to draw two buttons in the last ~29s.
+    if ending_baked:
+        print("\n🔔 Subscribe/like ending overlay already baked into the render "
+              "— no whole-video re-encode needed")
+    elif os.path.exists(SUBSCRIBE_MOV) and os.path.exists(LIKE_MOV):
+        print("\n🔔 Adding subscribe/like ending overlay (separate pass)...")
 
         # Timing: subscribe starts 20s before end (6s duration), like starts after subscribe
         subscribe_dur = 6.0

@@ -641,7 +641,62 @@ def burn_subtitles_segmented(
 
 
 # ============================================================
-# PART 3: MAIN ENTRY POINT
+# PART 3: BUILD THE CAPTION TRACK (no video needed)
+# ============================================================
+
+def shift_srt_for_segment(srt_path: str, segment_start: float, output_path: str):
+    """Write an SRT whose timestamps are relative to a segment starting at
+    `segment_start` seconds on the final timeline.
+
+    Public wrapper around _shift_srt_timestamps so the single-pass renderer
+    burns each segment with EXACTLY the same timestamp maths the old separate
+    caption pass used.
+    """
+    _shift_srt_timestamps(srt_path, segment_start, output_path)
+
+
+def build_caption_track(
+    audio_path: str,
+    srt_path: Optional[str] = None,
+    whisper_model: str = "base",
+    speed_factor: float = 1.0,
+) -> Optional[str]:
+    """Transcribe the voiceover and write the caption .srt (plus its
+    .silences.json mute ranges). Returns the SRT path, or None on failure.
+
+    This is deliberately separated from add_subtitles_to_video(): the caption
+    track now has to exist BEFORE the background is rendered, because the
+    render burns the captions inside its own single encode. Burning them
+    afterwards meant re-encoding the whole finished video at a lower quality
+    than the render itself.
+    """
+    if not audio_path or not os.path.exists(audio_path):
+        print(f"   ⚠️ Caption track skipped: audio not found ({audio_path})")
+        return None
+
+    if srt_path is None:
+        srt_path = audio_path.replace(".mp3", ".srt").replace(".wav", ".srt")
+
+    if os.path.exists(srt_path):
+        print(f"   ✅ Caption track already exists: {srt_path}")
+        return srt_path
+
+    try:
+        srt_path = generate_srt_from_audio(
+            audio_path=audio_path,
+            output_srt_path=srt_path,
+            model_size=whisper_model,
+            speed_factor=speed_factor,
+        )
+        print(f"   ✅ Caption track ready: {srt_path}")
+        return srt_path
+    except Exception as e:
+        print(f"   ⚠️ Caption track failed: {e}")
+        return None
+
+
+# ============================================================
+# PART 4: MAIN ENTRY POINT
 # ============================================================
 
 def add_subtitles_to_video(
@@ -684,20 +739,15 @@ def add_subtitles_to_video(
                 raise Exception("Audio extraction failed")
     else:
         print(f"   ✅ Using provided audio: {audio_path}")
-    
+
     # Generate SRT from audio
-    srt_path = audio_path.replace(".mp3", ".srt")
-    if not os.path.exists(srt_path):
-        try:
-            srt_path = generate_srt_from_audio(
-                audio_path=audio_path,
-                output_srt_path=srt_path,
-                model_size=whisper_model,
-                speed_factor=speed_factor
-            )
-        except Exception as e:
-            print(f"   ❌ Transcription failed: {e}")
-            raise Exception("Transcription failed")
+    srt_path = build_caption_track(
+        audio_path=audio_path,
+        whisper_model=whisper_model,
+        speed_factor=speed_factor,
+    )
+    if not srt_path:
+        raise Exception("Transcription failed")
     
     # Burn subtitles using segmented method
     if output_path is None:
