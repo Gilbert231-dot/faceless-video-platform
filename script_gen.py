@@ -13,6 +13,51 @@ openai_client = OpenAI(
 # (slightly higher price per token, still on the free/developer tier).
 GROQ_MODEL = "openai/gpt-oss-20b"
 
+# openai/gpt-oss-20b is a REASONING model. Left at its default effort it spends
+# most of the completion budget thinking rather than writing, and because
+# max_tokens caps thinking + answer together, the answer gets cut off. Measured
+# on this file's own hook prompt: 28 of 30 tokens went to reasoning and the hook
+# came back as an EMPTY string; on the story prompt, 2,325 of 4,000 (58%) went
+# to reasoning and the narration came back as a ~200-word summary of a 336-word
+# story. "low" holds reasoning near 5-125 tokens, so the budget pays for prose.
+# Sent via extra_body because that works on every openai-python 1.x, whereas a
+# bare keyword needs a new-enough SDK to forward unknown fields.
+LOW_REASONING = {"reasoning_effort": "low"}  # Groq accepts low|medium|high only
+
+
+def _groq_text(messages, max_tokens, temperature):
+    """One Groq chat call, retried once with double the budget if the reply came
+    back empty or cut off.
+
+    WHY THE RETRY MATTERS: max_tokens caps reasoning + answer together, and the
+    reasoning spend for the SAME prompt varies enormously between calls — measured
+    at 5 tokens on one draw and 114 on the next for the hook prompt, and 894 vs
+    2,325 for the story prompt. So a fixed budget cannot be made safe by tuning:
+    a bad draw spends it thinking and hands back '' (finish_reason=length) or cuts
+    the story off mid-sentence. This detects both and buys more room.
+    """
+    budget = int(max_tokens)
+    text = ""
+    for attempt in (1, 2):
+        response = openai_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            max_tokens=budget,
+            temperature=temperature,
+            extra_body=LOW_REASONING,
+        )
+        choice = response.choices[0]
+        text = (choice.message.content or "").strip()
+        if text and choice.finish_reason != "length":
+            return text
+        if attempt == 1:
+            reason = "empty" if not text else "cut off"
+            print(f"   ↻ Groq reply {reason} (finish={choice.finish_reason}) "
+                  f"— retrying with {budget * 2} tokens")
+            budget *= 2
+    return text
+
+
 # ===========================
 # SLANG / ACRONYM NORMALIZATION
 # ===========================
@@ -81,14 +126,11 @@ def generate_hook(story_text, title, subreddit=None):
     
     Hook:"""
     
-    response = openai_client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=30,
-        temperature=0.9
-    )
-    
-    hook = response.choices[0].message.content.strip()
+    # 400, not 30: the hook is one line, but the budget also pays for the model's
+    # thinking, which measured 5-114 tokens on this exact prompt. At 30 the reply
+    # was '' with finish_reason=length on every draw, so the hook never existed
+    # and every video fell back to speaking the raw Reddit title.
+    hook = _groq_text([{"role": "user", "content": prompt}], 400, 0.9).strip()
     return hook
 
 # ===========================
@@ -416,16 +458,10 @@ The goal is to make the story feel fresh, personal, and engaging."""
     user_content = f"Title: {title}\n\nStory: {story}"
     
     # --- INCREASED MAX TOKENS FOR COMPLETE STORIES ---
-    response = openai_client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_content}
-        ],
-        max_tokens=max_tokens_value,
-        temperature=0.85
-    )
-    script_text = response.choices[0].message.content
+    script_text = _groq_text(
+        [{"role": "system", "content": system_prompt},
+         {"role": "user", "content": user_content}],
+        max_tokens_value, 0.85)
 
     # --- FORCE COMPLETE ENDING ---
     script_text = normalize_slang(script_text)
@@ -488,17 +524,10 @@ END THE STORY NATURALLY at its own resolution — no cliffhanger, no tease.
 COMPLETE THE STORY FULLY. DO NOT leave sentences unfinished.
 Keep the script 500-700 words."""
     
-    response = openai_client.chat.completions.create(
-        model=GROQ_MODEL,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Write a dramatic story about: {topic}"}
-        ],
-        max_tokens=800,
-        temperature=0.85
-    )
-    
-    script = response.choices[0].message.content
+    script = _groq_text(
+        [{"role": "system", "content": system_prompt},
+         {"role": "user", "content": f"Write a dramatic story about: {topic}"}],
+        800, 0.85)
     script = normalize_slang(script)
     script = strip_hype_intro(script)
     script = diversify_stock_hooks(script)

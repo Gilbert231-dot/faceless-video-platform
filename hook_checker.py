@@ -239,7 +239,7 @@ def hook_verdict(score):
 def llm_critique(opening):
     """Optional deeper critique via Groq (same key/model as script_gen.py)."""
     try:
-        from script_gen import openai_client, GROQ_MODEL
+        from script_gen import openai_client, GROQ_MODEL, LOW_REASONING
         resp = openai_client.chat.completions.create(
             model=GROQ_MODEL,
             messages=[{
@@ -254,6 +254,9 @@ def llm_critique(opening):
             }],
             max_tokens=200,
             temperature=0.5,
+            # same reasoning-model trap as script_gen: without this the coach
+            # spends the 200-token budget thinking and returns a fragment.
+            extra_body=LOW_REASONING,
         )
         return resp.choices[0].message.content.strip()
     except Exception as e:
