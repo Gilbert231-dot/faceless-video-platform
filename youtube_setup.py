@@ -72,17 +72,24 @@ load_dotenv()
 #   - youtube.force-ssl: REQUIRED for videos().update — editing an existing
 #     video's title/privacy (schedule_public.py). Without it, update calls
 #     fail with "insufficient authentication scopes".
-#   - youtubeAnalytics.readonly: REQUIRED for the Analytics API (impressions,
-#     CTR, average view duration in performance_tracker.py). Without it every
-#     analytics call returns 403, so the dashboard's performance panel stays
-#     empty even after the API is enabled in Cloud Console. Enabling the API
-#     is NOT enough on its own — the consent screen must grant the scope, and
-#     a refresh token only carries the scopes it was minted with.
+#   - yt-analytics.readonly: REQUIRED for the YouTube Analytics AND Reporting
+#     APIs (traffic sources, retention, view duration, subscriber gains in
+#     performance_tracker.py). Without it every analytics call fails, so the
+#     dashboard's performance panel stays empty even after the API is enabled
+#     in Cloud Console — enabling the API is NOT enough on its own, because a
+#     refresh token only carries the scopes it was minted with.
+#
+#     ⚠️ The scope is `yt-analytics.readonly`. It is NOT
+#     `youtubeAnalytics.readonly` — `youtubeAnalytics.googleapis.com` is the
+#     API's service name (the URL you enable in Cloud Console), and passing it
+#     as a scope makes Google refuse the WHOLE consent request with
+#     "Error 400: invalid_scope", which looks like a permissions problem but is
+#     really just the wrong string.
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
     "https://www.googleapis.com/auth/youtube.force-ssl",
-    "https://www.googleapis.com/auth/youtubeAnalytics.readonly",
+    "https://www.googleapis.com/auth/yt-analytics.readonly",
 ]
 
 

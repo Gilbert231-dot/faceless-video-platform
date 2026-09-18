@@ -16,7 +16,7 @@ dashboard's "Latest videos" panel can rank them.
 Auth: uses the SAME YouTube OAuth secrets as the pipeline
 (YOUTUBE_REFRESH_TOKEN / YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET).
 
-IMPORTANT: the analytics fields need the youtubeAnalytics.readonly scope
+IMPORTANT: the analytics fields need the yt-analytics.readonly scope
 on the refresh token. The scope list lives in youtube_setup.py; if the
 token was minted WITHOUT it, the analytics part degrades gracefully to
 views/likes/duration only (videos.list stats) and prints a hint.
@@ -48,16 +48,22 @@ except ImportError:
 HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "video_history.json")
 
 # youtube.upload is included so the refresh token works exactly like the
-# pipeline's; youtube.readonly powers videos.list; youtubeAnalytics.readonly
-# powers the analytics endpoint (impressions, CTR, view duration).
+# pipeline's; youtube.readonly powers videos.list; yt-analytics.readonly
+# powers the analytics endpoint (traffic sources, retention, view duration).
+#
+# The scope is `yt-analytics.readonly` — NOT `youtubeAnalytics.readonly`.
+# `youtubeAnalytics.googleapis.com` is only the API's service name (what you
+# enable in Cloud Console); the consent screen rejects the service name as an
+# invalid scope with `Error 400: invalid_scope`, which looks exactly like a
+# permissions problem but is really a typo'd string.
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
-    "https://www.googleapis.com/auth/youtubeAnalytics.readonly",
+    "https://www.googleapis.com/auth/yt-analytics.readonly",
 ]
 
 # The scopes every pipeline refresh token is guaranteed to carry. Used when
-# the token was minted BEFORE youtubeAnalytics.readonly was added to
+# the token was minted BEFORE yt-analytics.readonly was added to
 # youtube_setup.py: Google then rejects the token refresh itself with
 # `invalid_scope`, which happens at AUTH time (google.auth.RefreshError) —
 # BEFORE any HTTP request — so it can never surface as an HttpError and the
@@ -113,7 +119,7 @@ def get_services():
     except RefreshError as err:
         if "invalid_scope" not in str(err):
             raise
-        print(_safe("[performance] Token has no youtubeAnalytics.readonly scope "
+        print(_safe("[performance] Token has no yt-analytics.readonly scope "
                     "— recording views/likes/comments only. Re-run "
                     "youtube_setup.py to add it (the API must also be enabled in "
                     "Cloud Console)."))
@@ -262,9 +268,9 @@ def main():
 
     if not analytics_ok:
         print(_safe("\n[performance] NOTE: analytics unavailable (missing "
-                    "youtubeAnalytics.readonly scope or channel not eligible)."))
+                    "yt-analytics.readonly scope or channel not eligible)."))
         print(_safe("            Showing views/likes only. Re-run youtube_setup.py after"))
-        print(_safe("            adding 'youtubeAnalytics.readonly' to SCOPES to unlock"))
+        print(_safe("            adding 'yt-analytics.readonly' to SCOPES to unlock"))
         print(_safe("            average view duration + completion %."))
 
     stats_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
