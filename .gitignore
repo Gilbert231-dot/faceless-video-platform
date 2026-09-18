@@ -34,3 +34,7 @@ test_used_ids.json
 local_config.json
 local_uploaded_ids.json
 local_downloads/
+
+# story_forge.py prototype output — manufactured sample families, never input
+# to the pipeline and never committed
+forge_samples/
