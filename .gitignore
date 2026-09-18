@@ -41,6 +41,10 @@ forge_samples/
 # Local-only story tooling: never committed, never part of the pipeline
 story_forge.py
 vibe_miner.py
+# Measurement helpers for the forge: read-only, no pipeline contact, and they
+# describe output that is itself never committed.
+_measure_band.py
+_wpm_probe.py
 # Spelled as the tool actually writes it: the old all-lowercase rule only matched
 # on case-insensitive filesystems (Windows/macOS), so on a Linux checkout the
 # ledger would have become an untracked file.
