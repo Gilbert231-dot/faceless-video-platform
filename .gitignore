@@ -41,6 +41,12 @@ forge_samples/
 # Local-only story tooling: never committed, never part of the pipeline
 story_forge.py
 vibe_miner.py
-forge_state.json
+# Spelled as the tool actually writes it: the old all-lowercase rule only matched
+# on case-insensitive filesystems (Windows/macOS), so on a Linux checkout the
+# ledger would have become an untracked file.
+FORGE_STATE.json
 style_card.json
 vibe_notes.md
+# Downloaded example audio from a miner run (~56 MB last time): local scratch,
+# never committed, and the transcripts inside it are already cached separately.
+vibe_media/
