@@ -308,10 +308,25 @@ jobs:
             # — a failed render printed "✅ Video i done" and the run limped
             # on to upload nothing. Check the actual status now and fail the
             # job loudly.
-            # `| tail -1` is required: the function PRINTS debug lines to
-            # stdout before the JSON result, so the whole blob would fail
-            # json.load (that bit us: a GOOD video was marked failed).
-            RESULT=$(python -c "from tasks import generate_video_from_reddit; import json; print(json.dumps(generate_video_from_reddit()))" | tail -1)
+            # OBSERVABILITY FIX: the old `| tail -1` kept the JSON result but
+            # THREW AWAY everything else tasks.py printed — including
+            # "[drive] Source video: WxH", "FOOTAGE_MODE=direct", the
+            # "📊 Quality: CRF ..." line and the WEAK-SOURCE warning. A
+            # finished run therefore could not be verified from its own log.
+            # Now the full stdout+stderr is captured to a file and echoed, so
+            # every run explains its own quality; only the last line (the JSON)
+            # is parsed, exactly as before.
+            RENDER_LOG="/tmp/render_$i.log"
+            set +e
+            python -c "from tasks import generate_video_from_reddit; import json; print(json.dumps(generate_video_from_reddit()))" > "$RENDER_LOG" 2>&1
+            RENDER_RC=$?
+            set -e
+            cat "$RENDER_LOG"
+            if [ "$RENDER_RC" -ne 0 ]; then
+              echo "❌ Video $i FAILED (python exited $RENDER_RC)."
+              exit 1
+            fi
+            RESULT=$(tail -1 "$RENDER_LOG")
             STATUS=$(echo "$RESULT" | python -c "import json,sys; print(json.load(sys.stdin).get('status','error'))" 2>/dev/null || echo error)
 
             if [ "$STATUS" != "success" ]; then
