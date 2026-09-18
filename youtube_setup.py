@@ -72,10 +72,17 @@ load_dotenv()
 #   - youtube.force-ssl: REQUIRED for videos().update — editing an existing
 #     video's title/privacy (schedule_public.py). Without it, update calls
 #     fail with "insufficient authentication scopes".
+#   - youtubeAnalytics.readonly: REQUIRED for the Analytics API (impressions,
+#     CTR, average view duration in performance_tracker.py). Without it every
+#     analytics call returns 403, so the dashboard's performance panel stays
+#     empty even after the API is enabled in Cloud Console. Enabling the API
+#     is NOT enough on its own — the consent screen must grant the scope, and
+#     a refresh token only carries the scopes it was minted with.
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
     "https://www.googleapis.com/auth/youtube.force-ssl",
+    "https://www.googleapis.com/auth/youtubeAnalytics.readonly",
 ]
 
 

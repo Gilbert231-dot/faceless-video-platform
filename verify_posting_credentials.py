@@ -76,8 +76,13 @@ TIKTOK_CREATOR_INFO_URL = (
 DEFAULT_REPO = "Gilbert231-dot/faceless-video-platform"
 HTTP_TIMEOUT = 30
 
-# A token may only be refreshed with scopes that were granted at consent time;
-# this is the superset youtube_setup.py mints.
+# A token may only be refreshed with scopes that were granted at consent time.
+# This list is deliberately the ORIGINAL three scopes, not everything
+# youtube_setup.py now requests: Google rejects the whole refresh with
+# `invalid_scope` when even one requested scope was never consented to, and
+# this file is a CI preflight that gates posting — so listing a newer scope
+# here would fail runs until the token is re-minted. Keep it to what every
+# token in circulation already carries.
 YOUTUBE_SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",

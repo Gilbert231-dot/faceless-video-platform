@@ -33,6 +33,8 @@ import re
 import sys
 import time
 
+from google.auth.exceptions import RefreshError
+from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -47,11 +49,23 @@ HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "video_h
 
 # youtube.upload is included so the refresh token works exactly like the
 # pipeline's; youtube.readonly powers videos.list; youtubeAnalytics.readonly
-# powers the analytics endpoint (falls back gracefully when absent).
+# powers the analytics endpoint (impressions, CTR, view duration).
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
     "https://www.googleapis.com/auth/youtubeAnalytics.readonly",
+]
+
+# The scopes every pipeline refresh token is guaranteed to carry. Used when
+# the token was minted BEFORE youtubeAnalytics.readonly was added to
+# youtube_setup.py: Google then rejects the token refresh itself with
+# `invalid_scope`, which happens at AUTH time (google.auth.RefreshError) —
+# BEFORE any HTTP request — so it can never surface as an HttpError and the
+# graceful-degradation path below never runs. Without this fallback the whole
+# tracker dies on a missing scope and even views/likes/comments are lost.
+FALLBACK_SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    "https://www.googleapis.com/auth/youtube.readonly",
 ]
 
 UA = {"User-Agent": "faceless-performance-tracker/1.0"}
@@ -61,8 +75,24 @@ def _safe(text):
     return str(text).encode("ascii", "replace").decode("ascii")
 
 
+def _credentials(refresh_token, client_id, client_secret, scopes):
+    return Credentials(
+        token=None,
+        refresh_token=refresh_token,
+        client_id=client_id,
+        client_secret=client_secret,
+        token_uri="https://oauth2.googleapis.com/token",
+        scopes=scopes,
+    )
+
+
 def get_services():
-    """Return (youtube_v3, youtube_analytics) clients or raise."""
+    """Return (youtube_v3, youtube_analytics | None).
+
+    `youtube_analytics` is None when the refresh token carries no analytics
+    scope, in which case the caller records basic stats only. A refresh token
+    genuinely broken another way still raises, so a dead token stays loud.
+    """
     refresh_token = os.getenv("YOUTUBE_REFRESH_TOKEN")
     client_id = os.getenv("YOUTUBE_CLIENT_ID")
     client_secret = os.getenv("YOUTUBE_CLIENT_SECRET")
@@ -74,14 +104,24 @@ def get_services():
         }.items() if not v]
         raise RuntimeError("Missing YouTube OAuth secrets in environment: " + ", ".join(missing))
 
-    creds = Credentials(
-        token=None,
-        refresh_token=refresh_token,
-        client_id=client_id,
-        client_secret=client_secret,
-        token_uri="https://oauth2.googleapis.com/token",
-        scopes=SCOPES,
-    )
+    # Preferred: full scope set, so impressions/CTR/retention are available.
+    creds = _credentials(refresh_token, client_id, client_secret, SCOPES)
+    try:
+        # Force the token exchange now: a scope the token never consented to
+        # fails HERE, not on the first API call.
+        creds.refresh(Request())
+    except RefreshError as err:
+        if "invalid_scope" not in str(err):
+            raise
+        print(_safe("[performance] Token has no youtubeAnalytics.readonly scope "
+                    "— recording views/likes/comments only. Re-run "
+                    "youtube_setup.py to add it (the API must also be enabled in "
+                    "Cloud Console)."))
+        creds = _credentials(refresh_token, client_id, client_secret, FALLBACK_SCOPES)
+        creds.refresh(Request())  # a token broken any other way must still fail
+        yt = build("youtube", "v3", credentials=creds)
+        return yt, None
+
     yt = build("youtube", "v3", credentials=creds)
     ya = build("youtubeAnalytics", "v2", credentials=creds, developerKey=None)
     return yt, ya
@@ -187,7 +227,8 @@ def main():
     details = fetch_video_details(yt, yt_ids)
     print(_safe(f"[performance] Got basic stats for {len(details)} videos."))
 
-    analytics_ok = True
+    # No analytics client => the token lacks the scope; basic stats still run.
+    analytics_ok = ya is not None
     for e in history:
         if e.get("platform") != "youtube" or not e.get("video_id"):
             continue
@@ -202,7 +243,7 @@ def main():
         if dur:
             e["duration_sec"] = dur
         try:
-            a = fetch_analytics(ya, vid, args.days)
+            a = fetch_analytics(ya, vid, args.days) if analytics_ok else {}
             if a:
                 e["avg_view_duration_sec"] = a["avg_view_duration_sec"]
                 e["watch_time_min"] = a["watch_time_min"]
@@ -210,8 +251,13 @@ def main():
                     e["completion_pct"] = round(min(100.0, a["avg_view_duration_sec"] / dur * 100), 1)
         except HttpError as err:
             if err.resp.status in (403, 400):
+                # Scope/eligibility affects EVERY video, so stop calling
+                # analytics — but do NOT abandon the loop: views/likes/
+                # comments come from videos.list (already fetched above) and
+                # used to be silently lost for every video after the first
+                # failure, which is why the dashboard showed zeros.
                 analytics_ok = False
-                break  # scope/eligibility issue affects every video - stop trying
+                continue
             # 401/410/429 etc: continue with the rest
 
     if not analytics_ok:
