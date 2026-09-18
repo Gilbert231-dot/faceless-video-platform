@@ -38,3 +38,9 @@ local_downloads/
 # story_forge.py prototype output — manufactured sample families, never input
 # to the pipeline and never committed
 forge_samples/
+# Local-only story tooling: never committed, never part of the pipeline
+story_forge.py
+vibe_miner.py
+forge_state.json
+style_card.json
+vibe_notes.md
