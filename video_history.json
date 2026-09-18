@@ -1,5 +1,29 @@
 [
   {
+    "video_file": "output_1789712403_captioned_1789712403.mp4",
+    "title": "[FULL STORY] My moderator boss tried to expose bots—now I’m caught in their revenge plot.",
+    "subreddit": "MaliciousCompliance",
+    "platform": "facebook",
+    "status": "posted",
+    "video_id": "122112808773447442",
+    "url": "https://www.facebook.com/reel/1806966544083056",
+    "posted_at": "2026-09-18T06:22:41Z",
+    "hook_score": 39,
+    "publish_at": "2026-09-18T15:00:00Z"
+  },
+  {
+    "video_file": "output_1789712403_captioned_1789712403.mp4",
+    "title": "[FULL STORY] My moderator boss tried to expose bots—now I’m caught in their revenge plot.",
+    "subreddit": "MaliciousCompliance",
+    "platform": "youtube",
+    "status": "posted",
+    "video_id": "xva-SX4Xbbc",
+    "url": "https://youtu.be/xva-SX4Xbbc",
+    "posted_at": "2026-09-18T06:21:03Z",
+    "hook_score": 39,
+    "publish_at": "2026-09-18T15:00:00Z"
+  },
+  {
     "video_file": "output_1789637596_captioned_1789637596.mp4",
     "title": "[FULL STORY] Sent Scammer Dirty Diapers and More",
     "subreddit": "pettyrevenge",
@@ -1150,27 +1174,5 @@
     "url": "https://www.facebook.com/1272041649331476/videos/1057732893509413",
     "posted_at": "2026-08-24T09:11:17Z",
     "hook_score": 26
-  },
-  {
-    "video_file": "output_1787561858_captioned_1787561864.mp4",
-    "title": "[TEST] Entitled kids think they can play with my girlfriend's crutches",
-    "subreddit": "EntitledPeople",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "zZbeWVwcOfY",
-    "url": "https://youtu.be/zZbeWVwcOfY",
-    "posted_at": "2026-08-24T09:10:50Z",
-    "hook_score": 26
-  },
-  {
-    "video_file": "output_1787495452_captioned_1787495455.mp4",
-    "title": "[TEST] The 25,000 Pounds of Thrust Wake Up Call",
-    "subreddit": "MaliciousCompliance",
-    "platform": "facebook",
-    "status": "posted",
-    "video_id": "122102314299447442",
-    "url": "https://www.facebook.com/reel/2128972221163301",
-    "posted_at": "2026-08-23T14:38:05Z",
-    "hook_score": 14
   }
 ]

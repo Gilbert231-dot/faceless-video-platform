@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-17T09:34:38Z",
+  "generated_at": "2026-09-18T06:22:41Z",
   "total_stories": 367,
-  "unused_stories": 301,
-  "used_stories": 66,
+  "unused_stories": 300,
+  "used_stories": 67,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 150,
-  "runway_date": "2027-02-14",
+  "runway_date": "2027-02-15",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -78,8 +78,8 @@
     },
     {
       "name": "MaliciousCompliance",
-      "total": 12,
-      "unused": 12
+      "total": 11,
+      "unused": 11
     },
     {
       "name": "ProRevenge",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 95
+    "next_index": 96
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-18T03:00:00Z",
-      "2026-09-19T03:00:00Z"
+      "2026-09-18T15:00:00Z",
+      "2026-09-19T15:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789712403_captioned_1789712403.mp4",
+      "title": "[FULL STORY] My moderator boss tried to expose bots—now I’m caught in their revenge plot.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122112808773447442",
+      "url": "https://www.facebook.com/reel/1806966544083056",
+      "posted_at": "2026-09-18T06:22:41Z",
+      "hook_score": 39,
+      "publish_at": "2026-09-18T15:00:00Z"
+    },
+    {
+      "video_file": "output_1789712403_captioned_1789712403.mp4",
+      "title": "[FULL STORY] My moderator boss tried to expose bots—now I’m caught in their revenge plot.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "xva-SX4Xbbc",
+      "url": "https://youtu.be/xva-SX4Xbbc",
+      "posted_at": "2026-09-18T06:21:03Z",
+      "hook_score": 39,
+      "publish_at": "2026-09-18T15:00:00Z"
+    },
     {
       "video_file": "output_1789637596_captioned_1789637596.mp4",
       "title": "[FULL STORY] Sent Scammer Dirty Diapers and More",
@@ -196,30 +220,6 @@
       "posted_at": "2026-09-17T05:59:34Z",
       "hook_score": 0,
       "publish_at": "2026-09-17T15:00:00Z"
-    },
-    {
-      "video_file": "output_1789553659_ending_captioned_1789553748.mp4",
-      "title": "[FULL STORY] Return a wedding gift after 40 years",
-      "subreddit": "EntitledPeople",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122112333735447442",
-      "url": "https://www.facebook.com/reel/2846342665744689",
-      "posted_at": "2026-09-16T10:20:27Z",
-      "hook_score": 14,
-      "publish_at": "2026-09-17T03:00:00Z"
-    },
-    {
-      "video_file": "output_1789553659_ending_captioned_1789553748.mp4",
-      "title": "[FULL STORY] Return a wedding gift after 40 years",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "9qmUbVULQUA",
-      "url": "https://youtu.be/9qmUbVULQUA",
-      "posted_at": "2026-09-16T10:20:13Z",
-      "hook_score": 14,
-      "publish_at": "2026-09-17T03:00:00Z"
     }
   ]
 }
