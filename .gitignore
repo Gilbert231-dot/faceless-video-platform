@@ -41,6 +41,8 @@ forge_samples/
 # Local-only story tooling: never committed, never part of the pipeline
 story_forge.py
 vibe_miner.py
+forge_index.py
+narrate_story.py
 # Measurement helpers for the forge: read-only, no pipeline contact, and they
 # describe output that is itself never committed.
 _measure_band.py
