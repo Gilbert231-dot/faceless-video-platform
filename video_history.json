@@ -1,5 +1,29 @@
 [
   {
+    "video_file": "output_1789818687_captioned_1789818687.mp4",
+    "title": "[FULL STORY] I thought Miami was paradise—then the city betrayed me.",
+    "subreddit": "unpopularopinion",
+    "platform": "facebook",
+    "status": "posted",
+    "video_id": "122113343505447442",
+    "url": "https://www.facebook.com/reel/3287568268097647",
+    "posted_at": "2026-09-19T11:54:10Z",
+    "hook_score": 39,
+    "publish_at": "2026-09-20T03:00:00Z"
+  },
+  {
+    "video_file": "output_1789818687_captioned_1789818687.mp4",
+    "title": "[FULL STORY] I thought Miami was paradise—then the city betrayed me.",
+    "subreddit": "unpopularopinion",
+    "platform": "youtube",
+    "status": "posted",
+    "video_id": "cgxm3wRXANg",
+    "url": "https://youtu.be/cgxm3wRXANg",
+    "posted_at": "2026-09-19T11:52:21Z",
+    "hook_score": 39,
+    "publish_at": "2026-09-20T03:00:00Z"
+  },
+  {
     "video_file": "output_1789813467_captioned_1789813467.mp4",
     "title": "[FULL STORY] I left 100€ in my car, then my SIL’s boyfriend stole everything.",
     "subreddit": "AITAH",
@@ -1356,32 +1380,5 @@
     "url": "https://www.facebook.com/1272041649331476/videos/2138260763390724",
     "posted_at": "2026-08-25T20:05:21Z",
     "hook_score": 21
-  },
-  {
-    "video_file": "output_1787687140_ending_captioned_1787687338.mp4",
-    "title": "[TEST] Apparently I could have put the refuse lorry driver in ‘fear for his life’",
-    "subreddit": "pettyrevenge",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "HXHurEg_4_M",
-    "url": "https://youtu.be/HXHurEg_4_M",
-    "posted_at": "2026-08-25T20:04:49Z",
-    "hook_score": 21,
-    "views": 0,
-    "likes": 0,
-    "comments": 0,
-    "duration_sec": 198.0,
-    "stats_at": "2026-09-19T08:11:24Z"
-  },
-  {
-    "video_file": "output_1787675598_ending_captioned_1787675773.mp4",
-    "title": "[TEST] Posting Podcasts, Surveys, or your college homework will get you banned.",
-    "subreddit": "TalesFromTheFrontDesk",
-    "platform": "facebook",
-    "status": "posted",
-    "video_id": "27906590382285494",
-    "url": "https://www.facebook.com/1272041649331476/videos/27906590382285494",
-    "posted_at": "2026-08-25T16:51:09Z",
-    "hook_score": 1
   }
 ]
