@@ -42,6 +42,7 @@ forge_samples/
 story_forge.py
 vibe_miner.py
 forge_index.py
+forge_redrift.py
 narrate_story.py
 # Measurement helpers for the forge: read-only, no pipeline contact, and they
 # describe output that is itself never committed.
