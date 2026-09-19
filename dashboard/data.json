@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-19T06:55:57Z",
+  "generated_at": "2026-09-19T08:11:24Z",
   "total_stories": 367,
   "unused_stories": 297,
   "used_stories": 70,
@@ -93,11 +93,12 @@
   "youtube": {
     "privacy": "public",
     "slots": [
-      "15:00"
+      "12:00",
+      "18:00"
     ],
     "next_publish_utc": [
-      "2026-09-19T15:00:00Z",
-      "2026-09-20T15:00:00Z"
+      "2026-09-19T12:00:00Z",
+      "2026-09-19T18:00:00Z"
     ]
   },
   "videos": [
@@ -123,7 +124,12 @@
       "url": "https://youtu.be/i_F9FukUcxs",
       "posted_at": "2026-09-19T06:53:11Z",
       "hook_score": 13,
-      "publish_at": "2026-09-19T15:00:00Z"
+      "publish_at": "2026-09-19T15:00:00Z",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "duration_sec": 125.0,
+      "stats_at": "2026-09-19T08:11:24Z"
     },
     {
       "video_file": "output_1789725824_captioned_1789725824.mp4",
@@ -147,7 +153,12 @@
       "url": "https://youtu.be/oAqsEWA1fls",
       "posted_at": "2026-09-18T10:04:44Z",
       "hook_score": 39,
-      "publish_at": "2026-09-19T03:00:00Z"
+      "publish_at": "2026-09-19T03:00:00Z",
+      "views": 2,
+      "likes": 0,
+      "comments": 0,
+      "duration_sec": 93.0,
+      "stats_at": "2026-09-19T08:11:24Z"
     },
     {
       "video_file": "output_1789716188_captioned_1789716188.mp4",
@@ -176,7 +187,7 @@
       "likes": 0,
       "comments": 0,
       "duration_sec": 42.0,
-      "stats_at": "2026-09-18T08:23:41Z"
+      "stats_at": "2026-09-19T08:11:24Z"
     },
     {
       "video_file": "output_1789712403_captioned_1789712403.mp4",
@@ -201,11 +212,11 @@
       "posted_at": "2026-09-18T06:21:03Z",
       "hook_score": 39,
       "publish_at": "2026-09-18T15:00:00Z",
-      "views": 0,
+      "views": 1,
       "likes": 0,
       "comments": 0,
       "duration_sec": 82.0,
-      "stats_at": "2026-09-18T08:23:41Z"
+      "stats_at": "2026-09-19T08:11:24Z"
     },
     {
       "video_file": "output_1789637596_captioned_1789637596.mp4",
@@ -230,11 +241,11 @@
       "posted_at": "2026-09-17T09:34:09Z",
       "hook_score": 0,
       "publish_at": "2026-09-18T03:00:00Z",
-      "views": 0,
+      "views": 1,
       "likes": 0,
       "comments": 0,
       "duration_sec": 51.0,
-      "stats_at": "2026-09-18T08:23:41Z"
+      "stats_at": "2026-09-19T08:11:24Z"
     }
   ]
 }
