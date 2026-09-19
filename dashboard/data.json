@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-19T08:11:24Z",
+  "generated_at": "2026-09-19T10:27:47Z",
   "total_stories": 367,
-  "unused_stories": 297,
-  "used_stories": 70,
+  "unused_stories": 296,
+  "used_stories": 71,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 148,
@@ -17,13 +17,13 @@
       "unused": 25
     },
     {
-      "name": "AITAH",
-      "total": 25,
-      "unused": 25
-    },
-    {
       "name": "TrueOffMyChest",
       "total": 25,
+      "unused": 24
+    },
+    {
+      "name": "AITAH",
+      "total": 24,
       "unused": 24
     },
     {
@@ -88,20 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 99
+    "next_index": 100
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
-      "2026-09-19T12:00:00Z",
-      "2026-09-19T18:00:00Z"
+      "2026-09-19T23:00:00Z",
+      "2026-09-20T23:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789813467_captioned_1789813467.mp4",
+      "title": "[FULL STORY] I left 100€ in my car, then my SIL’s boyfriend stole everything.",
+      "subreddit": "AITAH",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122113320513447442",
+      "url": "https://www.facebook.com/reel/4485997764951457",
+      "posted_at": "2026-09-19T10:27:47Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-19T23:00:00Z"
+    },
+    {
+      "video_file": "output_1789813467_captioned_1789813467.mp4",
+      "title": "[FULL STORY] I left 100€ in my car, then my SIL’s boyfriend stole everything.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "xGfJoRPVnIA",
+      "url": "https://youtu.be/xGfJoRPVnIA",
+      "posted_at": "2026-09-19T10:25:42Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-19T23:00:00Z"
+    },
     {
       "video_file": "output_1789800732_captioned_1789800732.mp4",
       "title": "[FULL STORY] My new coworker’s wrath exploded—now I’m stuck in a nightmare I can’t escape.",
@@ -216,35 +239,6 @@
       "likes": 0,
       "comments": 0,
       "duration_sec": 82.0,
-      "stats_at": "2026-09-19T08:11:24Z"
-    },
-    {
-      "video_file": "output_1789637596_captioned_1789637596.mp4",
-      "title": "[FULL STORY] Sent Scammer Dirty Diapers and More",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122112568023447442",
-      "url": "https://www.facebook.com/reel/1739335017301451",
-      "posted_at": "2026-09-17T09:34:38Z",
-      "hook_score": 0,
-      "publish_at": "2026-09-18T03:00:00Z"
-    },
-    {
-      "video_file": "output_1789637596_captioned_1789637596.mp4",
-      "title": "[FULL STORY] Sent Scammer Dirty Diapers and More",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "6M3osUI7Paw",
-      "url": "https://youtu.be/6M3osUI7Paw",
-      "posted_at": "2026-09-17T09:34:09Z",
-      "hook_score": 0,
-      "publish_at": "2026-09-18T03:00:00Z",
-      "views": 1,
-      "likes": 0,
-      "comments": 0,
-      "duration_sec": 51.0,
       "stats_at": "2026-09-19T08:11:24Z"
     }
   ]

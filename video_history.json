@@ -1,5 +1,29 @@
 [
   {
+    "video_file": "output_1789813467_captioned_1789813467.mp4",
+    "title": "[FULL STORY] I left 100€ in my car, then my SIL’s boyfriend stole everything.",
+    "subreddit": "AITAH",
+    "platform": "facebook",
+    "status": "posted",
+    "video_id": "122113320513447442",
+    "url": "https://www.facebook.com/reel/4485997764951457",
+    "posted_at": "2026-09-19T10:27:47Z",
+    "hook_score": 52,
+    "publish_at": "2026-09-19T23:00:00Z"
+  },
+  {
+    "video_file": "output_1789813467_captioned_1789813467.mp4",
+    "title": "[FULL STORY] I left 100€ in my car, then my SIL’s boyfriend stole everything.",
+    "subreddit": "AITAH",
+    "platform": "youtube",
+    "status": "posted",
+    "video_id": "xGfJoRPVnIA",
+    "url": "https://youtu.be/xGfJoRPVnIA",
+    "posted_at": "2026-09-19T10:25:42Z",
+    "hook_score": 52,
+    "publish_at": "2026-09-19T23:00:00Z"
+  },
+  {
     "video_file": "output_1789800732_captioned_1789800732.mp4",
     "title": "[FULL STORY] My new coworker’s wrath exploded—now I’m stuck in a nightmare I can’t escape.",
     "subreddit": "pettyrevenge",
@@ -1359,33 +1383,5 @@
     "url": "https://www.facebook.com/1272041649331476/videos/27906590382285494",
     "posted_at": "2026-08-25T16:51:09Z",
     "hook_score": 1
-  },
-  {
-    "video_file": "output_1787675598_ending_captioned_1787675773.mp4",
-    "title": "[TEST] Posting Podcasts, Surveys, or your college homework will get you banned.",
-    "subreddit": "TalesFromTheFrontDesk",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "FrDHr3FMzhc",
-    "url": "https://youtu.be/FrDHr3FMzhc",
-    "posted_at": "2026-08-25T16:50:28Z",
-    "hook_score": 1,
-    "views": 0,
-    "likes": 0,
-    "comments": 0,
-    "duration_sec": 153.0,
-    "stats_at": "2026-09-19T08:11:24Z"
-  },
-  {
-    "video_file": "output_1787618674_ending_captioned_1787618758.mp4",
-    "title": "Landlord put me through 3 years of hell. ",
-    "subreddit": "ProRevenge",
-    "platform": "facebook",
-    "status": "posted",
-    "video_id": "122103521787447442",
-    "url": "https://www.facebook.com/reel/1543918460185902",
-    "posted_at": "2026-08-25T00:55:14Z",
-    "hook_score": 26,
-    "publish_at": "2026-08-26T18:00:00Z"
   }
 ]
