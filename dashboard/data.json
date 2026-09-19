@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-18T10:06:37Z",
+  "generated_at": "2026-09-19T06:55:57Z",
   "total_stories": 367,
-  "unused_stories": 298,
-  "used_stories": 69,
+  "unused_stories": 297,
+  "used_stories": 70,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 149,
+  "days_of_stories": 148,
   "runway_date": "2027-02-14",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -78,8 +78,8 @@
     },
     {
       "name": "pettyrevenge",
-      "total": 12,
-      "unused": 11
+      "total": 11,
+      "unused": 10
     },
     {
       "name": "ProRevenge",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 98
+    "next_index": 99
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-19T03:00:00Z",
-      "2026-09-20T03:00:00Z"
+      "2026-09-19T15:00:00Z",
+      "2026-09-20T15:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789800732_captioned_1789800732.mp4",
+      "title": "[FULL STORY] My new coworker’s wrath exploded—now I’m stuck in a nightmare I can’t escape.",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "4690356181193199",
+      "url": "https://www.facebook.com/1272041649331476/videos/4690356181193199",
+      "posted_at": "2026-09-19T06:55:57Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-19T15:00:00Z"
+    },
+    {
+      "video_file": "output_1789800732_captioned_1789800732.mp4",
+      "title": "[FULL STORY] My new coworker’s wrath exploded—now I’m stuck in a nightmare I can’t escape.",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "i_F9FukUcxs",
+      "url": "https://youtu.be/i_F9FukUcxs",
+      "posted_at": "2026-09-19T06:53:11Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-19T15:00:00Z"
+    },
     {
       "video_file": "output_1789725824_captioned_1789725824.mp4",
       "title": "[FULL STORY] My ex‑boss ruined Jacob’s legacy—now I’m exposing his cruel betrayal.",
@@ -210,35 +234,6 @@
       "likes": 0,
       "comments": 0,
       "duration_sec": 51.0,
-      "stats_at": "2026-09-18T08:23:41Z"
-    },
-    {
-      "video_file": "output_1789634313_captioned_1789634313.mp4",
-      "title": "[FULL STORY] She thought she owned everyone, so I put her in her place.",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122112559785447442",
-      "url": "https://www.facebook.com/reel/1601153391644489",
-      "posted_at": "2026-09-17T08:40:58Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-17T23:00:00Z"
-    },
-    {
-      "video_file": "output_1789634313_captioned_1789634313.mp4",
-      "title": "[FULL STORY] She thought she owned everyone, so I put her in her place.",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "r9-nSa9mooY",
-      "url": "https://youtu.be/r9-nSa9mooY",
-      "posted_at": "2026-09-17T08:39:27Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-17T23:00:00Z",
-      "views": 0,
-      "likes": 0,
-      "comments": 0,
-      "duration_sec": 57.0,
       "stats_at": "2026-09-18T08:23:41Z"
     }
   ]
