@@ -23,7 +23,7 @@ from config import FAST_MODE, DEBUG_MODE, USE_CAPTIONS, VOICE_SPEED, platform_ta
 
 # ElevenLabs Voice IDs
 MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"  # Custom Gen Z voice
-FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"  # Sarah
+FEMALE_VOICE_ID = "CT97FgDtAHKczJP3Yl78"  # "Female yappy voice" (was Sarah: EXAVITQu4vr4xnSDxMaL)
 DEFAULT_VOICE_ID = MALE_VOICE_ID
 
 # Channel name shown on the animated reddit frame (the account name).
@@ -522,7 +522,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             male_voice_id=MALE_VOICE_ID
         )
         
-        voice_display = "Sarah (Female)" if detected_gender == 'female' else "Brian (Male)"
+        voice_display = "Female yappy voice (Female)" if detected_gender == 'female' else "Brian (Male)"
         if detected_gender is None:
             voice_display = "Brian (Male - Default)"
         

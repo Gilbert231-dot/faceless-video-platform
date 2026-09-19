@@ -97,11 +97,12 @@ CAPTION_ALIGNMENT = int(os.environ.get("CAPTION_ALIGNMENT", "10"))
 EXTRACT_FACTOR = round((SPEED_FACTOR / VOICE_SPEED) * 1.1, 3)
 
 # --- FEMALE NARRATOR VOLUME BOOST ---
-# Both narrators are normalized to the same LUFS target below, so Sarah and
-# Brian come out at identical loudness. Sarah (the female voice) reads a bit
-# quieter subjectively, so she gets a small extra boost ON TOP of the
-# normalization. Tune with FEMALE_VOICE_BOOST_DB (env override).
-FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"      # Sarah (see tasks.py)
+# Both narrators are normalized to the same LUFS target below, so the female and
+# male voices come out at identical loudness. The female voice read a bit quieter
+# subjectively (measured on the previous one, Sarah), so she gets a small extra
+# boost ON TOP of the normalization. Tune with FEMALE_VOICE_BOOST_DB (env override)
+# — this offset was tuned for Sarah and may want revisiting for a new voice.
+FEMALE_VOICE_ID = "CT97FgDtAHKczJP3Yl78"      # "Female yappy voice" (see tasks.py)
 FEMALE_VOICE_BOOST_DB = float(os.environ.get("FEMALE_VOICE_BOOST_DB", "6.5"))
 
 # --- ANIMATED TITLE FRAME (burned into segment 0's filter chain) ---
@@ -581,13 +582,13 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     VOICE_LUFS_TARGET = -20.0   # integrated loudness (reference was -22; +2 for punch)
     VOICE_TP_MAX = -1.5         # max true peak (dBFS)
     
-    # Sarah (the female narrator) gets a small extra boost so she sits
+    # The female narrator gets a small extra boost so she sits
     # slightly above Brian in the mix. Raising the TARGET (not a raw gain)
     # keeps the true-peak clamp intact, so the boost can never clip.
     voice_target = VOICE_LUFS_TARGET
     if voice_id == FEMALE_VOICE_ID:
         voice_target += FEMALE_VOICE_BOOST_DB
-        print(f"   🎙️ Female narrator boost: +{FEMALE_VOICE_BOOST_DB:.1f} dB (Sarah louder)")
+        print(f"   🎙️ Female narrator boost: +{FEMALE_VOICE_BOOST_DB:.1f} dB (female louder)")
     
     # --- OTHER SETTINGS ---
     # Uniform CRF for the WHOLE background video. CRF controls quality; the

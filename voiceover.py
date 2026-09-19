@@ -30,7 +30,7 @@ if not ELEVENLABS_API_KEY:
 
 # Voice IDs
 MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"      # Custom Gen Z voice
-FEMALE_VOICE_ID = "EXAVITQu4vr4xnSDxMaL"    # Sarah
+FEMALE_VOICE_ID = "CT97FgDtAHKczJP3Yl78"    # "Female yappy voice" (was Sarah)
 DEFAULT_VOICE_ID = MALE_VOICE_ID
 
 def compress_narrator_pauses(audio_path: str) -> str:
