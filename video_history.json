@@ -21,7 +21,12 @@
     "url": "https://youtu.be/m2Elb2QjsrE",
     "posted_at": "2026-09-20T07:47:58Z",
     "hook_score": 52,
-    "publish_at": "2026-09-20T21:00:00Z"
+    "publish_at": "2026-09-20T21:00:00Z",
+    "views": 0,
+    "likes": 0,
+    "comments": 0,
+    "duration_sec": 51.0,
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789886486_captioned_1789886486.mp4",
@@ -45,7 +50,12 @@
     "url": "https://youtu.be/KaLWPIAjNxI",
     "posted_at": "2026-09-20T06:42:19Z",
     "hook_score": 65,
-    "publish_at": "2026-09-20T15:00:00Z"
+    "publish_at": "2026-09-20T15:00:00Z",
+    "views": 0,
+    "likes": 0,
+    "comments": 0,
+    "duration_sec": 86.0,
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789818687_captioned_1789818687.mp4",
@@ -69,7 +79,12 @@
     "url": "https://youtu.be/cgxm3wRXANg",
     "posted_at": "2026-09-19T11:52:21Z",
     "hook_score": 39,
-    "publish_at": "2026-09-20T03:00:00Z"
+    "publish_at": "2026-09-20T03:00:00Z",
+    "views": 3,
+    "likes": 0,
+    "comments": 0,
+    "duration_sec": 73.0,
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789813467_captioned_1789813467.mp4",
@@ -93,7 +108,12 @@
     "url": "https://youtu.be/xGfJoRPVnIA",
     "posted_at": "2026-09-19T10:25:42Z",
     "hook_score": 52,
-    "publish_at": "2026-09-19T23:00:00Z"
+    "publish_at": "2026-09-19T23:00:00Z",
+    "views": 0,
+    "likes": 0,
+    "comments": 0,
+    "duration_sec": 74.0,
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789800732_captioned_1789800732.mp4",
@@ -118,11 +138,11 @@
     "posted_at": "2026-09-19T06:53:11Z",
     "hook_score": 13,
     "publish_at": "2026-09-19T15:00:00Z",
-    "views": 0,
+    "views": 1,
     "likes": 0,
     "comments": 0,
     "duration_sec": 125.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789725824_captioned_1789725824.mp4",
@@ -151,7 +171,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 93.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789716188_captioned_1789716188.mp4",
@@ -180,7 +200,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 42.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789712403_captioned_1789712403.mp4",
@@ -209,7 +229,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 82.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789637596_captioned_1789637596.mp4",
@@ -234,11 +254,11 @@
     "posted_at": "2026-09-17T09:34:09Z",
     "hook_score": 0,
     "publish_at": "2026-09-18T03:00:00Z",
-    "views": 1,
+    "views": 2,
     "likes": 0,
     "comments": 0,
     "duration_sec": 51.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789634313_captioned_1789634313.mp4",
@@ -267,7 +287,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 57.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789629942_captioned_1789629942.mp4",
@@ -296,7 +316,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 87.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789624726_captioned_1789624726.mp4",
@@ -325,7 +345,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 54.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789553659_ending_captioned_1789553748.mp4",
@@ -354,7 +374,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 41.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789542667_ending_captioned_1789542856.mp4",
@@ -379,11 +399,11 @@
     "posted_at": "2026-09-16T07:22:53Z",
     "hook_score": 34,
     "publish_at": "2026-09-16T21:00:00Z",
-    "views": 0,
+    "views": 1,
     "likes": 0,
     "comments": 0,
     "duration_sec": 73.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789538149_ending_captioned_1789538250.mp4",
@@ -412,7 +432,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 68.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789471560_ending_captioned_1789471875.mp4",
@@ -453,7 +473,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 65.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789461709_ending_captioned_1789461806.mp4",
@@ -482,7 +502,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 49.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789457423_ending_captioned_1789457748.mp4",
@@ -507,11 +527,11 @@
     "posted_at": "2026-09-15T07:50:34Z",
     "hook_score": 34,
     "publish_at": "2026-09-15T15:00:00Z",
-    "views": 4,
+    "views": 3,
     "likes": 0,
     "comments": 0,
     "duration_sec": 98.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789385220_ending_captioned_1789385411.mp4",
@@ -536,11 +556,11 @@
     "posted_at": "2026-09-14T11:38:55Z",
     "hook_score": 0,
     "publish_at": "2026-09-15T03:00:00Z",
-    "views": 2,
+    "views": 4,
     "likes": 0,
     "comments": 0,
     "duration_sec": 66.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789379900_ending_captioned_1789380057.mp4",
@@ -569,7 +589,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 65.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789374976_ending_captioned_1789375156.mp4",
@@ -594,11 +614,11 @@
     "posted_at": "2026-09-14T08:47:56Z",
     "hook_score": 0,
     "publish_at": "2026-09-14T21:00:00Z",
-    "views": 4,
+    "views": 2,
     "likes": 0,
     "comments": 0,
     "duration_sec": 63.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789369166_ending_captioned_1789369452.mp4",
@@ -627,7 +647,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 95.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789281529_ending_captioned_1789281758.mp4",
@@ -656,7 +676,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 79.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789214481_ending_captioned_1789214735.mp4",
@@ -685,7 +705,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 88.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789207676_ending_captioned_1789207943.mp4",
@@ -714,7 +734,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 107.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789196150_ending_captioned_1789196518.mp4",
@@ -743,7 +763,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 123.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789129355_ending_captioned_1789129605.mp4",
@@ -772,7 +792,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 84.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789121958_ending_captioned_1789122358.mp4",
@@ -801,7 +821,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 132.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789113397_ending_captioned_1789113592.mp4",
@@ -830,7 +850,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 66.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789107354_ending_captioned_1789107503.mp4",
@@ -855,11 +875,11 @@
     "posted_at": "2026-09-11T06:25:36Z",
     "hook_score": 13,
     "publish_at": "2026-09-11T15:00:00Z",
-    "views": 15,
+    "views": 16,
     "likes": 0,
     "comments": 0,
     "duration_sec": 52.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1789023236_ending_captioned_1789023552.mp4",
@@ -888,7 +908,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 112.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1788937810_ending_captioned_1788938163.mp4",
@@ -917,7 +937,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 115.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1788867984_ending_captioned_1788868094.mp4",
@@ -944,7 +964,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 77.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1788860970_ending_captioned_1788861065.mp4",
@@ -1007,7 +1027,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 137.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1788071716_ending_captioned_1788071844.mp4",
@@ -1023,7 +1043,7 @@
     "likes": 1,
     "comments": 0,
     "duration_sec": 99.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1788043457_ending_captioned_1788043524.mp4",
@@ -1076,7 +1096,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 51.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1788040945_ending_captioned_1788041029.mp4",
@@ -1093,7 +1113,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 61.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1788037347_ending_captioned_1788037531.mp4",
@@ -1110,7 +1130,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 135.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1787991534_ending_captioned_1787991711.mp4",
@@ -1207,7 +1227,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 200.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1787950931_ending_captioned_1787951103.mp4",
@@ -1224,7 +1244,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 141.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1787945490_ending_captioned_1787945686.mp4",
@@ -1241,7 +1261,7 @@
     "likes": 0,
     "comments": 0,
     "duration_sec": 161.0,
-    "stats_at": "2026-09-19T08:11:24Z"
+    "stats_at": "2026-09-20T08:43:46Z"
   },
   {
     "video_file": "output_1787901057_ending_captioned_1787901297.mp4",

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T07:49:03Z",
+  "generated_at": "2026-09-20T08:43:46Z",
   "total_stories": 367,
   "unused_stories": 293,
   "used_stories": 74,
@@ -93,11 +93,12 @@
   "youtube": {
     "privacy": "public",
     "slots": [
-      "21:00"
+      "12:00",
+      "18:00"
     ],
     "next_publish_utc": [
-      "2026-09-20T21:00:00Z",
-      "2026-09-21T21:00:00Z"
+      "2026-09-20T12:00:00Z",
+      "2026-09-20T18:00:00Z"
     ]
   },
   "videos": [
@@ -123,7 +124,12 @@
       "url": "https://youtu.be/m2Elb2QjsrE",
       "posted_at": "2026-09-20T07:47:58Z",
       "hook_score": 52,
-      "publish_at": "2026-09-20T21:00:00Z"
+      "publish_at": "2026-09-20T21:00:00Z",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "duration_sec": 51.0,
+      "stats_at": "2026-09-20T08:43:46Z"
     },
     {
       "video_file": "output_1789886486_captioned_1789886486.mp4",
@@ -147,7 +153,12 @@
       "url": "https://youtu.be/KaLWPIAjNxI",
       "posted_at": "2026-09-20T06:42:19Z",
       "hook_score": 65,
-      "publish_at": "2026-09-20T15:00:00Z"
+      "publish_at": "2026-09-20T15:00:00Z",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "duration_sec": 86.0,
+      "stats_at": "2026-09-20T08:43:46Z"
     },
     {
       "video_file": "output_1789818687_captioned_1789818687.mp4",
@@ -171,7 +182,12 @@
       "url": "https://youtu.be/cgxm3wRXANg",
       "posted_at": "2026-09-19T11:52:21Z",
       "hook_score": 39,
-      "publish_at": "2026-09-20T03:00:00Z"
+      "publish_at": "2026-09-20T03:00:00Z",
+      "views": 3,
+      "likes": 0,
+      "comments": 0,
+      "duration_sec": 73.0,
+      "stats_at": "2026-09-20T08:43:46Z"
     },
     {
       "video_file": "output_1789813467_captioned_1789813467.mp4",
@@ -195,7 +211,12 @@
       "url": "https://youtu.be/xGfJoRPVnIA",
       "posted_at": "2026-09-19T10:25:42Z",
       "hook_score": 52,
-      "publish_at": "2026-09-19T23:00:00Z"
+      "publish_at": "2026-09-19T23:00:00Z",
+      "views": 0,
+      "likes": 0,
+      "comments": 0,
+      "duration_sec": 74.0,
+      "stats_at": "2026-09-20T08:43:46Z"
     },
     {
       "video_file": "output_1789800732_captioned_1789800732.mp4",
@@ -220,11 +241,11 @@
       "posted_at": "2026-09-19T06:53:11Z",
       "hook_score": 13,
       "publish_at": "2026-09-19T15:00:00Z",
-      "views": 0,
+      "views": 1,
       "likes": 0,
       "comments": 0,
       "duration_sec": 125.0,
-      "stats_at": "2026-09-19T08:11:24Z"
+      "stats_at": "2026-09-20T08:43:46Z"
     }
   ]
 }
