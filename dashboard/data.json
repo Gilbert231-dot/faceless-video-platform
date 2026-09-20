@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-20T08:43:46Z",
+  "generated_at": "2026-09-20T10:42:58Z",
   "total_stories": 367,
-  "unused_stories": 293,
-  "used_stories": 74,
+  "unused_stories": 292,
+  "used_stories": 75,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 146,
@@ -72,14 +72,14 @@
       "unused": 16
     },
     {
-      "name": "MaliciousCompliance",
-      "total": 10,
-      "unused": 10
-    },
-    {
       "name": "pettyrevenge",
       "total": 11,
       "unused": 10
+    },
+    {
+      "name": "MaliciousCompliance",
+      "total": 9,
+      "unused": 9
     },
     {
       "name": "ProRevenge",
@@ -88,20 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 103
+    "next_index": 104
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
-      "2026-09-20T12:00:00Z",
-      "2026-09-20T18:00:00Z"
+      "2026-09-21T03:00:00Z",
+      "2026-09-22T03:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789900835_captioned_1789900835.mp4",
+      "title": "[FULL STORY] My boss demanded instant help—my compliance turned the hospital into chaos.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122113645695447442",
+      "url": "https://www.facebook.com/reel/1075531658354626",
+      "posted_at": "2026-09-20T10:42:58Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-21T03:00:00Z"
+    },
+    {
+      "video_file": "output_1789900835_captioned_1789900835.mp4",
+      "title": "[FULL STORY] My boss demanded instant help—my compliance turned the hospital into chaos.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "lYwwg9RAqcU",
+      "url": "https://youtu.be/lYwwg9RAqcU",
+      "posted_at": "2026-09-20T10:41:28Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-21T03:00:00Z"
+    },
     {
       "video_file": "output_1789890431_captioned_1789890431.mp4",
       "title": "[FULL STORY] She demanded a free banana—my boss exposed the policy, and chaos erupted.",
@@ -216,35 +239,6 @@
       "likes": 0,
       "comments": 0,
       "duration_sec": 74.0,
-      "stats_at": "2026-09-20T08:43:46Z"
-    },
-    {
-      "video_file": "output_1789800732_captioned_1789800732.mp4",
-      "title": "[FULL STORY] My new coworker’s wrath exploded—now I’m stuck in a nightmare I can’t escape.",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "4690356181193199",
-      "url": "https://www.facebook.com/1272041649331476/videos/4690356181193199",
-      "posted_at": "2026-09-19T06:55:57Z",
-      "hook_score": 13,
-      "publish_at": "2026-09-19T15:00:00Z"
-    },
-    {
-      "video_file": "output_1789800732_captioned_1789800732.mp4",
-      "title": "[FULL STORY] My new coworker’s wrath exploded—now I’m stuck in a nightmare I can’t escape.",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "i_F9FukUcxs",
-      "url": "https://youtu.be/i_F9FukUcxs",
-      "posted_at": "2026-09-19T06:53:11Z",
-      "hook_score": 13,
-      "publish_at": "2026-09-19T15:00:00Z",
-      "views": 1,
-      "likes": 0,
-      "comments": 0,
-      "duration_sec": 125.0,
       "stats_at": "2026-09-20T08:43:46Z"
     }
   ]
