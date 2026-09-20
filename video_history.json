@@ -1,5 +1,29 @@
 [
   {
+    "video_file": "output_1789890431_captioned_1789890431.mp4",
+    "title": "[FULL STORY] She demanded a free banana—my boss exposed the policy, and chaos erupted.",
+    "subreddit": "TalesFromRetail",
+    "platform": "facebook",
+    "status": "posted",
+    "video_id": "122113609359447442",
+    "url": "https://www.facebook.com/reel/965045512550791",
+    "posted_at": "2026-09-20T07:49:03Z",
+    "hook_score": 52,
+    "publish_at": "2026-09-20T21:00:00Z"
+  },
+  {
+    "video_file": "output_1789890431_captioned_1789890431.mp4",
+    "title": "[FULL STORY] She demanded a free banana—my boss exposed the policy, and chaos erupted.",
+    "subreddit": "TalesFromRetail",
+    "platform": "youtube",
+    "status": "posted",
+    "video_id": "m2Elb2QjsrE",
+    "url": "https://youtu.be/m2Elb2QjsrE",
+    "posted_at": "2026-09-20T07:47:58Z",
+    "hook_score": 52,
+    "publish_at": "2026-09-20T21:00:00Z"
+  },
+  {
     "video_file": "output_1789886486_captioned_1789886486.mp4",
     "title": "[FULL STORY] My boss demanded “100% compliance”—now my crew is literally trapped.",
     "subreddit": "MaliciousCompliance",
@@ -1342,39 +1366,5 @@
     "posted_at": "2026-08-26T01:06:35Z",
     "hook_score": 0,
     "publish_at": "2026-08-26T12:00:00Z"
-  },
-  {
-    "video_file": "output_1787705576_ending_captioned_1787705705.mp4",
-    "title": "Tricking My Slacker Coworker into Sabotaging Himself",
-    "subreddit": "ProRevenge",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "25EfCKCugUM",
-    "url": "https://youtu.be/25EfCKCugUM",
-    "posted_at": "2026-08-26T01:06:06Z",
-    "hook_score": 13,
-    "publish_at": "2026-08-27T12:00:00Z",
-    "views": 0,
-    "likes": 0,
-    "comments": 0,
-    "duration_sec": 117.0,
-    "stats_at": "2026-09-19T08:11:24Z"
-  },
-  {
-    "video_file": "output_1787702122_ending_captioned_1787702254.mp4",
-    "title": "If you're gonna steal the catalytics off my truck you should've checked if they were actually functional first, wasn't so funny when it was turn.",
-    "subreddit": "ProRevenge",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "AfYGbpy_jlA",
-    "url": "https://youtu.be/AfYGbpy_jlA",
-    "posted_at": "2026-08-26T01:05:58Z",
-    "hook_score": 8,
-    "publish_at": "2026-08-26T18:00:00Z",
-    "views": 2,
-    "likes": 1,
-    "comments": 0,
-    "duration_sec": 115.0,
-    "stats_at": "2026-09-19T08:11:24Z"
   }
 ]

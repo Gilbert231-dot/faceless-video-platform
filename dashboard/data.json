@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-09-20T06:44:17Z",
+  "generated_at": "2026-09-20T07:49:03Z",
   "total_stories": 367,
-  "unused_stories": 294,
-  "used_stories": 73,
+  "unused_stories": 293,
+  "used_stories": 74,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 147,
-  "runway_date": "2027-02-14",
+  "days_of_stories": 146,
+  "runway_date": "2027-02-13",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
   "subreddits": [
     {
       "name": "TalesFromRetail",
-      "total": 25,
-      "unused": 25
+      "total": 24,
+      "unused": 24
     },
     {
       "name": "TrueOffMyChest",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 102
+    "next_index": 103
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
-      "2026-09-20T15:00:00Z",
-      "2026-09-21T15:00:00Z"
+      "2026-09-20T21:00:00Z",
+      "2026-09-21T21:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789890431_captioned_1789890431.mp4",
+      "title": "[FULL STORY] She demanded a free banana—my boss exposed the policy, and chaos erupted.",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122113609359447442",
+      "url": "https://www.facebook.com/reel/965045512550791",
+      "posted_at": "2026-09-20T07:49:03Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-20T21:00:00Z"
+    },
+    {
+      "video_file": "output_1789890431_captioned_1789890431.mp4",
+      "title": "[FULL STORY] She demanded a free banana—my boss exposed the policy, and chaos erupted.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "m2Elb2QjsrE",
+      "url": "https://youtu.be/m2Elb2QjsrE",
+      "posted_at": "2026-09-20T07:47:58Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-20T21:00:00Z"
+    },
     {
       "video_file": "output_1789886486_captioned_1789886486.mp4",
       "title": "[FULL STORY] My boss demanded “100% compliance”—now my crew is literally trapped.",
@@ -200,35 +224,6 @@
       "likes": 0,
       "comments": 0,
       "duration_sec": 125.0,
-      "stats_at": "2026-09-19T08:11:24Z"
-    },
-    {
-      "video_file": "output_1789725824_captioned_1789725824.mp4",
-      "title": "[FULL STORY] My ex‑boss ruined Jacob’s legacy—now I’m exposing his cruel betrayal.",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "2468103493999084",
-      "url": "https://www.facebook.com/1272041649331476/videos/2468103493999084",
-      "posted_at": "2026-09-18T10:06:37Z",
-      "hook_score": 39,
-      "publish_at": "2026-09-19T03:00:00Z"
-    },
-    {
-      "video_file": "output_1789725824_captioned_1789725824.mp4",
-      "title": "[FULL STORY] My ex‑boss ruined Jacob’s legacy—now I’m exposing his cruel betrayal.",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "oAqsEWA1fls",
-      "url": "https://youtu.be/oAqsEWA1fls",
-      "posted_at": "2026-09-18T10:04:44Z",
-      "hook_score": 39,
-      "publish_at": "2026-09-19T03:00:00Z",
-      "views": 2,
-      "likes": 0,
-      "comments": 0,
-      "duration_sec": 93.0,
       "stats_at": "2026-09-19T08:11:24Z"
     }
   ]
