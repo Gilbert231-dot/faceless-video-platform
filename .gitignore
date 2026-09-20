@@ -63,6 +63,8 @@ vibe_media/
 # The overnight runner. Local tooling: it shells out to story_forge.py, writes only under
 # forge_samples/ and forge_logs/, and never touches the pipeline.
 forge_night.py
+# Its run logs. Same reasoning as the samples: local record of a local run.
+forge_logs/
 # Scratch patch and probe scripts written while changing the forge (no tracked file starts
 # with an underscore, so this cannot swallow anything real).
 _*.py
