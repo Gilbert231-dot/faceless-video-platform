@@ -1,5 +1,29 @@
 [
   {
+    "video_file": "output_1789886486_captioned_1789886486.mp4",
+    "title": "[FULL STORY] My boss demanded “100% compliance”—now my crew is literally trapped.",
+    "subreddit": "MaliciousCompliance",
+    "platform": "facebook",
+    "status": "posted",
+    "video_id": "122113596543447442",
+    "url": "https://www.facebook.com/reel/2171000226813863",
+    "posted_at": "2026-09-20T06:44:17Z",
+    "hook_score": 65,
+    "publish_at": "2026-09-20T15:00:00Z"
+  },
+  {
+    "video_file": "output_1789886486_captioned_1789886486.mp4",
+    "title": "[FULL STORY] My boss demanded “100% compliance”—now my crew is literally trapped.",
+    "subreddit": "MaliciousCompliance",
+    "platform": "youtube",
+    "status": "posted",
+    "video_id": "KaLWPIAjNxI",
+    "url": "https://youtu.be/KaLWPIAjNxI",
+    "posted_at": "2026-09-20T06:42:19Z",
+    "hook_score": 65,
+    "publish_at": "2026-09-20T15:00:00Z"
+  },
+  {
     "video_file": "output_1789818687_captioned_1789818687.mp4",
     "title": "[FULL STORY] I thought Miami was paradise—then the city betrayed me.",
     "subreddit": "unpopularopinion",
@@ -1352,33 +1376,5 @@
     "comments": 0,
     "duration_sec": 115.0,
     "stats_at": "2026-09-19T08:11:24Z"
-  },
-  {
-    "video_file": "output_1787698841_ending_captioned_1787698924.mp4",
-    "title": "Emergency clothing cannot be put through expenses.",
-    "subreddit": "MaliciousCompliance",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "ivwJXJNXj1k",
-    "url": "https://youtu.be/ivwJXJNXj1k",
-    "posted_at": "2026-08-26T01:05:49Z",
-    "hook_score": 0,
-    "publish_at": "2026-08-26T12:00:00Z",
-    "views": 1,
-    "likes": 0,
-    "comments": 0,
-    "duration_sec": 74.0,
-    "stats_at": "2026-09-19T08:11:24Z"
-  },
-  {
-    "video_file": "output_1787687140_ending_captioned_1787687338.mp4",
-    "title": "[TEST] Apparently I could have put the refuse lorry driver in ‘fear for his life’",
-    "subreddit": "pettyrevenge",
-    "platform": "facebook",
-    "status": "posted",
-    "video_id": "2138260763390724",
-    "url": "https://www.facebook.com/1272041649331476/videos/2138260763390724",
-    "posted_at": "2026-08-25T20:05:21Z",
-    "hook_score": 21
   }
 ]

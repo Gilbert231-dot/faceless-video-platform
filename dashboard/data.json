@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-19T11:54:10Z",
+  "generated_at": "2026-09-20T06:44:17Z",
   "total_stories": 367,
-  "unused_stories": 295,
-  "used_stories": 72,
+  "unused_stories": 294,
+  "used_stories": 73,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 147,
-  "runway_date": "2027-02-13",
+  "runway_date": "2027-02-14",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -73,8 +73,8 @@
     },
     {
       "name": "MaliciousCompliance",
-      "total": 11,
-      "unused": 11
+      "total": 10,
+      "unused": 10
     },
     {
       "name": "pettyrevenge",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 101
+    "next_index": 102
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
-      "2026-09-20T03:00:00Z",
-      "2026-09-21T03:00:00Z"
+      "2026-09-20T15:00:00Z",
+      "2026-09-21T15:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789886486_captioned_1789886486.mp4",
+      "title": "[FULL STORY] My boss demanded “100% compliance”—now my crew is literally trapped.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122113596543447442",
+      "url": "https://www.facebook.com/reel/2171000226813863",
+      "posted_at": "2026-09-20T06:44:17Z",
+      "hook_score": 65,
+      "publish_at": "2026-09-20T15:00:00Z"
+    },
+    {
+      "video_file": "output_1789886486_captioned_1789886486.mp4",
+      "title": "[FULL STORY] My boss demanded “100% compliance”—now my crew is literally trapped.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "KaLWPIAjNxI",
+      "url": "https://youtu.be/KaLWPIAjNxI",
+      "posted_at": "2026-09-20T06:42:19Z",
+      "hook_score": 65,
+      "publish_at": "2026-09-20T15:00:00Z"
+    },
     {
       "video_file": "output_1789818687_captioned_1789818687.mp4",
       "title": "[FULL STORY] I thought Miami was paradise—then the city betrayed me.",
@@ -205,35 +229,6 @@
       "likes": 0,
       "comments": 0,
       "duration_sec": 93.0,
-      "stats_at": "2026-09-19T08:11:24Z"
-    },
-    {
-      "video_file": "output_1789716188_captioned_1789716188.mp4",
-      "title": "[FULL STORY] I finally stopped yelling at reckless drivers—then they did something I never saw coming.",
-      "subreddit": "pettyrevenge",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122112821781447442",
-      "url": "https://www.facebook.com/reel/1575419683869909",
-      "posted_at": "2026-09-18T07:24:22Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-18T21:00:00Z"
-    },
-    {
-      "video_file": "output_1789716188_captioned_1789716188.mp4",
-      "title": "[FULL STORY] I finally stopped yelling at reckless drivers—then they did something I never saw coming.",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "qZiPqxzPBa8",
-      "url": "https://youtu.be/qZiPqxzPBa8",
-      "posted_at": "2026-09-18T07:23:58Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-18T21:00:00Z",
-      "views": 0,
-      "likes": 0,
-      "comments": 0,
-      "duration_sec": 42.0,
       "stats_at": "2026-09-19T08:11:24Z"
     }
   ]
