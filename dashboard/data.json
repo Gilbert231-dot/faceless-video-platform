@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-21T06:36:49Z",
+  "generated_at": "2026-09-21T07:50:10Z",
   "total_stories": 367,
-  "unused_stories": 291,
-  "used_stories": 76,
+  "unused_stories": 290,
+  "used_stories": 77,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 145,
@@ -72,13 +72,13 @@
       "unused": 16
     },
     {
-      "name": "pettyrevenge",
-      "total": 11,
-      "unused": 10
-    },
-    {
       "name": "MaliciousCompliance",
       "total": 9,
+      "unused": 9
+    },
+    {
+      "name": "pettyrevenge",
+      "total": 10,
       "unused": 9
     },
     {
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 105
+    "next_index": 106
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
-      "2026-09-21T15:00:00Z",
-      "2026-09-22T15:00:00Z"
+      "2026-09-21T21:00:00Z",
+      "2026-09-22T21:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1789976879_captioned_1789976879.mp4",
+      "title": "[FULL STORY] My sister’s boyfriend is a man‑baby—so I used her towel to wipe the sink.",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122113925493447442",
+      "url": "https://www.facebook.com/reel/1572875337655307",
+      "posted_at": "2026-09-21T07:50:10Z",
+      "hook_score": 39,
+      "publish_at": "2026-09-21T21:00:00Z"
+    },
+    {
+      "video_file": "output_1789976879_captioned_1789976879.mp4",
+      "title": "[FULL STORY] My sister’s boyfriend is a man‑baby—so I used her towel to wipe the sink.",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "X11XBK0id-s",
+      "url": "https://youtu.be/X11XBK0id-s",
+      "posted_at": "2026-09-21T07:48:51Z",
+      "hook_score": 39,
+      "publish_at": "2026-09-21T21:00:00Z"
+    },
     {
       "video_file": "output_1789972515_captioned_1789972515.mp4",
       "title": "[FULL STORY] I helped him find the item, he exploded—my world turned upside down.",
@@ -205,35 +229,6 @@
       "likes": 0,
       "comments": 0,
       "duration_sec": 86.0,
-      "stats_at": "2026-09-20T08:43:46Z"
-    },
-    {
-      "video_file": "output_1789818687_captioned_1789818687.mp4",
-      "title": "[FULL STORY] I thought Miami was paradise—then the city betrayed me.",
-      "subreddit": "unpopularopinion",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122113343505447442",
-      "url": "https://www.facebook.com/reel/3287568268097647",
-      "posted_at": "2026-09-19T11:54:10Z",
-      "hook_score": 39,
-      "publish_at": "2026-09-20T03:00:00Z"
-    },
-    {
-      "video_file": "output_1789818687_captioned_1789818687.mp4",
-      "title": "[FULL STORY] I thought Miami was paradise—then the city betrayed me.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "cgxm3wRXANg",
-      "url": "https://youtu.be/cgxm3wRXANg",
-      "posted_at": "2026-09-19T11:52:21Z",
-      "hook_score": 39,
-      "publish_at": "2026-09-20T03:00:00Z",
-      "views": 3,
-      "likes": 0,
-      "comments": 0,
-      "duration_sec": 73.0,
       "stats_at": "2026-09-20T08:43:46Z"
     }
   ]
