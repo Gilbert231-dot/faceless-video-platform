@@ -174,6 +174,12 @@ jobs:
           # re-encode, then a SEPARATE caption re-encode of the finished video
           # (which capped the delivered file at CRF 18 slow).
           echo "FOOTAGE_MODE=direct" >> $GITHUB_ENV
+          # The subscribe + like buttons and their sound, over the last ~20s.
+          # Turned OFF deliberately: we are testing whether viewers still like
+          # and comment with no on-screen prompt to do it. Flip to "true" to
+          # restore the old ending (the overlays and their audio are untouched
+          # on disk).
+          echo "ENDING_ANIMATIONS=false" >> $GITHUB_ENV
           # CAPTION burn settings for the FALLBACK caption pass only
           # (caption_utils.py). Captions are normally burned inside the render
           # above; this separate pass runs only if that failed.

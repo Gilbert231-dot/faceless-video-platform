@@ -44,6 +44,30 @@ PAUSE_MIN_KEPT_SEC = 0.10   # never keep less than this
 PAUSE_THRESHOLD = 0.01      # |sample| below this (of full scale) counts as silence
 
 # ===========================
+# NARRATOR LOUDNESS
+# ===========================
+# Every narration is brought to ONE integrated loudness, whatever voice spoke
+# it, so the male and female narrators match instead of drifting apart.
+#
+# A plain gain CANNOT do this for a cloned voice with a wide crest factor:
+# the true-peak ceiling caps how far a quiet voice can be lifted. Measured on
+# the female clone of Sep 2026 ("Female yappy voice"): -29.7 LUFS with a
+# -3.1 dBFS peak, i.e. a 26 dB crest factor. Lifting her to the -20 target
+# needed +9.7 dB but the ceiling allowed only +1.6 dB, so she landed ~13 dB
+# under the male and was heard as "very low compared to the male's voice".
+# So the voiceover is LIMIT-normalized (ffmpeg loudnorm: it lifts the average
+# and limits the peaks together), then measured and corrected to the target.
+# Set VOICE_LEVEL_NORMALIZE=False to fall back to gain-only behaviour.
+VOICE_LEVEL_NORMALIZE = os.getenv("VOICE_LEVEL_NORMALIZE", "True").lower() in ("true", "1", "yes")
+VOICE_LUFS_TARGET = float(os.getenv("VOICE_LUFS_TARGET", "-20.0"))  # integrated loudness
+VOICE_TP_MAX = float(os.getenv("VOICE_TP_MAX", "-1.5"))            # max true peak (dBFS)
+VOICE_LRA_TARGET = float(os.getenv("VOICE_LRA_TARGET", "11"))      # loudness range
+# Extra offset for the female narrator, ON TOP of the target. 0.0 = identical
+# level to the male (user request: "on the same level or close"). Was 6.5, which
+# was set for the previous voice (Sarah) and never survived the peak clamp.
+FEMALE_VOICE_BOOST_DB = float(os.getenv("FEMALE_VOICE_BOOST_DB", "0.0"))
+
+# ===========================
 # PER-PLATFORM TAGS
 # ===========================
 

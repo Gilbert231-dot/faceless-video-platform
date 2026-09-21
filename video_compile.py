@@ -7,7 +7,12 @@ import subprocess
 import tempfile
 import shutil
 from tqdm import tqdm
-from config import VOICE_SPEED
+from config import (
+    VOICE_SPEED,
+    VOICE_LUFS_TARGET,
+    VOICE_TP_MAX,
+    FEMALE_VOICE_BOOST_DB,
+)
 
 # Force line-buffered stdout so every print() appears in the Actions log
 # immediately (Python defaults to block-buffered when piped, which hides
@@ -97,13 +102,11 @@ CAPTION_ALIGNMENT = int(os.environ.get("CAPTION_ALIGNMENT", "10"))
 EXTRACT_FACTOR = round((SPEED_FACTOR / VOICE_SPEED) * 1.1, 3)
 
 # --- FEMALE NARRATOR VOLUME BOOST ---
-# Both narrators are normalized to the same LUFS target below, so the female and
-# male voices come out at identical loudness. The female voice read a bit quieter
-# subjectively (measured on the previous one, Sarah), so she gets a small extra
-# boost ON TOP of the normalization. Tune with FEMALE_VOICE_BOOST_DB (env override)
-# — this offset was tuned for Sarah and may want revisiting for a new voice.
+# Both narrators are normalized to the same LUFS target, so the female and male
+# voices come out at the same loudness. FEMALE_VOICE_BOOST_DB (config.py) is an
+# extra offset ON TOP of that target — it is 0.0, i.e. identical levels, and the
+# env var still overrides it if a particular voice ever needs a nudge.
 FEMALE_VOICE_ID = "CT97FgDtAHKczJP3Yl78"      # "Female yappy voice" (see tasks.py)
-FEMALE_VOICE_BOOST_DB = float(os.environ.get("FEMALE_VOICE_BOOST_DB", "6.5"))
 
 # --- ANIMATED TITLE FRAME (burned into segment 0's filter chain) ---
 # The narrator speaks the story TITLE at the very start of the voiceover
@@ -120,6 +123,13 @@ TITLE_MIN_SEC = 1.8      # never shorter than this (tiny titles still readable)
 TITLE_MAX_SEC = 12.0     # never longer than this (covers the longest hooks)
 # Set TITLE_INTRO=false in the workflow env to disable the intro entirely.
 TITLE_INTRO = os.environ.get("TITLE_INTRO", "true").lower() != "false"
+
+# --- ENDING ANIMATIONS (subscribe + like buttons) ---
+# Two animated buttons with their own sound, drawn over the last ~20s of every
+# video. Set ENDING_ANIMATIONS=true in the workflow env to bring them back.
+# OFF by default: a run nobody has deliberately decided about should not spend
+# the last 20 seconds of the video asking the viewer for something.
+ENDING_ANIMATIONS = os.environ.get("ENDING_ANIMATIONS", "false").lower() == "true"
 
 # --- SOUND EFFECTS ---
 # Ding sound when the reddit card appears (0:00)
@@ -576,19 +586,22 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     # voice). YouTube normalizes playback to ~-14 LUFS regardless, so what
     # matters is a consistent, voice-forward narration level — the SAME for
     # the male and female voices. The old fixed 1.5x/1.8x gains left the two
-    # voices mismatched (and could push peaks into clipping). Instead we
-    # measure each narration and apply a fixed gain to hit VOICE_LUFS_TARGET
-    # (two-pass, deterministic, never clipping past VOICE_TP_MAX).
-    VOICE_LUFS_TARGET = -20.0   # integrated loudness (reference was -22; +2 for punch)
-    VOICE_TP_MAX = -1.5         # max true peak (dBFS)
-    
-    # The female narrator gets a small extra boost so she sits
-    # slightly above Brian in the mix. Raising the TARGET (not a raw gain)
-    # keeps the true-peak clamp intact, so the boost can never clip.
+    # voices mismatched (and could push peaks into clipping).
+    #
+    # The real normalization now happens EARLIER: voiceover.normalize_voice_
+    # loudness() runs right after TTS and brings the raw narration to
+    # VOICE_LUFS_TARGET, using loudnorm so the peaks are limited rather than
+    # merely clamped. That is the only way a quiet clone reaches the target —
+    # the female voice needed +9.7 dB while a pure gain was capped at +1.6 by
+    # its peak ceiling, which is why she used to land ~13 dB under the male.
+    # The measurement below stays as the VERIFIER (it should print ~0.0 dB) and
+    # still corrects anything that arrives unnormalized. Both constants are
+    # imported from config.py so there is one source of truth.
     voice_target = VOICE_LUFS_TARGET
     if voice_id == FEMALE_VOICE_ID:
         voice_target += FEMALE_VOICE_BOOST_DB
-        print(f"   🎙️ Female narrator boost: +{FEMALE_VOICE_BOOST_DB:.1f} dB (female louder)")
+        if FEMALE_VOICE_BOOST_DB:
+            print(f"   🎙️ Female narrator boost: +{FEMALE_VOICE_BOOST_DB:.1f} dB")
     
     # --- OTHER SETTINGS ---
     # Uniform CRF for the WHOLE background video. CRF controls quality; the
@@ -784,7 +797,10 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     final_timeline_dur = audio_duration / VOICE_SPEED
     ending_overlays = []   # (name, mov_path, abs_start, duration)
     ending_baked = False
-    if os.path.exists(SUBSCRIBE_MOV) and os.path.exists(LIKE_MOV):
+    if not ENDING_ANIMATIONS:
+        print("   🔕 Subscribe/like ending animations OFF "
+              "(ENDING_ANIMATIONS=false — no buttons, no sound)")
+    elif os.path.exists(SUBSCRIBE_MOV) and os.path.exists(LIKE_MOV):
         subscribe_start = max(final_timeline_dur - 20.0, 0.0)
         ending_overlays = [
             ("subscribe", SUBSCRIBE_MOV, subscribe_start, 6.0),
@@ -1281,7 +1297,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     print(f"      - Resolution: {OUTPUT_W}x{OUTPUT_H} (9:16, "
           f"{'single-pass from source' if direct_mode else 'staged 4K intermediate'})")
     print(f"      - Captions: {'✅ burned in this encode' if srt_abs else '❌ none'}")
-    print(f"      - Ending overlay: {'✅ baked into this encode' if ending_baked else '❌ none'}")
+    print(f"      - Ending overlay: "
+              f"{'✅ baked into this encode' if ending_baked else ('❌ off (ENDING_ANIMATIONS=false)' if not ENDING_ANIMATIONS else '❌ none')}")
     print(f"      - Video codec: H.264 (High Profile)")
     print(f"      - Audio codec: AAC 192kbps")
     print(f"      - Video speed: {SPEED_FACTOR}x")
@@ -1338,6 +1355,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     if ending_baked:
         print("\n🔔 Subscribe/like ending overlay already baked into the render "
               "— no whole-video re-encode needed")
+    elif not ENDING_ANIMATIONS:
+        print("\n🔕 Subscribe/like ending overlay disabled (ENDING_ANIMATIONS=false) "
+              "— no buttons, no sound, no re-encode")
     elif os.path.exists(SUBSCRIBE_MOV) and os.path.exists(LIKE_MOV):
         print("\n🔔 Adding subscribe/like ending overlay (separate pass)...")
 

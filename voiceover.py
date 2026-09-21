@@ -9,6 +9,8 @@ from tts_clean import clean_for_tts
 from config import (
     PAUSE_COMPRESS, PAUSE_MIN_SEC, PAUSE_KEEP_RATIO,
     PAUSE_MIN_KEPT_SEC, PAUSE_THRESHOLD,
+    VOICE_LEVEL_NORMALIZE, VOICE_LUFS_TARGET, VOICE_TP_MAX, VOICE_LRA_TARGET,
+    FEMALE_VOICE_BOOST_DB,
 )
 
 # Try the new ElevenLabs import style (v1.0.0+)
@@ -142,6 +144,122 @@ def compress_narrator_pauses(audio_path: str) -> str:
                 pass
 
 
+def measure_loudness(media_path: str) -> Tuple[Optional[float], Optional[float]]:
+    """Return (integrated_LUFS, true_peak_dBFS), or (None, None) on failure."""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['ffmpeg', '-y', '-nostats', '-i', media_path,
+             '-af', 'ebur128=peak=true', '-f', 'null', '-'],
+            capture_output=True, text=True, timeout=180)
+        out = result.stdout + result.stderr
+        summary = out.split("Summary:")[-1]
+        m_i = re.search(r"I:\s+(-?[\d.]+) LUFS", summary)
+        m_tp = re.search(r"Peak:\s+(-?[\d.]+) dBFS", out)
+        return (float(m_i.group(1)) if m_i else None,
+                float(m_tp.group(1)) if m_tp else None)
+    except Exception:
+        return None, None
+
+
+def _loudnorm_measure(src: str, target: float):
+    """Pass 1 of two-pass loudnorm: ffmpeg's own measurement of the material."""
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['ffmpeg', '-y', '-nostats', '-i', src, '-af',
+             f"loudnorm=I={target}:TP={VOICE_TP_MAX}:LRA={VOICE_LRA_TARGET}"
+             ":print_format=json", '-f', 'null', '-'],
+            capture_output=True, text=True, timeout=900)
+        out = result.stdout + result.stderr
+        m = re.search(r'\{[^{}]*"input_i"[^{}]*\}', out, re.DOTALL)
+        return json.loads(m.group(0)) if m else None
+    except Exception:
+        return None
+
+
+def normalize_voice_loudness(audio_path: str,
+                             voice_id: Optional[str] = None) -> str:
+    """Bring a narration to VOICE_LUFS_TARGET so every voice matches.
+
+    Why not just a gain: the true-peak ceiling caps a gain, and a cloned
+    voice can have a crest factor wide enough that the cap binds long before
+    the target is reached. loudnorm lifts the average and limits the peaks
+    TOGETHER, which is the only way a quiet clone reaches the male's level;
+    the result is then measured and given the small remaining correction.
+
+    Runs AFTER pause compression on purpose: the pause detector compares
+    against an absolute threshold, so changing the level first would change
+    which gaps it finds.
+
+    Fails SAFE: any problem logs a warning and returns the original audio.
+    """
+    if not VOICE_LEVEL_NORMALIZE:
+        return audio_path
+    try:
+        import subprocess
+        target = VOICE_LUFS_TARGET
+        if voice_id == FEMALE_VOICE_ID:
+            target += FEMALE_VOICE_BOOST_DB
+
+        before_i, before_tp = measure_loudness(audio_path)
+        if before_i is None:
+            print("   \u26a0\ufe0f Loudness measurement failed - narration kept as-is")
+            return audio_path
+
+        def _apply(src, dst, af):
+            subprocess.run(
+                ['ffmpeg', '-y', '-nostats', '-loglevel', 'error', '-i', src,
+                 '-af', af, '-ac', '1', '-acodec', 'mp3', '-b:a', '192k', dst],
+                check=True, capture_output=True, timeout=900)
+
+        # TWO-PASS loudnorm. The single-pass form only ESTIMATES the material as
+        # it streams and undershot by ~3 dB on the real clone (measured), which
+        # the gain correction below then cannot make up because the peak ceiling
+        # binds first. Pass 1 measures, pass 2 applies using the measurements.
+        work = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
+        stats = _loudnorm_measure(audio_path, target)
+        af = f"loudnorm=I={target}:TP={VOICE_TP_MAX}:LRA={VOICE_LRA_TARGET}"
+        if stats:
+            af += (":linear=false"
+                   f":measured_I={stats['input_i']}"
+                   f":measured_TP={stats['input_tp']}"
+                   f":measured_LRA={stats['input_lra']}"
+                   f":measured_thresh={stats['input_thresh']}"
+                   f":offset={stats['target_offset']}")
+        _apply(audio_path, work, af)
+        after_i, after_tp = measure_loudness(work)
+
+        # Small measured correction, still honouring the peak ceiling. Never
+        # allowed to make the voice quieter AND clip: the min() keeps the peak.
+        if after_i is not None:
+            gain = target - after_i
+            if after_tp is not None:
+                gain = min(gain, VOICE_TP_MAX - after_tp)
+            if abs(gain) >= 0.1:
+                corrected = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
+                try:
+                    _apply(work, corrected, f"volume={gain:.2f}dB")
+                except Exception:
+                    corrected = None
+                if corrected:
+                    try:
+                        os.unlink(work)
+                    except Exception:
+                        pass
+                    work = corrected
+                    after_i, after_tp = measure_loudness(work)
+
+        print(f"   \U0001f399\ufe0f Narration level: {before_i:.1f} LUFS "
+              f"(peak {before_tp if before_tp is not None else 0:.1f}) -> "
+              f"{after_i if after_i is not None else target:.1f} LUFS "
+              f"(target {target:.1f})")
+        return work
+    except Exception as e:
+        print(f"   \u26a0\ufe0f Loudness normalization skipped ({e}) - using original voiceover")
+        return audio_path
+
+
 def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str, Optional[str]]:
     """
     Generate voiceover using ElevenLabs.
@@ -206,7 +324,8 @@ def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str
                 f.write(audio_bytes)
             
             print(f"   ✅ Voiceover saved: {audio_path}")
-            return compress_narrator_pauses(audio_path), None
+            return normalize_voice_loudness(
+                compress_narrator_pauses(audio_path), voice_id), None
             
         else:
             # Old ElevenLabs v0.x API (kept for local fallback — the runner
@@ -222,7 +341,8 @@ def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str
             save(audio, audio_path)
             
             print(f"   ✅ Voiceover saved: {audio_path}")
-            return compress_narrator_pauses(audio_path), None
+            return normalize_voice_loudness(
+                compress_narrator_pauses(audio_path), voice_id), None
             
     except Exception as e:
         print(f"   ❌ ElevenLabs failed: {e}")
