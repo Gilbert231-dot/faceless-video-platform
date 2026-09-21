@@ -180,6 +180,12 @@ jobs:
           # restore the old ending (the overlays and their audio are untouched
           # on disk).
           echo "ENDING_ANIMATIONS=false" >> $GITHUB_ENV
+          # The ding that used to land at 0:00, over the title card. Turned OFF
+          # deliberately: the card and its whoosh carry the intro, and the bell
+          # sat on top of the narrator's first words. The file stays on disk —
+          # flip to "true" to restore it (TITLE_INTRO stays on, so the card and
+          # the whoosh are unaffected).
+          echo "INTRO_DING=false" >> $GITHUB_ENV
           # CAPTION burn settings for the FALLBACK caption pass only
           # (caption_utils.py). Captions are normally burned inside the render
           # above; this separate pass runs only if that failed.

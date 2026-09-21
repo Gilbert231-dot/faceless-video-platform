@@ -136,6 +136,10 @@ ENDING_ANIMATIONS = os.environ.get("ENDING_ANIMATIONS", "false").lower() == "tru
 DING_SOUND_PATH = "assets/sound_effects/ding.mp3"
 # Whoosh sound when the card exits (slides LEFT)
 WHOOSH_SOUND_PATH = "assets/sound_effects/whoosh.mp3"
+# The ding is OFF by default: the card and the whoosh already carry the intro,
+# and the bell lands on top of the narrator's first words. The file is left on
+# disk untouched — set INTRO_DING=true in the workflow env to bring it back.
+INTRO_DING = os.environ.get("INTRO_DING", "false").lower() == "true"
 
 # Helper: Measure integrated loudness (LUFS) and true peak (dBFS) via EBU R128.
 def measure_loudness(media_path: str):
@@ -1175,16 +1179,18 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             print("   Continuing without music...")
     
     # --- SOUND EFFECTS + ENDING ANIMATION AUDIO ---
-    # ding at 0:00 (card appears), whoosh at t3 (card slides out), plus the
-    # subscribe/like sounds for the ending animations.
+    # whoosh when the card slides out, the ding at 0:00 only if INTRO_DING is
+    # on, plus the subscribe/like sounds for the ending animations.
     #
     # IMPORTANT: the ending animations are baked into the RENDER, which carries
     # no audio, so their sound is mixed here instead of in a separate pass over
     # the finished video. NOTE: no narration delay — captions are timed to the
     # original audio, so shifting the voice would desync them.
     sfx_inputs = []   # (path, volume, delay_seconds, strip_leading_silence)
-    if TITLE_INTRO and os.path.exists(DING_SOUND_PATH):
+    if INTRO_DING and TITLE_INTRO and os.path.exists(DING_SOUND_PATH):
         sfx_inputs.append((DING_SOUND_PATH, 0.45, 0.0, False))
+    elif TITLE_INTRO and os.path.exists(DING_SOUND_PATH):
+        print("   🔕 Intro ding disabled (INTRO_DING=false)")
     if TITLE_INTRO and os.path.exists(WHOOSH_SOUND_PATH) \
             and intro_frame and os.path.exists(intro_frame):
         total_words = len((script or "").split())
