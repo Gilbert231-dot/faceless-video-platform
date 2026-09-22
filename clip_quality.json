@@ -1,0 +1,101 @@
+{
+ "files": {
+  "1zEfuSuOYns6IQPa8Ldlm2-bdP0CqSjSc": {
+   "duration": 772.4,
+   "probe_len": 90.0,
+   "probed_at": "2026-09-22T05:56:48Z",
+   "used": [
+    {
+     "at": "2026-09-22T05:56:48Z",
+     "start": 104.99
+    }
+   ],
+   "windows": [
+    {
+     "detail": 12.017,
+     "motion": 19.241,
+     "score": 8.114,
+     "start": 0.0
+    },
+    {
+     "detail": 15.366,
+     "motion": 30.041,
+     "score": 8.776,
+     "start": 262.47
+    },
+    {
+     "detail": 16.752,
+     "motion": 22.014,
+     "score": 10.805,
+     "start": 524.93
+    },
+    {
+     "detail": 20.187,
+     "motion": 28.569,
+     "score": 11.776,
+     "start": 104.99
+    },
+    {
+     "detail": 19.938,
+     "motion": 27.887,
+     "score": 11.748,
+     "start": 367.45
+    },
+    {
+     "detail": 19.504,
+     "motion": 29.137,
+     "score": 11.284,
+     "start": 629.92
+    },
+    {
+     "detail": 19.706,
+     "motion": 29.801,
+     "score": 11.293,
+     "start": 209.97
+    },
+    {
+     "detail": 12.898,
+     "motion": 4.324,
+     "score": 11.64,
+     "start": 472.44
+    },
+    {
+     "detail": 16.146,
+     "motion": 29.492,
+     "score": 9.294,
+     "start": 52.49
+    },
+    {
+     "detail": 20.359,
+     "motion": 32.277,
+     "score": 11.267,
+     "start": 314.96
+    },
+    {
+     "detail": 16.166,
+     "motion": 26.161,
+     "score": 9.774,
+     "start": 577.43
+    },
+    {
+     "detail": 17.126,
+     "motion": 34.736,
+     "score": 9.166,
+     "start": 157.48
+    },
+    {
+     "detail": 18.894,
+     "motion": 26.431,
+     "score": 11.377,
+     "start": 419.95
+    },
+    {
+     "detail": 19.684,
+     "motion": 32.578,
+     "score": 10.848,
+     "start": 682.41
+    }
+   ]
+  }
+ }
+}

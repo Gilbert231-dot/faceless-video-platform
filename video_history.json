@@ -1,5 +1,29 @@
 [
   {
+    "video_file": "output_1790060202_captioned_1790060202.mp4",
+    "title": "[FULL STORY] I refused my sister’s ticket, dog emergency ruined my savings—what next?",
+    "subreddit": "AITAH",
+    "platform": "facebook",
+    "status": "posted",
+    "video_id": "1521166840031656",
+    "url": "https://www.facebook.com/1272041649331476/videos/1521166840031656",
+    "posted_at": "2026-09-22T07:00:03Z",
+    "hook_score": 65,
+    "publish_at": "2026-09-22T15:00:00Z"
+  },
+  {
+    "video_file": "output_1790060202_captioned_1790060202.mp4",
+    "title": "[FULL STORY] I refused my sister’s ticket, dog emergency ruined my savings—what next?",
+    "subreddit": "AITAH",
+    "platform": "youtube",
+    "status": "posted",
+    "video_id": "GWEssN18gnU",
+    "url": "https://youtu.be/GWEssN18gnU",
+    "posted_at": "2026-09-22T06:57:45Z",
+    "hook_score": 65,
+    "publish_at": "2026-09-22T15:00:00Z"
+  },
+  {
     "video_file": "output_1789986179_captioned_1789986179.mp4",
     "title": "[FULL STORY] \"Will Ferrell’s man‑child routine ruined every movie—this is why I’m done watching.\"",
     "subreddit": "unpopularopinion",
@@ -1385,33 +1409,5 @@
     "comments": 0,
     "duration_sec": 141.0,
     "stats_at": "2026-09-21T09:10:16Z"
-  },
-  {
-    "video_file": "output_1787945490_ending_captioned_1787945686.mp4",
-    "title": "Got my doctorate",
-    "subreddit": "pettyrevenge",
-    "platform": "youtube",
-    "status": "posted",
-    "video_id": "YpL0GMd12OA",
-    "url": "https://youtu.be/YpL0GMd12OA",
-    "posted_at": "2026-08-28T23:21:03Z",
-    "hook_score": 13,
-    "publish_at": "2026-08-29T23:00:00Z",
-    "views": 0,
-    "likes": 0,
-    "comments": 0,
-    "duration_sec": 161.0,
-    "stats_at": "2026-09-21T09:10:16Z"
-  },
-  {
-    "video_file": "output_1787901057_ending_captioned_1787901297.mp4",
-    "title": "[TEST] I was deceived not only by someone I was dating, but also by his friend.",
-    "subreddit": "TrueOffMyChest",
-    "platform": "facebook",
-    "status": "posted",
-    "video_id": "1394923069245048",
-    "url": "https://www.facebook.com/1272041649331476/videos/1394923069245048",
-    "posted_at": "2026-08-28T07:36:01Z",
-    "hook_score": 21
   }
 ]
