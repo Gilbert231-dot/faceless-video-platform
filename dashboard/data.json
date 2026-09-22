@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-22T07:00:03Z",
+  "generated_at": "2026-09-22T08:08:10Z",
   "total_stories": 367,
-  "unused_stories": 287,
-  "used_stories": 80,
+  "unused_stories": 286,
+  "used_stories": 81,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 143,
@@ -22,11 +22,6 @@
       "unused": 24
     },
     {
-      "name": "TalesFromRetail",
-      "total": 23,
-      "unused": 23
-    },
-    {
       "name": "TalesFromTheFrontDesk",
       "total": 23,
       "unused": 23
@@ -40,6 +35,11 @@
       "name": "tifu",
       "total": 23,
       "unused": 23
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 22,
+      "unused": 22
     },
     {
       "name": "self",
@@ -88,19 +88,43 @@
     }
   ],
   "schedule": {
-    "next_index": 109
+    "next_index": 110
   },
   "youtube": {
     "privacy": "public",
     "slots": [
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
-      "2026-09-22T15:00:00Z",
-      "2026-09-23T15:00:00Z"
+      "2026-09-22T21:00:00Z",
+      "2026-09-23T21:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1790064367_captioned_1790064367.mp4",
+      "title": "[FULL STORY] I couldn't give him cash—he exploded, demanding a manager, and everything changed.",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122114237001447442",
+      "url": "https://www.facebook.com/reel/1401569875436300",
+      "posted_at": "2026-09-22T08:08:10Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-22T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790064367_captioned_1790064367.mp4",
+      "title": "[FULL STORY] I couldn't give him cash—he exploded, demanding a manager, and everything changed.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "8nv2Pl_-Aoo",
+      "url": "https://youtu.be/8nv2Pl_-Aoo",
+      "posted_at": "2026-09-22T08:06:59Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-22T21:00:00Z"
+    },
     {
       "video_file": "output_1790060202_captioned_1790060202.mp4",
       "title": "[FULL STORY] I refused my sister’s ticket, dog emergency ruined my savings—what next?",
@@ -205,35 +229,6 @@
       "likes": 0,
       "comments": 0,
       "duration_sec": 54.0,
-      "stats_at": "2026-09-21T09:10:16Z"
-    },
-    {
-      "video_file": "output_1789972515_captioned_1789972515.mp4",
-      "title": "[FULL STORY] I helped him find the item, he exploded—my world turned upside down.",
-      "subreddit": "TalesFromRetail",
-      "platform": "facebook",
-      "status": "posted",
-      "video_id": "122113908807447442",
-      "url": "https://www.facebook.com/reel/1560099748663015",
-      "posted_at": "2026-09-21T06:36:49Z",
-      "hook_score": 13,
-      "publish_at": "2026-09-21T15:00:00Z"
-    },
-    {
-      "video_file": "output_1789972515_captioned_1789972515.mp4",
-      "title": "[FULL STORY] I helped him find the item, he exploded—my world turned upside down.",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "PmzOaNBeYnc",
-      "url": "https://youtu.be/PmzOaNBeYnc",
-      "posted_at": "2026-09-21T06:36:10Z",
-      "hook_score": 13,
-      "publish_at": "2026-09-21T15:00:00Z",
-      "views": 0,
-      "likes": 0,
-      "comments": 0,
-      "duration_sec": 57.0,
       "stats_at": "2026-09-21T09:10:16Z"
     }
   ]
