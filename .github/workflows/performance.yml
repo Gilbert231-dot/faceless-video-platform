@@ -10,6 +10,14 @@ on:
 permissions:
   contents: write   # needed to push the refreshed metrics back to the repo
 
+# It writes video_history.json and dashboard/data.json, which the video
+# pipeline also writes -- so it must never overlap itself.  Its own group,
+# not the pipeline's: see generate_video.yml for why sharing a group would
+# let this workflow's delayed cron cancel a queued batch.
+concurrency:
+  group: performance-tracker
+  cancel-in-progress: true
+
 jobs:
   track:
     runs-on: ubuntu-latest
@@ -58,12 +66,10 @@ jobs:
       - name: Commit refreshed metrics
         if: steps.pause.outputs.go == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add video_history.json dashboard/data.json
-          if git diff --cached --quiet; then
-            echo "ℹ️ No metric changes — nothing to commit."
-          else
-            git commit -m "Refresh per-video performance metrics (daily tracker)"
-            git push
-          fi
+          # Same retrying push as the video pipeline.  A plain `git push` here
+          # was rejected whenever a batch had committed first, and the tracker's
+          # metrics were lost along with it (it is also what made the batch's own
+          # push fail on 2026-09-22).  The script reports success only when the
+          # state is actually on main, and a no-change run is a no-op.
+          bash push_pipeline_state.sh "Refresh per-video performance metrics (daily tracker)" \
+            video_history.json dashboard/data.json

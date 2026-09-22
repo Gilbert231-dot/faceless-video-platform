@@ -39,6 +39,24 @@ on:
         default: 'false'
         type: string
 
+# SERIALISE RUNS.  The four daily batches chain with a 30-minute gap, but a
+# manual dispatch during a scheduled run (or a slow batch whose chain fires
+# while it is still finishing) used to mean two pipelines ran at once -- and
+# they both push state to main, which is how the 2026-09-22 race happened.
+#
+# cancel-in-progress: false on purpose: never cancel a batch that is
+# half-rendered (it has already spent the story and the ElevenLabs credits).
+#
+# The daily performance tracker is deliberately NOT in this group.  GitHub
+# cancels a *pending* run when a newer run queues in the same group, so a
+# queued Batch 4 could be silently cancelled by the tracker's cron (which
+# GitHub delays by hours).  Losing a video that way is worse than the overlap
+# it would prevent, and the overlap itself is now harmless: both writers
+# merge and retry their state push (push_pipeline_state.sh).
+concurrency:
+  group: video-pipeline
+  cancel-in-progress: false
+
 permissions:
   contents: write   # needed to push videos/state back to the repo
   actions: write    # needed to dispatch the upload workflow via gh
@@ -390,20 +408,23 @@ jobs:
       # FIXED (story repeats): persist the used-marks NOW, before any upload
       # step.  The old flow only pushed used_story_ids.json at the very end
       # ("Push state files"), so any run that failed at an upload step lost
-      # its marks and the next run re-picked the same story.  If this push
-      # fails it's non-fatal — the final push (if: always()) retries later.
+      # its marks and the next run re-picked the same story.
       # always(): also ships partial marks when a multi-video run dies after
       # marking some stories used but before finishing all of them.
+      #
+      # The push itself lives in push_pipeline_state.sh: it retries onto
+      # whatever main holds, folds main's own changes to these files back in,
+      # and reports a failure instead of swallowing it.  --soft-fail here
+      # because this push is insurance for the upload steps below and the
+      # steps after it are gated on success() -- a hard failure here would
+      # skip the very render it exists to protect.  The final push ("Push
+      # state files") runs WITHOUT --soft-fail, so a real loss turns the run
+      # red.
       - name: Push used-story state (early)
         if: always()
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -f used_story_ids.json 2>/dev/null || true
-          git add -f reddit_stories/ 2>/dev/null || true
-          git commit -m "Persist used-story marks before upload" 2>/dev/null || echo "ℹ️ Nothing new to commit"
-          git pull --rebase origin main 2>/dev/null || true
-          git push origin main || echo "⚠️ Early state push failed"
+          bash push_pipeline_state.sh --soft-fail "Persist used-story marks before upload" \
+            used_story_ids.json reddit_stories/
 
       # FIXED: CRF 18 videos are ~187 MB for a 100s short — GitHub rejects
       # files over 100 MB, so videos CANNOT be pushed to the repo anymore.
@@ -754,44 +775,30 @@ jobs:
         # when an upload step failed, so the next run can't re-pick the story.
         if: always()
         run: |
-          # Persist used-story IDs and clip state so the next run doesn't reuse
-          # the same stories (state JSONs only — videos are uploaded directly).
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # FIXED: git add ABORTS and stages NOTHING if any pathspec is missing
-          # (test_used_ids.json / clip_state.json don't exist on a fresh runner).
-          # Add each file separately so one missing file can't block the others.
-          git add -f used_story_ids.json 2>/dev/null || true
-          git add -f test_used_ids.json 2>/dev/null || true
-          git add -f clip_state.json 2>/dev/null || true
-          # Per-file background-window quality map: a source is measured once,
-          # then every later run picks its best window for free.
-          git add -f clip_quality.json 2>/dev/null || true
-          # TikTok schedule slot counter (next free 2/day slot per video).
-          git add -f tiktok_schedule_state.json 2>/dev/null || true
-          # YouTube publish-slot counter (keeps same-day videos far apart).
-          git add -f youtube_schedule_state.json 2>/dev/null || true
-          # Dashboard video history (titles, subreddits, YouTube URLs, status).
-          git add -f video_history.json 2>/dev/null || true
-          # Regenerated dashboard data (story stats + video history).
-          git add -f dashboard/data.json 2>/dev/null || true
-          # Landing-page demo clip + poster (regenerated from the newest video
-          # by the Refresh landing-page demo step above).
-          git add -f assets/demo/real_demo.mp4 2>/dev/null || true
-          git add -f assets/demo/real_poster.jpg 2>/dev/null || true
-          # Voiceover QA report (residual 'ale' check) — one per video.
-          git add -f output/voiceover_qa_*.json 2>/dev/null || true
-          # Exact text sent to ElevenLabs (proves what the narrator was asked
-          # to say — ale/markdown/brackets all cleaned pre-TTS).
-          git add -f output/tts_script_*.json 2>/dev/null || true
-          # Cleaned story bank (used stories removed by cleanup_used_stories.py).
-          git add -f reddit_stories/ 2>/dev/null || true
-          git commit -m "Update story/clip state after generation" 2>/dev/null || echo "ℹ️ Nothing new to commit"
-          # Rebase onto whatever landed on main since the run started, so the
-          # state push can't be rejected when the run took a long time.
-          git pull --rebase origin main 2>/dev/null || true
-          git push origin main || echo "⚠️ State push failed"
+          # Every file that has to survive the run.  push_pipeline_state.sh
+          # adds them one at a time -- git add ABORTS and stages NOTHING if
+          # any pathspec is missing (test_used_ids.json / clip_state.json /
+          # clip_quality.json do not exist on a fresh runner) -- then commits
+          # ONLY these paths on top of the current main, folds main's own
+          # version of each of them back in (state_merge.py), and retries the
+          # push instead of losing the state to a race with another writer.
+          #
+          # The two globs stay quoted so git's own pathspec matching expands
+          # them; a glob that matches nothing is simply skipped.
+          bash push_pipeline_state.sh "Update story/clip state after generation" \
+            used_story_ids.json \
+            test_used_ids.json \
+            clip_state.json \
+            clip_quality.json \
+            tiktok_schedule_state.json \
+            youtube_schedule_state.json \
+            video_history.json \
+            dashboard/data.json \
+            assets/demo/real_demo.mp4 \
+            assets/demo/real_poster.jpg \
+            "output/voiceover_qa_*.json" \
+            "output/tts_script_*.json" \
+            reddit_stories/
 
       # Download the ORIGINAL generated videos (no re-encode). GitHub's 100 MB
       # repo-file limit doesn't apply to artifacts, and the zip download
