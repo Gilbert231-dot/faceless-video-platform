@@ -807,6 +807,11 @@ jobs:
             output/*.mp4
             output/*.json
             output/*.jpg
+            # Belt AND braces: the Facebook-only copy (608x1080, ~4.7 Mbps) is
+            # written to a temp dir now, but it must never be downloadable beside
+            # the real video again - a manual upload that picks it gets soft video
+            # on TikTok with nothing to show for it.
+            !output/*.fb_compress.mp4
           if-no-files-found: warn
           retention-days: 7
 

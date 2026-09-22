@@ -41,6 +41,7 @@ import logging
 import os
 import subprocess
 import sys
+import tempfile
 import time
 
 import requests
@@ -99,7 +100,15 @@ def _compress_for_facebook(video_path):
         logger.info("Video is %.1f MB (under %d MB limit) — no compression needed", size_mb, FB_MAX_SIZE_MB)
         return video_path, False
 
-    compressed_path = video_path + ".fb_compress.mp4"
+    # WRITTEN OUTSIDE output/ ON PURPOSE. This is a Facebook-only copy: 608x1080 at
+    # ~4.7 Mbps, a sixth of the master. It used to be written beside the master
+    # (video_path + ".fb_compress.mp4"), and the Reels path returns early without
+    # cleaning it up - so it was zipped into the artifact next to the real file,
+    # where a manual upload can pick it by mistake and get visibly soft video on
+    # TikTok with no sign that anything went wrong. Nothing outside this module
+    # reads it, and the runner is ephemeral, so a temp directory is the right home.
+    compressed_path = os.path.join(tempfile.mkdtemp(prefix="fb_compress_"),
+                                   os.path.basename(video_path))
     logger.info(
         "Compressing %.1f MB video for Facebook → CRF 20, 1080p, fast preset...",
         size_mb,
