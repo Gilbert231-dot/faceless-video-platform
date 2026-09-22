@@ -88,6 +88,12 @@ STAGED_PRESET = os.environ.get("STAGED_PRESET", "veryfast")
 # lanczos upscale reads slightly soft. This recovers perceived crispness
 # without an extra encode. Set VIDEO_UNSHARP=off to disable.
 VIDEO_UNSHARP = os.environ.get("VIDEO_UNSHARP", "5:5:0.6:5:5:0.0").strip()
+# ...but only where there is something to compensate for. A source whose 9:16
+# slice already fills OUTPUT_W (an already-vertical 2160x3840 file, for example)
+# is downscaled by the render, so sharpening it only adds halos. Set this to
+# true to sharpen regardless, as before.
+_UNSHARP_ALWAYS = os.environ.get("VIDEO_UNSHARP_ALWAYS", "false").strip().lower() \
+    in ("1", "true", "yes", "on")
 
 # Caption burn style (burned inside the render — see compile_video).
 CAPTION_FONT_SIZE = int(os.environ.get("CAPTION_FONT_SIZE", "16"))
@@ -285,6 +291,12 @@ def _plan_render_segments(spans, extract_duration, segment_duration, speed_facto
                 "footage": dur,
                 "out_dur": dur / speed_factor,
                 "out_start": 0.0,
+                # Geometry of the file this slice came from, so the
+                # render chain can tell an UPSCALE (a 9:16 crop of a
+                # 4K landscape frame is 1215px wide) from a DOWNSCALE
+                # (an already-vertical 2160x3840 source).
+                "width": span.get("width"),
+                "height": span.get("height"),
             })
             local += dur
         remaining -= take_total
@@ -354,6 +366,27 @@ def _crop_width(src_w, src_h):
         return 0
     return int(min(src_w, src_h * 9.0 / 16.0))
 
+def sharpen_for_source(src_w, src_h):
+    """VIDEO_UNSHARP, or None when this source gives the render nothing to fix.
+
+    VIDEO_UNSHARP exists because a 9:16 crop of a 4K LANDSCAPE frame is
+    1215x2160, so reaching 1440x2560 is a 1.19x lanczos upscale that reads
+    slightly soft. A source whose 9:16 slice is already OUTPUT_W wide or wider
+    (an already-vertical 2160x3840 file, for instance) is DOWNscaled by the
+    render instead: there is no softness to recover, so sharpening it only puts
+    halos on the frame for the platform encoder to amplify.
+
+    Unknown geometry (a failed probe) keeps the old behaviour: sharpen.
+    """
+    if VIDEO_UNSHARP.lower() in ("", "off", "none", "false"):
+        return None
+    if _UNSHARP_ALWAYS:
+        return VIDEO_UNSHARP
+    crop_w = _crop_width(src_w or 0, src_h or 0)
+    if not crop_w:
+        return VIDEO_UNSHARP
+    return VIDEO_UNSHARP if crop_w < OUTPUT_W else None
+
 
 def _report_source_quality(spans):
     """Print (and warn about) the real upscale factor for the footage in use.
@@ -377,10 +410,25 @@ def _report_source_quality(spans):
             print(f"      {os.path.basename(path)}: resolution unknown (probe failed)")
             continue
         upscale = OUTPUT_W / crop_w
-        note = "✅ native-quality" if upscale <= 1.25 else (
-            "⚠️ upscaled" if upscale <= 2.0 else "⚠️ HEAVILY upscaled")
-        print(f"      {os.path.basename(path)}: {w}x{h} → crop {crop_w}x{h} → "
-              f"output {OUTPUT_W}x{OUTPUT_H} → upscale {upscale:.2f}x  {note}")
+        label = os.path.basename(path)
+        if upscale <= 1.0001:
+            # The source is at least as wide as the frame, so the render
+            # DOWNSCALES it. This is what a true vertical source buys.
+            note = (f"✅ native source — the render downscales it "
+                    f"({upscale:.2f}x); nothing is invented or softened")
+        elif upscale <= 1.25:
+            note = f"✅ native-quality ({upscale:.2f}x upscale)"
+        elif upscale <= 2.0:
+            note = f"⚠️ upscaled {upscale:.2f}x"
+        else:
+            note = f"⚠️ HEAVILY upscaled {upscale:.2f}x"
+        if crop_w >= w - 1:
+            # Already 9:16: the crop takes the whole width (zero-width cut).
+            print(f"      {label}: {w}x{h} → already 9:16, NO crop → "
+                  f"output {OUTPUT_W}x{OUTPUT_H} → {note}")
+        else:
+            print(f"      {label}: {w}x{h} → crop {crop_w}x{h} → "
+                  f"output {OUTPUT_W}x{OUTPUT_H} → {note}")
         if upscale > 1.25:
             print(f"      ⚠️ WEAK SOURCE: this file cannot fill {OUTPUT_W}x{OUTPUT_H} "
                   f"({crop_w}px of real width for a {OUTPUT_W}px frame). The background "
@@ -970,7 +1018,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     LIKE_X, LIKE_Y = 634, 1600
     quality_label = f"CRF {CRF_VALUE} ({PRESET})"
 
-    def _base_chain(i, out_start):
+    def _base_chain(i, out_start, sharpen=None):
         """crop → scale → fps → speed → [sharpen] → [captions].
 
         Format/setsar are appended by the job builder: RGBA when an overlay
@@ -982,8 +1030,8 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             f'fps={OUTPUT_FPS},'
             f'setpts={1/SPEED_FACTOR}*PTS'
         )
-        if unsharp:
-            chain += f',unsharp={unsharp}'
+        if sharpen:
+            chain += f',unsharp={sharpen}'
         if srt_abs:
             seg_srt = os.path.join(caption_temp_dir, f"shifted_{i:04d}.srt")
             shift_srt_for_segment(srt_abs, out_start, seg_srt)
@@ -997,10 +1045,20 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         return chain
 
     jobs = []
+    _skipped_sharpen = set()
     for i, job in enumerate(job_sources):
         seg_out_start = job["out_start"]
         seg_out_end = seg_out_start + job["out_dur"]
-        chain = _base_chain(i, seg_out_start)
+        sharpen = sharpen_for_source(job.get("width"), job.get("height"))
+        if unsharp and not sharpen:
+            _src_name = os.path.basename(job.get("src") or "?")
+            if _src_name not in _skipped_sharpen:
+                _skipped_sharpen.add(_src_name)
+                print(f"   🔎 {_src_name}: the render downscales this source "
+                      f"({job.get('width')}x{job.get('height')}), so the "
+                      f"upscale-compensating sharpen is skipped "
+                      f"(VIDEO_UNSHARP_ALWAYS=true forces it on)")
+        chain = _base_chain(i, seg_out_start, sharpen)
 
         # Which ending overlays fall inside this segment's window?
         seg_overlays = []
