@@ -186,6 +186,15 @@ jobs:
           # flip to "true" to restore it (TITLE_INTRO stays on, so the card and
           # the whoosh are unaffected).
           echo "INTRO_DING=false" >> $GITHUB_ENV
+          # Which card the video OPENS on. "true" = the animated hook card:
+          # the channel wordmark, the story title, and an accent bar that fills
+          # as the title is narrated, over a card that drifts and then swipes
+          # away. "false" = the old reddit post mock-up screenshot as the intro.
+          # Switched away from the screenshot deliberately: TikTok's own content
+          # check flagged it as unoriginal (a picture of another platform's
+          # post) and low quality (a static image), and the vote/comment pills
+          # on it are decoration rather than anything we can stand behind.
+          echo "HOOK_INTRO=true" >> $GITHUB_ENV
           # CAPTION burn settings for the FALLBACK caption pass only
           # (caption_utils.py). Captions are normally burned inside the render
           # above; this separate pass runs only if that failed.

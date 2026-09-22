@@ -29,6 +29,16 @@ DEFAULT_VOICE_ID = MALE_VOICE_ID
 # Channel name shown on the animated reddit frame (the account name).
 FRAME_USERNAME = "StoryLab"
 
+# --- WHICH CARD OPENS THE VIDEO ---
+# true  -> the animated hook card (generate_hook_frame.py): the channel
+#          wordmark, the title, and an accent bar the renderer fills. No
+#          reddit chrome and no engagement counters, because TikTok's
+#          content check reads a screenshot of another platform's post as
+#          unoriginal content, and an unchanging image as low quality.
+# false -> the old reddit post mock-up as the intro (kept for instant
+#          rollback; the thumbnail below uses that frame either way).
+HOOK_INTRO = os.getenv("HOOK_INTRO", "True").lower() in ("true", "1", "yes")
+
 # When unused stories fall to this many, the run warns loudly so the user
 # refills the bank (fetch_stories.py on the laptop, or its weekly schedule).
 STORY_REFILL_THRESHOLD = 100  # must match MIN_UNUSED in fetch_stories.py
@@ -639,7 +649,31 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             traceback.print_exc(file=sys.stderr)
             print(f"   ⚠️ Reddit frame generation failed (continuing without it): {e}")
             frame_path = None
-        
+
+        # ----- ANIMATED HOOK CARD (the intro the video actually opens on) -----
+        # Written to a temp dir, NOT to output/: the artifact step collects
+        # output/*.json, so a sidecar there would ship inside the download
+        # zip beside the videos. The reddit frame above stays in output/ -
+        # the thumbnail composite still uses it.
+        intro_frame_path = frame_path
+        if HOOK_INTRO:
+            try:
+                from generate_hook_frame import generate_hook_frame
+                hook_dir = tempfile.mkdtemp(prefix="hook_card_")
+                hook_path = os.path.join(hook_dir, "hook_card.png")
+                hook_geo = generate_hook_frame(title=frame_title, out_path=hook_path)
+                intro_frame_path = hook_path
+                print(f"   \U0001f3ac Hook card ready: {hook_geo['title_lines']} "
+                      f"title line(s), {hook_geo['canvas_w']}x{hook_geo['canvas_h']}, "
+                      f"accent bar {hook_geo['bar']['w']}px")
+            except Exception as e:
+                # The card is the hook, not the story: fall back to the card
+                # we already have rather than failing the run, but say so.
+                import traceback
+                print("   \u274c HOOK CARD GENERATION FAILED - falling back to the reddit frame")
+                traceback.print_exc()
+                intro_frame_path = frame_path
+
         # ----- GENERATE THE VIDEO -----
         print("\n🎬 GENERATING VIDEO...")
         video_path_1, audio_path_1, final_audio_1 = generate_single_video(
@@ -650,7 +684,7 @@ def generate_video_from_reddit(subreddit=None, mark_used=True, force_real=False)
             include_title_in_script=True,
             subreddit=subreddit_name,
             voice_id=selected_voice,
-            intro_frame=frame_path
+            intro_frame=intro_frame_path
         )
         print(f"✅ Video ready: {video_path_1}")
         

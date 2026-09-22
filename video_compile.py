@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import json
 import math
 import time
 import subprocess
@@ -123,6 +124,21 @@ TITLE_MIN_SEC = 1.8      # never shorter than this (tiny titles still readable)
 TITLE_MAX_SEC = 12.0     # never longer than this (covers the longest hooks)
 # Set TITLE_INTRO=false in the workflow env to disable the intro entirely.
 TITLE_INTRO = os.environ.get("TITLE_INTRO", "true").lower() != "false"
+
+# --- INTRO CARD MOTION ---
+# The card is a single PNG, so without this its frames are pixel-identical
+# for the whole intro - and a run of unchanging frames is what TikTok's own
+# content check calls a "static image" (it names static images as low-quality
+# content). The card now drifts slowly while it is held, and the accent track
+# drawn by generate_hook_frame.py is filled across the hold. Both are geometry
+# only: no extra encode pass, no measurable CPU on the Actions runner.
+# Drift is a RATE, not a total: a fixed total spread over a 12s hold is
+# invisible per frame, while a fixed rate stays perceptible whether the
+# card is up for 2s or 12s. The caps stop a long card wandering.
+CARD_DRIFT_X_PPS = float(os.environ.get("CARD_DRIFT_X_PPS", "6"))
+CARD_DRIFT_Y_PPS = float(os.environ.get("CARD_DRIFT_Y_PPS", "11"))
+CARD_DRIFT_MAX_X = int(os.environ.get("CARD_DRIFT_MAX_X", "70"))
+CARD_DRIFT_MAX_Y = int(os.environ.get("CARD_DRIFT_MAX_Y", "120"))
 
 # --- ENDING ANIMATIONS (subscribe + like buttons) ---
 # Two animated buttons with their own sound, drawn over the last ~20s of every
@@ -560,6 +576,87 @@ def run_ffmpeg(cmd, timeout=None, label="ffmpeg"):
             pass
         raise
 
+def _load_card_geometry(card_path):
+    """Read the animated-hook geometry written beside a card PNG.
+
+    generate_hook_frame.py records where its accent track sits, in the card's
+    own pixels, so the renderer can fill it in the right place without keeping
+    a second copy of that layout here. A card with no sidecar (the old reddit
+    post frame) returns None and renders exactly as it always did.
+    """
+    path = os.path.splitext(card_path)[0] + ".json"
+    if not os.path.exists(path):
+        return None            # a card without a sidecar simply has no bar
+    try:
+        with open(path, encoding="utf-8") as fh:
+            meta = json.load(fh)
+    except (OSError, ValueError) as e:
+        # Only "cannot read it" is tolerated. Swallowing everything is how a
+        # missing import silently turned the bar off once already.
+        print(f"   \u26a0\ufe0f Card geometry unreadable ({e}) - skipping the accent bar")
+        return None
+    if not (isinstance(meta, dict) and isinstance(meta.get("bar"), dict)):
+        print("   \u26a0\ufe0f Card geometry carries no bar - skipping the accent bar")
+        return None
+    return meta
+
+
+def build_title_card(card_path, hold, fade_start, fade_dur, width, height, top):
+    """Geometry for the intro card: its motion, and its accent bar if it has one.
+
+    Returns (card_x_expr, card_y_expr, bar). All three are `overlay` geometry, so
+    they may use W and w - but note that inside each overlay w is the width of
+    THAT overlay's own input, which is why the bar's expressions never carry the
+    centring term (W-w)/2: the card is scaled to exactly `width`, so its centring
+    is always 0, and for the strips it would mean something else entirely.
+
+    `bar` is None for a card with no geometry sidecar (the old reddit frame),
+    which then renders exactly as it always did.
+
+    hold/fade_start/fade_dur are seconds on the FINAL timeline.
+    """
+    slide = f"clip((t-{fade_start:.3f})/{fade_dur:.3f},0,1)"
+    slide_x = width + 100          # far enough LEFT to clear the frame entirely
+    # drifts up and to the left for as long as it is up, then capped
+    drift_x = f"min(t*{CARD_DRIFT_X_PPS:g},{CARD_DRIFT_MAX_X})"
+    drift_y = f"min(t*{CARD_DRIFT_Y_PPS:g},{CARD_DRIFT_MAX_Y})"
+    card_x = f"(W-w)/2-{drift_x}-{slide_x}*{slide}"
+    card_y = f"{top}-{drift_y}"
+    box_x = f"-{drift_x}-{slide_x}*{slide}"
+    box_y = f"{top}-{drift_y}"
+
+    meta = _load_card_geometry(card_path)
+    bar = None
+    if meta and meta.get("strip") and meta.get("fill_file"):
+        card_dir = os.path.dirname(os.path.abspath(card_path))
+        track = os.path.join(card_dir, meta.get("track_file", ""))
+        fill = os.path.join(card_dir, meta["fill_file"])
+        if os.path.exists(track) and os.path.exists(fill):
+            s = width / float(meta.get("canvas_w") or width)
+            st = meta["strip"]
+            # The strips sit under the card's hole, so their x has no centring
+            # term: the card is scaled to exactly `width`, which makes the
+            # overlay's (W-w)/2 zero. Here W and w would mean the strip's own
+            # dimensions, so that term must not appear at all.
+            strip_x = st["x"] * s
+            strip_y = st["y"] * s
+            strip_w = max(int(round(st["w"] * s)), 2)
+            strip_h = max(int(round(st["h"] * s)), 2)
+            bar = {
+                "x_expr": f"{box_x}+{strip_x:.1f}",
+                "y_expr": f"{box_y}+{strip_y:.1f}",
+                # the fill's right edge is what travels: it starts a whole strip
+                # width to the LEFT of the groove and slides across it
+                "fill_x_expr": (f"{box_x}+{strip_x:.1f}-{strip_w}"
+                                f"+{strip_w}*clip(t/{hold:.3f},0,1)"),
+                "w": strip_w,
+                "h": strip_h,
+                "track": track,
+                "fill": fill,
+            }
+    return card_x, card_y, bar
+
+
 def compile_video(video_paths, audio_path, script, subtitle_path=None,
                   intro_frame=None, title=None, part_label=None,
                   voice_id=None, footage_spans=None, burn_captions=True,
@@ -663,7 +760,9 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     overlay_filter = None
     frame_input = None
     title_x_expr = None
+    title_y_expr = None
     title_frame_top = None
+    title_card_bar = None
     if intro_frame and os.path.exists(intro_frame) and TITLE_INTRO:
         total_words = len((script or "").split())
         title_words = len(title.split()) if title else 0
@@ -676,30 +775,29 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
             final_dur = audio_duration / VOICE_SPEED
             title_secs = min(max(title_secs, TITLE_MIN_SEC), TITLE_MAX_SEC, max(final_dur - 0.5, 1.0))
             t4 = title_secs
-            t3 = max(t4 - TITLE_FADE_SEC, 0.0)  # fade-out starts this late; card fully visible from 0:00
-            slide = round(0.03 * OUTPUT_H)
+            t3 = max(t4 - TITLE_FADE_SEC, 0.0)  # slide-out starts this late; card fully visible from 0:00
             # Card sits in the UPPER-MIDDLE of the screen (top edge ~14% down,
             # matching the darkflow001 TikTok style) with the story footage
-            # and captions below it. NO entry animation: the card is pinned at
-            # its resting spot from the first frame. On exit it fades out
-            # while sliding LEFT and away (like the TikTok reference).
+            # and captions below it. It drifts slowly while held (see
+            # build_title_card) and then swipes LEFT and away on exit.
             frame_top = round(0.14 * OUTPUT_H)
-            # Slide LEFT on exit — fast swipe, NO fade out (card stays opaque)
-            slide_x = OUTPUT_W + 100  # slide FULL width + margin to go completely off-screen LEFT
-            slide_duration = TITLE_FADE_SEC   # how long the slide takes (fast)
-            x_expr = f"(W-w)/2-{slide_x}*clip((t-{t3:.3f})/{slide_duration:.3f},0,1)"
+            x_expr, y_expr, title_bar = build_title_card(
+                intro_frame, t4, t3, TITLE_FADE_SEC, OUTPUT_W, OUTPUT_H, frame_top)
             overlay_filter = (
                 f"[1:v]scale={OUTPUT_W}:-1:flags=lanczos[card];"
-                f"[bg][card]overlay=x='{x_expr}':y={frame_top}:eval=frame"
+                f"[bg][card]overlay=x='{x_expr}':y='{y_expr}':eval=frame"
             )
             # The render loop builds segment 0's filtergraph itself (it may also
             # carry an ending overlay), so it needs the card's geometry, not
             # just the pre-baked filter string.
             title_x_expr = x_expr
+            title_y_expr = y_expr
             title_frame_top = frame_top
+            title_card_bar = title_bar
             frame_input = intro_frame
-            print(f"   ✨ Reddit frame intro: {os.path.basename(intro_frame)} "
-                  f"({title_secs:.1f}s on screen)")
+            print(f"   ✨ Hook card intro: {os.path.basename(intro_frame)} "
+                  f"({title_secs:.1f}s on screen"
+                  + (", with the accent bar filling)" if title_bar else ")"))
         else:
             print("   ⚠️ Frame intro skipped (empty title or script)")
     elif intro_frame and not os.path.exists(intro_frame):
@@ -966,11 +1064,51 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
                 card_pad = nxt
                 nxt += 1
                 parts.append(f"[{card_idx}:v]scale={OUTPUT_W}:-1:flags=lanczos[card]")
-                parts.append(
-                    f"[{label}][card]overlay=x='{title_x_expr}':"
-                    f"y={title_frame_top}:eval=frame[v{card_pad}]"
-                )
-                label = f"v{card_pad}"
+                bar = title_card_bar
+                if bar and os.path.exists(bar["fill"]) and os.path.exists(bar["track"]):
+                    # The accent track and its fill live UNDER the card, which
+                    # carries a transparent hole exactly where the track sits.
+                    # The fill starts one strip-width to the LEFT of the groove
+                    # and slides right across the hold, so the hole is what turns
+                    # it into a bar that grows.
+                    #
+                    # It has to be done this way: on this ffmpeg, drawbox and
+                    # crop evaluate their geometry ONCE (measured - a width
+                    # expression fills the whole bar on the first frame and never
+                    # moves again), while overlay re-evaluates x/y every frame.
+                    # That is also what makes the card's own drift possible.
+                    track_idx = n_in
+                    fill_idx = n_in + 1
+                    n_in += 2
+                    extra_inputs += ['-loop', '1', '-t', '15', '-i', bar["track"]]
+                    extra_inputs += ['-loop', '1', '-t', '15', '-i', bar["fill"]]
+                    track_pad = nxt
+                    fill_pad = nxt + 1
+                    after_pad = nxt + 2
+                    nxt += 3
+                    parts.append(
+                        f"[{track_idx}:v]scale={bar['w']}:{bar['h']}[bartrack]")
+                    parts.append(
+                        f"[{fill_idx}:v]scale={bar['w']}:{bar['h']}[barfill]")
+                    parts.append(
+                        f"[{label}][bartrack]overlay=x='{bar['x_expr']}':"
+                        f"y='{bar['y_expr']}':eval=frame[v{track_pad}]"
+                    )
+                    parts.append(
+                        f"[v{track_pad}][barfill]overlay=x='{bar['fill_x_expr']}':"
+                        f"y='{bar['y_expr']}':eval=frame[v{fill_pad}]"
+                    )
+                    parts.append(
+                        f"[v{fill_pad}][card]overlay=x='{title_x_expr}':"
+                        f"y='{title_y_expr or title_frame_top}':eval=frame[v{after_pad}]"
+                    )
+                    label = f"v{after_pad}"
+                else:
+                    parts.append(
+                        f"[{label}][card]overlay=x='{title_x_expr}':"
+                        f"y='{title_y_expr or title_frame_top}':eval=frame[v{card_pad}]"
+                    )
+                    label = f"v{card_pad}"
             for name, mov, local, dur in seg_overlays:
                 extra_inputs += ['-i', mov]
                 ov_idx = n_in
