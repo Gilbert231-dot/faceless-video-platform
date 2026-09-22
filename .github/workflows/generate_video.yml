@@ -765,6 +765,9 @@ jobs:
           git add -f used_story_ids.json 2>/dev/null || true
           git add -f test_used_ids.json 2>/dev/null || true
           git add -f clip_state.json 2>/dev/null || true
+          # Per-file background-window quality map: a source is measured once,
+          # then every later run picks its best window for free.
+          git add -f clip_quality.json 2>/dev/null || true
           # TikTok schedule slot counter (next free 2/day slot per video).
           git add -f tiktok_schedule_state.json 2>/dev/null || true
           # YouTube publish-slot counter (keeps same-day videos far apart).
