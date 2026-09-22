@@ -38,6 +38,27 @@ DRIVE_URLS = [
 DRIVE_FOLDER_ID = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
 GDRIVE_API_KEY = os.environ.get("GDRIVE_API_KEY", "").strip()
 
+# Background-source rotation (ON by default). Each video moves on to the
+# NEXT footage file instead of continuing inside the one the previous video
+# used. Why it matters: the offset cursor alone never ran a file dry — a
+# ~30-minute source feeds ~10 minutes of footage for four 2-3 minute
+# stories — so every video of the day came off the SAME file with only the
+# offset changed, which is the signature duplicate-content detection looks
+# for. OFF (CLIP_ROTATE_FILES=false) restores the old behaviour exactly.
+ROTATE_FILES = os.environ.get("CLIP_ROTATE_FILES", "true").lower() not in (
+    "false", "0", "no", "off")
+# Videos a batch produces; used only for the "you need more files" note.
+VIDEOS_PER_BATCH = int(os.environ.get("VIDEOS_PER_BATCH", "4"))
+
+# Rotation must not trade a different background for a softer one. Some
+# files in a footage folder are pre-cropped (884x1920 was one), and a
+# 9:16 crop of one of those only gives the renderer ~884px of real width
+# for a 1440px frame. The bar here is the renderer's own "native-quality"
+# line (video_compile.py prints the same 1.25x figure): a candidate must
+# fill the frame within that. 0 disables the check.
+MAX_UPSCALE = float(os.environ.get("CLIP_MAX_UPSCALE", "1.25"))
+OUTPUT_W = 1440                  # keep in sync with video_compile.OUTPUT_W
+
 # ================================
 # HELPERS
 # ================================
@@ -201,17 +222,98 @@ def plan_footage(duration_needed):
     current_id = state.get("video_id", "")
     offset = state["offset"]
 
+    # per-file cursors: rotation means each file must remember where IT
+    # stopped, not just where the last video ended.
+    file_offsets = state.get("file_offsets")
+    if not isinstance(file_offsets, dict):
+        file_offsets = {}
+        if current_id:
+            file_offsets[current_id] = float(offset)
+    else:
+        file_offsets = {k: float(v) for k, v in file_offsets.items()
+                        if isinstance(v, (int, float))}
+
     current_pos = 0
+    known = False
     for i, f in enumerate(files):
         if f["id"] == current_id:
             current_pos = i
+            known = True
             break
     else:
         offset = 0.0
 
+    # Each file's real size, learned from the probe the first time it is
+    # loaded, kept in the state so a file that cannot fill the frame is
+    # skipped next run WITHOUT paying for its multi-GB download again.
+    source_meta = state.get("source_meta")
+    source_meta = dict(source_meta) if isinstance(source_meta, dict) else {}
+
+    def _crop_width(w, h):
+        """Real width a 9:16 crop of this source yields.
+
+        Mirrors the render filter crop=min(iw,ih*9/16):ih in
+        video_compile.py (the copy test in forge_ab checks they agree).
+        """
+        if not w or not h:
+            return 0
+        return int(min(w, h * 9.0 / 16.0))
+
+    def _source_ok(fid):
+        """True/False for a measured file, None when it has never been seen."""
+        m = source_meta.get(fid) or {}
+        cw = _crop_width(m.get("width"), m.get("height"))
+        if not cw:
+            return None
+        if not MAX_UPSCALE:
+            return True
+        return (OUTPUT_W / cw) <= MAX_UPSCALE + 1e-9
+
+    # Rotate the FILE. Only when the previous file is still known, so a
+    # fresh state (or a replaced folder) still starts at the first file.
+    rotated = False
+    prev_pos = current_pos
+    if ROTATE_FILES and len(files) > 1 and known:
+        prev_name = files[current_pos]["name"]
+        picked = None
+        for step in range(1, len(files)):
+            cand = (current_pos + step) % len(files)
+            ok = _source_ok(files[cand]["id"])
+            if ok is False:
+                m = source_meta.get(files[cand]["id"], {})
+                cw = _crop_width(m.get("width"), m.get("height"))
+                print(f"[drive] not rotating onto {files[cand]['name']!r}: "
+                      f"{m.get('width')}x{m.get('height')} gives only {cw}px "
+                      f"of real width for a {OUTPUT_W}px frame "
+                      f"({OUTPUT_W / cw:.2f}x upscale, above the "
+                      f"{MAX_UPSCALE:.2f}x bar)")
+                continue
+            picked = cand
+            break
+        if picked is None:
+            print(f"[drive] every other footage file is below the "
+                  f"{MAX_UPSCALE:.2f}x bar, so this video stays on "
+                  f"{prev_name!r} — add more 4K sources to the folder to "
+                  f"rotate between them")
+        else:
+            current_pos = picked
+            rotated = True
+            next_name = files[current_pos]["name"]
+            offset = float(file_offsets.get(files[current_pos]["id"], 0.0))
+            print(f"[drive] File rotation: this video uses "
+                  f"{next_name!r} from {offset:.1f}s "
+                  f"(the previous video drew from {prev_name!r})")
+            if len(files) < VIDEOS_PER_BATCH:
+                print(f"[drive] NOTE: the folder holds {len(files)} footage "
+                      f"file(s) for {VIDEOS_PER_BATCH} videos a batch, so they "
+                      f"must be reused (A,B,A,B). Add more finished videos to "
+                      f"the Drive folder and every video gets its own source.")
+
     spans = []
     taken = 0.0
     force_staged = False
+    used = {}
+    durs = {}
     # Guard against an infinite loop if every file in the folder is tiny.
     guard_iterations = 0
     max_iterations = max(len(files), 1) * 200
@@ -235,9 +337,56 @@ def plan_footage(duration_needed):
                 pass
             download_file(fid, path)
             dur = get_video_duration(path)
-        return path, dur, _probe_source(path)
+        info = _probe_source(path)
+        if info.get("width") and info.get("height"):
+            source_meta[files[pos]["id"]] = {
+                "width": int(info["width"]), "height": int(info["height"]),
+                "codec": str(info.get("codec") or ""),
+            }
+        return path, dur, info
+
+    def _quality_start(pos, path, dur):
+        """Best MEASURED start inside this file, or None to keep the cursor.
+
+        The walk below uses whatever the cursor points at, so the delivered
+        sharpness depends on where the cursor happens to be. Measured on the real
+        footage, detail varies ~1.6x inside a single file. This asks clip_quality
+        for the best-scoring window of THIS file; anything unexpected returns
+        None and the old behaviour stands unchanged.
+        """
+        try:
+            import clip_quality
+        except Exception as e:
+            print(f"[clipq] unavailable ({e}) - keeping the rotation cursor")
+            return None
+        try:
+            start, _entry, result = clip_quality.plan_start(
+                files[pos]["id"], path, duration_needed, dur)
+        except Exception as e:
+            print(f"[clipq] skipped ({e.__class__.__name__}: {e}) - "
+                  f"keeping the rotation cursor")
+            return None
+        print(f"[clipq] {os.path.basename(path)}: "
+              f"{clip_quality.describe(start, result, duration_needed)}")
+        return start
 
     cache_path, duration, info = _load(current_pos)
+    if rotated and _source_ok(files[current_pos]["id"]) is False:
+        # First sight of this file and it is below the bar: undo the
+        # rotation rather than ship a softer video. The size just learned is
+        # remembered, so next run skips it before downloading anything.
+        m = source_meta.get(files[current_pos]["id"], {})
+        print(f"[drive] {files[current_pos]['name']!r} is "
+              f"{m.get('width')}x{m.get('height')} — below the "
+              f"{MAX_UPSCALE:.2f}x bar; keeping "
+              f"{files[prev_pos]['name']!r} for this video")
+        current_pos = prev_pos
+        offset = float(file_offsets.get(files[current_pos]["id"],
+                                       state.get("offset", 0.0)))
+        cache_path, duration, info = _load(current_pos)
+    _qs = _quality_start(current_pos, cache_path, duration)
+    if _qs is not None:
+        offset = _qs
     file_mb = os.path.getsize(cache_path) / (1024 * 1024) if os.path.exists(cache_path) else 0
     print(f"[drive] Cached video: {os.path.basename(cache_path)} ({file_mb:.1f} MB)")
     if info:
@@ -262,6 +411,9 @@ def plan_footage(duration_needed):
             current_pos = _advance(current_pos)
             offset = 0.0
             cache_path, duration, info = _load(current_pos)
+            _qs = _quality_start(current_pos, cache_path, duration)
+            if _qs is not None:
+                offset = _qs
             if info and info.get("codec") and info["codec"] not in _DIRECT_SAFE_CODECS:
                 force_staged = True
             continue
@@ -278,12 +430,18 @@ def plan_footage(duration_needed):
         })
         offset += take
         taken += take
+        # where THIS file stopped, so a later rotation resumes here
+        used[files[current_pos]["id"]] = offset
+        durs[files[current_pos]["id"]] = duration
 
         if offset >= duration - 0.1:
             current_pos = _advance(current_pos)
             offset = 0.0
             if taken < duration_needed - 0.05:
                 cache_path, duration, info = _load(current_pos)
+                _qs = _quality_start(current_pos, cache_path, duration)
+                if _qs is not None:
+                    offset = _qs
                 if info and info.get("codec") and info["codec"] not in _DIRECT_SAFE_CODECS:
                     force_staged = True
 
@@ -293,6 +451,23 @@ def plan_footage(duration_needed):
         new_offset = 0.0
     state["video_id"] = files[current_pos]["id"]
     state["offset"] = new_offset
+    # Persist a cursor per file drawn from. A file run to its end is wrapped
+    # to 0 so it stays usable next time rotation comes back round to it
+    # (otherwise it would be skipped forever). Merged, never replaced: a Drive
+    # listing hiccup that falls back to the hardcoded list must not wipe the
+    # real folder's cursors.
+    for _fid, _pos in used.items():
+        _dur = durs.get(_fid)
+        file_offsets[_fid] = 0.0 if (_dur and _pos >= _dur - 0.1) else _pos
+    file_offsets.setdefault(files[current_pos]["id"], 0.0)
+    merged = state.get("file_offsets")
+    merged = dict(merged) if isinstance(merged, dict) else {}
+    merged.update(file_offsets)
+    state["file_offsets"] = merged
+    seen = state.get("source_meta")
+    seen = dict(seen) if isinstance(seen, dict) else {}
+    seen.update(source_meta)
+    state["source_meta"] = seen
     save_state(state)
 
     total = sum(s["duration"] for s in spans)
