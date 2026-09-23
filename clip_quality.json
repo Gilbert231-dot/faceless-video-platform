@@ -1,5 +1,102 @@
 {
  "files": {
+  "1Qk6bx5C5Mkg1EEFyQZ9oNqy-nr-OcHK7": {
+   "duration": 1233.0,
+   "probe_len": 90.0,
+   "probed_at": "2026-09-23T07:33:38Z",
+   "used": [
+    {
+     "at": "2026-09-23T07:33:38Z",
+     "start": 615.45
+    }
+   ],
+   "windows": [
+    {
+     "detail": 10.553,
+     "motion": 26.712,
+     "score": 6.327,
+     "start": 0.0
+    },
+    {
+     "detail": 12.623,
+     "motion": 28.068,
+     "score": 7.418,
+     "start": 439.61
+    },
+    {
+     "detail": 10.78,
+     "motion": 24.673,
+     "score": 6.667,
+     "start": 879.21
+    },
+    {
+     "detail": 11.552,
+     "motion": 30.179,
+     "score": 6.584,
+     "start": 175.84
+    },
+    {
+     "detail": 16.819,
+     "motion": 23.912,
+     "score": 10.526,
+     "start": 615.45
+    },
+    {
+     "detail": 16.023,
+     "motion": 33.696,
+     "score": 8.697,
+     "start": 1055.05
+    },
+    {
+     "detail": 12.038,
+     "motion": 23.776,
+     "score": 7.55,
+     "start": 351.68
+    },
+    {
+     "detail": 10.265,
+     "motion": 26.255,
+     "score": 6.197,
+     "start": 791.29
+    },
+    {
+     "detail": 13.412,
+     "motion": 35.717,
+     "score": 7.085,
+     "start": 87.92
+    },
+    {
+     "detail": 9.741,
+     "motion": 25.455,
+     "score": 5.953,
+     "start": 527.53
+    },
+    {
+     "detail": 11.699,
+     "motion": 24.651,
+     "score": 7.238,
+     "start": 967.13
+    },
+    {
+     "detail": 10.376,
+     "motion": 30.341,
+     "score": 5.901,
+     "start": 263.76
+    },
+    {
+     "detail": 11.009,
+     "motion": 25.398,
+     "score": 6.734,
+     "start": 703.37
+    },
+    {
+     "detail": 10.618,
+     "motion": 35.612,
+     "score": 5.617,
+     "start": 1142.97
+    }
+   ]
+  },
   "1pN74Hxmsl8JIOHN5T8O0Z2ztDGGY827N": {
    "duration": 1827.3,
    "probe_len": 90.0,
