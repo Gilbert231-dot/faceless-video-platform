@@ -34,15 +34,20 @@ VOICE_SPEED = 1.15
 # encode THAT. Staging costs a whole extra lossy generation.
 #
 # VP9 and AV1 used to be staged, on the theory that 4K decode was too
-# expensive on a 2-core runner. Measured on a 4K60 VP9 source (both steps on
-# the same CPU, both limited to 4 threads):
+# expensive on a 2-core runner. Measured at 4K60, every step on the same CPU
+# and limited to 4 threads, normalised to 6s of footage:
 #
-#     decode 4K60 VP9 ................  6s of footage in  7.0s  (1.17x rt)
-#     the veryfast 4K x264 it replaces   6s of footage in 39.6s  (6.60x rt)
+#     decode VP9 ...............  6.0s   (1.17x realtime)
+#     decode AV1 (dav1d) ....... 18.3s   (3.06x realtime)
+#     the veryfast 4K x264 that staging pays  39.6s   (6.60x realtime)
 #
-# So staging a VP9 source costs ~5.6x MORE time than decoding it, and adds an
-# encode on top. The exclusion was paying a quality loss to buy a slowdown.
-# YouTube serves 4K gameplay as VP9, so this was hitting nearly every file.
+# Staging therefore costs ~5.6x more time than decoding VP9 and ~2.2x more than
+# decoding AV1 — plus a whole extra lossy generation. The exclusion was paying a
+# permanent quality loss to buy a slowdown. It also hit nearly every file,
+# because YouTube serves 4K gameplay as VP9, which is what these sources are.
+#
+# AV1's margin is the thinner of the two, so it was measured too rather than
+# assumed: it still wins. Sources are VP9 in practice, so AV1 is the rarer arm.
 #
 # FOOTAGE_FORCE_STAGED_CODECS=vp9,av1 restores the old behaviour for a codec
 # (useful as a rollback without touching code).
