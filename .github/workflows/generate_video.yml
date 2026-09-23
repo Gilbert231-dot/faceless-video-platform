@@ -325,9 +325,14 @@ jobs:
           # `peek` is read-only: it runs the same rotation decision the render
           # will make, but downloads nothing and writes no state. If it cannot
           # be resolved the cache is skipped and the run behaves as before.
-          FID=$(python drive_clip_manager.py peek 2>/dev/null | tail -1 | tr -d '\r')
+          # Keep only a line that actually looks like a Drive file id, and take
+          # the last one. `tail -1` alone was fragile: importing config.py can
+          # print unrelated warnings to stdout, and one of them as the last line
+          # would have silently become the cache key.
+          FID=$(python drive_clip_manager.py peek 2>/dev/null \
+                | tr -d '\r' | grep -oE '^[A-Za-z0-9_-]{20,}$' | tail -1)
           case "$FID" in
-            ""|*" "*|*Error*|*error*)
+            "")
               echo "⚠️ Could not resolve the footage file id — footage cache"
               echo "   skipped for this run; the file downloads as before."
               FID="unknown-${{ github.run_id }}"

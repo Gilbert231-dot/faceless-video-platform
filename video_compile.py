@@ -13,6 +13,7 @@ from config import (
     VOICE_LUFS_TARGET,
     VOICE_TP_MAX,
     FEMALE_VOICE_BOOST_DB,
+    codec_needs_staging,
 )
 
 # Force line-buffered stdout so every print() appears in the Actions log
@@ -450,7 +451,9 @@ def _stage_footage(source_video, extract_duration, output_dir):
     """STAGED PATH: re-encode the needed duration to clean H.264 first.
 
     Kept for FOOTAGE_MODE=staged (the rollback) and for sources whose codec is
-    too expensive to decode directly at 4K on a 2-core runner (VP9/AV1).
+    not in DIRECT_RENDER_CODECS (see config.py — VP9/AV1 are no longer here,
+    because normalizing them measured ~5.6x slower than decoding them AND
+    added a lossy generation).
 
     FIXED (exit-234 crash): the old -c:v copy preserved the source's original
     codec (VP9, AV1, ...) and container metadata — with sparse keyframes or a
@@ -535,9 +538,9 @@ def _stage_spans(spans, output_dir):
     """STAGED fallback for an already-planned footage list.
 
     Re-encodes each planned window to clean H.264 and concatenates the pieces.
-    Used when a source's codec is too expensive to decode directly (VP9/AV1 at
-    4K on a 2-core runner) — the footage plan itself is unchanged, so this
-    consumes exactly the same footage the direct path would have.
+    Used when a source's codec is not in DIRECT_RENDER_CODECS (see config.py)
+    — the footage plan itself is unchanged, so this consumes exactly the same
+    footage the direct path would have.
 
     See _stage_footage() for why the re-encode exists and what it costs.
     """
@@ -878,17 +881,23 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
     video_duration = 0.0
     source_video = video_paths[0] if video_paths else None
 
-    # Decode the footage directly only when we were handed a plan AND the
-    # sources use codecs we can afford to decode at 4K on a 2-core runner.
-    # (Sourced from the spans themselves, so this is correct even if the plan
-    # was built before a codec was known.)
+    # Decode the footage directly when we were handed a plan and every source
+    # codec is one we render directly. (Sourced from the spans themselves, so
+    # this is correct even if the plan was built before a codec was known.)
+    #
+    # VP9/AV1 are NO LONGER excluded here. Staging them cost ~5.6x more time
+    # than decoding them (measured: 6s of 4K60 VP9 decodes in 7.0s, the
+    # veryfast 4K H.264 it replaces takes 39.6s) AND added a lossy generation,
+    # so the old rule bought a permanent quality loss for a slowdown. See
+    # DIRECT_RENDER_CODECS in config.py.
     span_codecs = {(s.get("codec") or "").lower() for s in (footage_spans or [])}
-    heavy_codecs = {c for c in span_codecs if c and c not in ("h264", "hevc")}
-    direct_mode = bool(footage_spans) and FOOTAGE_MODE == "direct" and not heavy_codecs
+    stage_codecs = {c for c in span_codecs if codec_needs_staging(c)}
+    direct_mode = bool(footage_spans) and FOOTAGE_MODE == "direct" and not stage_codecs
 
-    if heavy_codecs:
-        print(f"   ⚠️ Source codec(s) {sorted(heavy_codecs)} are costly to decode "
-              f"directly — staging to H.264 first (one extra re-encode)")
+    if stage_codecs:
+        print(f"   ⚠️ Source codec(s) {sorted(stage_codecs)} need normalizing — "
+              f"staging to H.264 first (one extra re-encode). Set "
+              f"FOOTAGE_FORCE_STAGED_CODECS= (empty) to render them directly.")
 
     if direct_mode:
         print("   🎞️ FOOTAGE_MODE=direct — rendering straight from the source "
@@ -902,7 +911,7 @@ def compile_video(video_paths, audio_path, script, subtitle_path=None,
         print(f"   📊 Footage: {video_duration:.2f}s across {len(render_plan)} segment(s) "
               f"from {len({j['src'] for j in render_plan})} source file(s)")
     elif footage_spans:
-        # FOOTAGE_MODE=staged with a plan, or a codec we won't decode directly.
+        # FOOTAGE_MODE=staged with a plan, or a codec we don't render directly.
         # The plan is honoured exactly — same footage, same rotation state.
         print("   🎞️ Staging the planned footage (FOOTAGE_MODE=staged)")
         _report_source_quality(footage_spans)

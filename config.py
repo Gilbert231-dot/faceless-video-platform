@@ -27,6 +27,48 @@ DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() in ("true", "1", "yes")
 VOICE_SPEED = 1.15
 
 # ===========================
+# WHICH FOOTAGE CODECS RENDER DIRECTLY (one source of truth)
+# ===========================
+# The renderer can either decode the source straight into the final encode, or
+# "stage" it first: re-encode the footage to 4K H.264 with `veryfast`, then
+# encode THAT. Staging costs a whole extra lossy generation.
+#
+# VP9 and AV1 used to be staged, on the theory that 4K decode was too
+# expensive on a 2-core runner. Measured on a 4K60 VP9 source (both steps on
+# the same CPU, both limited to 4 threads):
+#
+#     decode 4K60 VP9 ................  6s of footage in  7.0s  (1.17x rt)
+#     the veryfast 4K x264 it replaces   6s of footage in 39.6s  (6.60x rt)
+#
+# So staging a VP9 source costs ~5.6x MORE time than decoding it, and adds an
+# encode on top. The exclusion was paying a quality loss to buy a slowdown.
+# YouTube serves 4K gameplay as VP9, so this was hitting nearly every file.
+#
+# FOOTAGE_FORCE_STAGED_CODECS=vp9,av1 restores the old behaviour for a codec
+# (useful as a rollback without touching code).
+DIRECT_RENDER_CODECS = {"h264", "hevc", "vp9", "av1"}
+FORCE_STAGED_CODECS = {c.strip().lower()
+                       for c in os.getenv("FOOTAGE_FORCE_STAGED_CODECS", "").split(",")
+                       if c.strip()}
+
+
+def codec_needs_staging(codec):
+    """True when this source codec should be normalized to H.264 before use.
+
+    An empty/unknown codec is NOT staged. That mirrors the rule this replaces
+    (`c and c not in safe_codecs`), where a failed probe has always gone direct,
+    so behaviour is unchanged for every source we cannot identify. A codec we
+    have never measured takes the safe route and is staged.
+    """
+    c = (codec or "").strip().lower()
+    if not c:
+        return False
+    if c in FORCE_STAGED_CODECS:
+        return True
+    return c not in DIRECT_RENDER_CODECS
+
+
+# ===========================
 # NARRATOR PAUSE COMPRESSION
 # ===========================
 # The narrator pauses between sentences; these knobs SHORTEN those gaps

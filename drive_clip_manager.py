@@ -6,6 +6,8 @@ import tempfile
 import subprocess
 from pathlib import Path
 
+from config import codec_needs_staging
+
 # gdown is imported lazily inside download_file(): it is only needed when a
 # file actually has to be downloaded (the runner installs it via
 # requirements.txt), and importing the module shouldn't require it.
@@ -188,10 +190,13 @@ def _probe_source(path):
         return {}
 
 
-# Codecs we are happy to decode directly during the render. VP9/AV1 4K
-# decode is expensive on a 2-core runner, so those sources fall back to the
-# staged path automatically (per file, not globally).
-_DIRECT_SAFE_CODECS = {"h264", "hevc"}
+# Which codecs the renderer decodes directly is ONE shared rule in config.py
+# (DIRECT_RENDER_CODECS / codec_needs_staging), so this file's log and the
+# renderer's actual decision can never contradict each other. VP9 and AV1 are
+# in that set: staging them measured ~5.6x slower than decoding them, and added
+# a lossy generation on top. Note `force_staged` below is reported for
+# diagnosis only — video_compile re-derives the decision from the spans'
+# codecs, which is what actually selects the path.
 
 
 # ================================
@@ -410,9 +415,10 @@ def plan_footage(duration_needed, peek_only=False):
         print(f"[drive] Source video: {info.get('codec','?')} "
               f"{info.get('width','?')}x{info.get('height','?')} "
               f"fps={info.get('fps','?')} ({os.path.basename(cache_path)})")
-        if info.get("codec") and info["codec"] not in _DIRECT_SAFE_CODECS:
-            print(f"[drive] ⚠️ Source codec '{info['codec']}' is expensive to decode at 4K "
-                  f"— using the staged (re-encode) path for this file")
+        if codec_needs_staging(info.get("codec")):
+            print(f"[drive] ⚠️ Source codec '{info['codec']}' is not in "
+                  f"DIRECT_RENDER_CODECS — it will be normalized to H.264 first "
+                  f"(one extra re-encode)")
             force_staged = True
 
     while taken < duration_needed - 0.05:
@@ -431,7 +437,7 @@ def plan_footage(duration_needed, peek_only=False):
             _qs = _quality_start(current_pos, cache_path, duration)
             if _qs is not None:
                 offset = _qs
-            if info and info.get("codec") and info["codec"] not in _DIRECT_SAFE_CODECS:
+            if info and codec_needs_staging(info.get("codec")):
                 force_staged = True
             continue
 
@@ -459,7 +465,7 @@ def plan_footage(duration_needed, peek_only=False):
                 _qs = _quality_start(current_pos, cache_path, duration)
                 if _qs is not None:
                     offset = _qs
-                if info and info.get("codec") and info["codec"] not in _DIRECT_SAFE_CODECS:
+                if info and codec_needs_staging(info.get("codec")):
                     force_staged = True
 
     new_offset = offset
