@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-22T11:17:48Z",
+  "generated_at": "2026-09-23T06:56:32Z",
   "total_stories": 367,
-  "unused_stories": 285,
-  "used_stories": 82,
+  "unused_stories": 283,
+  "used_stories": 84,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 142,
+  "days_of_stories": 141,
   "runway_date": "2027-02-11",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -83,24 +83,56 @@
     },
     {
       "name": "ProRevenge",
+      "total": 4,
+      "unused": 4
+    },
+    {
+      "name": "ProRevenge",
       "total": 6,
       "unused": 6
     }
   ],
   "schedule": {
-    "next_index": 111
+    "next_index": 112
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00"
     ],
     "next_publish_utc": [
+      "2026-09-23T15:00:00Z",
+      "2026-09-24T15:00:00Z",
       "2026-09-23T03:00:00Z",
       "2026-09-24T03:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1790146366_captioned_1790146366.mp4",
+      "title": "[FULL STORY] I staged a bombastic revenge, and the bully’s reaction stunned everyone.",
+      "subreddit": "ProRevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "2010968186235322",
+      "url": "https://www.facebook.com/1272041649331476/videos/2010968186235322",
+      "posted_at": "2026-09-23T06:56:32Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-23T15:00:00Z"
+    },
+    {
+      "video_file": "output_1790146366_captioned_1790146366.mp4",
+      "title": "[FULL STORY] I staged a bombastic revenge, and the bully’s reaction stunned everyone.",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ob6ZtVStqDI",
+      "url": "https://youtu.be/ob6ZtVStqDI",
+      "posted_at": "2026-09-23T06:53:47Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-23T15:00:00Z"
+    },
     {
       "video_file": "output_1790075687_captioned_1790075687.mp4",
       "title": "[FULL STORY] My screen job shattered when math mistake exposed a deadly chemical secret.",
