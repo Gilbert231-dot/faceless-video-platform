@@ -19,6 +19,10 @@ on:
         description: 'Source duration in seconds (for the expected-window check)'
         required: false
         default: '1233'
+      no_ua:
+        description: 'true = call ffmpeg WITHOUT the browser User-Agent, to tell a User-Agent problem from throttling'
+        required: false
+        default: 'false'
 
 jobs:
   probe:
@@ -45,9 +49,15 @@ jobs:
       - name: Run the probe
         run: |
           set -o pipefail
+          EXTRA=""
+          if [ "${{ github.event.inputs.no_ua }}" = "true" ]; then
+            EXTRA="--no-ua-for-ffmpeg"
+          fi
+          echo "user-agent toggle: ${EXTRA:-browser UA}"
           python .github/probe/probe_remote_seek_ci.py \
             --file-id "${{ github.event.inputs.file_id }}" \
             --src-duration "${{ github.event.inputs.src_duration }}" \
+            $EXTRA \
             2>&1 | tee probe_out.txt
 
       - name: Summary
