@@ -1,0 +1,72 @@
+name: Probe remote seek
+
+# Diagnostic only: decides whether a footage file can be fetched BY SLICE
+# instead of downloaded whole. Manual dispatch, one job, no schedule — it never
+# runs on its own and does not touch the scheduled pipeline.
+#
+# Why it has to run HERE and not on a laptop: the answer depends on the runner's
+# network and ffmpeg build. A laptop measurement gave a byte count that could
+# not be reconciled (2.1 MB forwarded for a window that needs ~6.5 MB), which is
+# exactly the case a byte count alone cannot settle.
+on:
+  workflow_dispatch:
+    inputs:
+      file_id:
+        description: 'Drive file id to probe'
+        required: false
+        default: '1Qk6bx5C5Mkg1EEFyQZ9oNqy-nr-OcHK7'
+      src_duration:
+        description: 'Source duration in seconds (for the expected-window check)'
+        required: false
+        default: '1233'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg curl
+
+      - name: Environment
+        run: |
+          df -h .
+          ffmpeg -version | head -2
+          echo "cpus: $(nproc)"
+
+      - name: Run the probe
+        run: |
+          set -o pipefail
+          python .github/probe/probe_remote_seek_ci.py \
+            --file-id "${{ github.event.inputs.file_id }}" \
+            --src-duration "${{ github.event.inputs.src_duration }}" \
+            2>&1 | tee probe_out.txt
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Remote seek probe"
+            echo '```'
+            tail -n 40 probe_out.txt || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-result
+          path: |
+            probe_result.json
+            probe_out.txt
+          if-no-files-found: warn
+          retention-days: 14
