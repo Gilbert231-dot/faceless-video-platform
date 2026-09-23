@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-23T09:00:46Z",
+  "generated_at": "2026-09-23T11:22:20Z",
   "total_stories": 367,
-  "unused_stories": 281,
-  "used_stories": 86,
+  "unused_stories": 280,
+  "used_stories": 87,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 140,
@@ -27,11 +27,6 @@
       "unused": 23
     },
     {
-      "name": "AITAH",
-      "total": 23,
-      "unused": 23
-    },
-    {
       "name": "TalesFromRetail",
       "total": 22,
       "unused": 22
@@ -43,6 +38,11 @@
     },
     {
       "name": "relationship_advice",
+      "total": 22,
+      "unused": 22
+    },
+    {
+      "name": "AITAH",
       "total": 22,
       "unused": 22
     },
@@ -87,6 +87,11 @@
       "unused": 3
     },
     {
+      "name": "AITAH",
+      "total": 23,
+      "unused": 23
+    },
+    {
       "name": "ProRevenge",
       "total": 4,
       "unused": 4
@@ -103,19 +108,21 @@
     }
   ],
   "schedule": {
-    "next_index": 114
+    "next_index": 115
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-09-24T03:00:00Z",
+      "2026-09-25T03:00:00Z",
       "2026-09-23T23:00:00Z",
       "2026-09-24T23:00:00Z",
       "2026-09-23T12:00:00Z",
@@ -124,11 +131,34 @@
       "2026-09-24T21:00:00Z",
       "2026-09-23T15:00:00Z",
       "2026-09-24T15:00:00Z",
-      "2026-09-23T03:00:00Z",
-      "2026-09-24T03:00:00Z"
+      "2026-09-23T03:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1790162255_captioned_1790162255.mp4",
+      "title": "[FULL STORY] BIL removed me, my sister exposed, and my world is ruined.\n\nAbstract?\n\nSure! Here's a concise, abstract hook that follows the guidelines:\n\n\"Mom betrayed me—BIL vanished, my sister exposed, and my life shattered.\"",
+      "subreddit": "AITAH",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "984517197991399",
+      "url": "https://www.facebook.com/1272041649331476/videos/984517197991399",
+      "posted_at": "2026-09-23T11:22:20Z",
+      "hook_score": 47,
+      "publish_at": "2026-09-24T03:00:00Z"
+    },
+    {
+      "video_file": "output_1790162255_captioned_1790162255.mp4",
+      "title": "[FULL STORY] BIL removed me, my sister exposed, and my world is ruined.\n\nAbstract?\n\nSure! Here's a concise, abstract hook that follows the guidelines:\n\n\"Mom betrayed me—BIL vanished, my sister exposed, and my life shattered.\"",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ZjsoLhWWvDg",
+      "url": "https://youtu.be/ZjsoLhWWvDg",
+      "posted_at": "2026-09-23T11:18:48Z",
+      "hook_score": 47,
+      "publish_at": "2026-09-24T03:00:00Z"
+    },
     {
       "video_file": "output_1790153961_captioned_1790153961.mp4",
       "title": "[FULL STORY] I thought eBay was safe—then the postal inspectors exposed my nightmare.",
@@ -138,18 +168,6 @@
       "video_id": "122114689659447442",
       "url": "https://www.facebook.com/reel/945386668089831",
       "posted_at": "2026-09-23T09:00:46Z",
-      "hook_score": 39,
-      "publish_at": "2026-09-23T23:00:00Z"
-    },
-    {
-      "video_file": "output_1790153961_captioned_1790153961.mp4",
-      "title": "[FULL STORY] I thought eBay was safe—then the postal inspectors exposed my nightmare.",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "yIROdwlx-9E",
-      "url": "https://youtu.be/yIROdwlx-9E",
-      "posted_at": "2026-09-23T09:00:31Z",
       "hook_score": 39,
       "publish_at": "2026-09-23T23:00:00Z"
     },
@@ -236,6 +254,18 @@
       "posted_at": "2026-09-21T09:07:44Z",
       "hook_score": 65,
       "publish_at": "2026-09-21T23:00:00Z"
+    },
+    {
+      "video_file": "output_1790153961_captioned_1790153961.mp4",
+      "title": "[FULL STORY] I thought eBay was safe—then the postal inspectors exposed my nightmare.",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "yIROdwlx-9E",
+      "url": "https://youtu.be/yIROdwlx-9E",
+      "posted_at": "2026-09-23T09:00:31Z",
+      "hook_score": 39,
+      "publish_at": "2026-09-23T23:00:00Z"
     },
     {
       "video_file": "output_1789976879_captioned_1789976879.mp4",
