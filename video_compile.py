@@ -83,6 +83,16 @@ FALLBACK_PRESET = os.environ.get("VIDEO_FALLBACK_PRESET", "slow")
 STAGED_CRF = int(os.environ.get("STAGED_CRF", "15"))
 STAGED_PRESET = os.environ.get("STAGED_PRESET", "veryfast")
 
+# Keep the downloaded footage on disk after it has been staged.
+# Why: the workflow caches `cached_videos` keyed by the footage file id, and a
+# cache can only save what is still on disk when the job ends. The staged path
+# used to delete the source immediately (a disk fix from when the runner was
+# tight), which meant the cache saved an EMPTY folder — so every run restored
+# nothing and re-downloaded the whole multi-GB file. One video per run needs
+# ~4-8 GB and the runner has ~80 GB free, so keeping it is cheap.
+# FOOTAGE_KEEP=0 restores delete-as-you-go if disk ever runs short.
+KEEP_FOOTAGE = os.environ.get("FOOTAGE_KEEP", "1").strip().lower() not in ("0", "false", "no")
+
 # Mild post-upscale sharpening. A 9:16 crop of a 4K landscape frame is
 # 1215x2160, so it is still upscaled 1.19x to reach 1440x2560 and a plain
 # lanczos upscale reads slightly soft. This recovers perceived crispness
@@ -499,15 +509,24 @@ def _stage_footage(source_video, extract_duration, output_dir):
             f"Source: {source_video}"
         )
 
-    # DISK FIX: in staged mode the extracted segment replaces the huge source,
-    # so the source can be deleted immediately. (Direct mode keeps the source
-    # on disk until its last segment has rendered — see the render loop.)
+    # The source used to be deleted here immediately ("DISK FIX"). That is what
+    # made the workflow's footage cache useless: the cache saves at the END of
+    # the job, so deleting the source first meant it saved an empty folder.
+    # Keep it by default so the cache can store it; FOOTAGE_KEEP=0 restores the
+    # old behaviour. (Direct mode never deleted it — see the render loop.)
     try:
         src_size = os.path.getsize(source_video) / (1024 * 1024)
-        os.unlink(source_video)
-        print(f"   🧹 Deleted source video ({src_size:.0f} MB freed)")
-    except Exception:
-        pass  # non-critical — log but don't abort
+    except OSError:
+        src_size = 0.0
+    if KEEP_FOOTAGE:
+        print(f"   💾 Kept the source ({src_size:.0f} MB) on disk so the footage "
+              f"cache can store it for later runs")
+    else:
+        try:
+            os.unlink(source_video)
+            print(f"   🧹 Deleted source video ({src_size:.0f} MB freed)")
+        except Exception:
+            pass  # non-critical — log but don't abort
 
     return gameplay_segment
 

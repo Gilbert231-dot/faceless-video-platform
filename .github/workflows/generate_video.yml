@@ -299,17 +299,49 @@ jobs:
             exit 1
           fi
 
-      - name: Cache downloaded videos
-        uses: actions/cache@v4
+      # -------------------------------------------------------------------
+      # FOOTAGE CACHE — why it is keyed per FILE now, not per pipeline version
+      #
+      # A cache saves at the END of the job. The old key was
+      # `hashFiles('drive_clip_manager.py')` AND the mp4 was deleted earlier in
+      # the same job, so the entry stored an EMPTY folder. Every run therefore
+      # restored nothing and re-downloaded the whole source — measured in the
+      # log: gdown printed `4.04G/4.04G [00:53, 76.3MB/s]` on every single run,
+      # and all three cache entries reported 0.0 MB.
+      #
+      # Now the run is asked which footage file it will use BEFORE the cache is
+      # restored, and the cache is keyed by that file's id. Each file is
+      # downloaded once and restored on every later run that needs it: rotation
+      # over two files (A,B,A,B) goes from four downloads a day to two, and a
+      # file reused days later is still a restore rather than a download.
+      #
+      # GitHub's 10 GB per-repo cache holds ~2 entries of this size, which is
+      # fine: the entries that matter are the most recently used files, and
+      # anything evicted simply downloads again exactly as it does today.
+      # -------------------------------------------------------------------
+      - name: "Which footage file will this run use?"
+        id: footage
+        run: |
+          # `peek` is read-only: it runs the same rotation decision the render
+          # will make, but downloads nothing and writes no state. If it cannot
+          # be resolved the cache is skipped and the run behaves as before.
+          FID=$(python drive_clip_manager.py peek 2>/dev/null | tail -1 | tr -d '\r')
+          case "$FID" in
+            ""|*" "*|*Error*|*error*)
+              echo "⚠️ Could not resolve the footage file id — footage cache"
+              echo "   skipped for this run; the file downloads as before."
+              FID="unknown-${{ github.run_id }}"
+              ;;
+          esac
+          echo "🎞️ This run's footage file id: $FID"
+          echo "fid=$FID" >> "$GITHUB_OUTPUT"
+
+      - name: Restore footage cache (keyed by the file this run needs)
         id: video-cache
+        uses: actions/cache/restore@v4
         with:
           path: cached_videos
-          # '-4k' bumps the key so the old 1080p cache (stale file IDs from
-          # the replaced folder) is orphaned instead of restored: the new 4K
-          # sources are 0.5-5 GB each and are downloaded by file ID anyway.
-          key: video-cache-4k-${{ hashFiles('drive_clip_manager.py') }}
-          restore-keys: |
-            video-cache-4k-
+          key: footage-${{ steps.footage.outputs.fid }}
 
       # NOTE: clip_state.json (background-footage position) is intentionally
       # NOT cached. GitHub cache keys are immutable, so a fixed key would
@@ -382,7 +414,10 @@ jobs:
             rm -f output/gameplay_segment_* 2>/dev/null
             rm -f output/audio_processed_* 2>/dev/null
             rm -f output/video_combined_* 2>/dev/null
-            rm -rf cached_videos/*.mp4 2>/dev/null
+            # cached_videos/*.mp4 is deliberately NOT deleted here any more:
+            # the footage must survive until the end of the job, because that is
+            # when the footage cache is saved. Deleting it here is what made the
+            # cache store an empty folder and re-download on every run.
             rm -rf cached_videos/*.part 2>/dev/null
             pip cache purge 2>/dev/null || true
             sudo apt-get clean 2>/dev/null || true
@@ -397,6 +432,33 @@ jobs:
           done
 
           echo "✅ All videos generated"
+
+      # Save the footage this run downloaded so the next run that needs the SAME
+      # file restores it instead of re-downloading it. Saved only on a cache
+      # miss, and only when the file is actually on disk — saving an empty
+      # folder is precisely the bug this replaces.
+      - name: "Did this run download new footage?"
+        id: footage-new
+        if: steps.video-cache.outputs.cache-hit != 'true'
+        run: |
+          F="cached_videos/video_${{ steps.footage.outputs.fid }}.mp4"
+          if [ -s "$F" ]; then
+            echo "ok=1" >> "$GITHUB_OUTPUT"
+            echo "💾 $(du -h "$F" | cut -f1) of footage will be cached for later runs."
+          else
+            echo "Nothing to cache (no file at $F)."
+          fi
+
+      - name: Save footage cache
+        if: steps.footage-new.outputs.ok == '1'
+        # continue-on-error: caching here is an optimisation, not part of making
+        # the video. A storage hiccup or a key that already exists must never
+        # turn a run that uploaded its video into a failed run.
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: cached_videos
+          key: footage-${{ steps.footage.outputs.fid }}
 
       # Remove today's used stories from the bank (they were marked used
       # during generation) and drop legacy comment dumps — keeps the folder
@@ -837,7 +899,9 @@ jobs:
       - name: Final cleanup
         run: |
           rm -rf output/*.mp4
-          rm -rf cached_videos/*.mp4
+          # cached_videos is deliberately NOT cleaned: it is what the footage
+          # cache saves (keyed per file id). Deleting it here emptied the cache
+          # and forced a full multi-GB re-download on every run.
           df -h
 
 

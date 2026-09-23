@@ -197,8 +197,14 @@ _DIRECT_SAFE_CODECS = {"h264", "hevc"}
 # ================================
 # FOOTAGE PLANNING (no re-encode)
 # ================================
-def plan_footage(duration_needed):
+def plan_footage(duration_needed, peek_only=False):
     """Plan which source footage to use WITHOUT re-encoding any of it.
+
+    peek_only=True returns ONLY the file this run will use and stops before
+    any download and before any state write. The workflow calls it before it
+    restores the footage cache, so the cache can be keyed by that exact file
+    id (the old single-key cache saved an empty folder, so every run
+    re-downloaded the whole multi-GB file four times a day).
 
     Returns {"spans": [...], "force_staged": bool}. Each span is
       {"path", "start", "duration", "file_id", "codec", "width", "height"}
@@ -308,6 +314,17 @@ def plan_footage(duration_needed):
                       f"file(s) for {VIDEOS_PER_BATCH} videos a batch, so they "
                       f"must be reused (A,B,A,B). Add more finished videos to "
                       f"the Drive folder and every video gets its own source.")
+
+    # READ-ONLY PEEK: the workflow asks which file this run will use BEFORE it
+    # restores the footage cache, so the cache can be keyed by that exact file
+    # id. This is the same decision the full call would make — it is the code
+    # above, not a copy of it — and it downloads nothing, writes no state.
+    if peek_only:
+        print(f"[drive] This run will draw footage from "
+              f"{files[current_pos]['name']!r} (file id {files[current_pos]['id']})")
+        return {"file_id": files[current_pos]["id"],
+                "name": files[current_pos]["name"],
+                "peek": True}
 
     spans = []
     taken = 0.0
@@ -653,8 +670,15 @@ def get_next_segment(duration_needed):
 
 
 if __name__ == "__main__":
+    # Manual check: python drive_clip_manager.py peek
+    #   -- prints the file id this run would use, downloading nothing.
+    # The workflow calls this before restoring the footage cache so the cache
+    # can be keyed per file instead of per pipeline version.
+    if len(os.sys.argv) > 1 and os.sys.argv[1] == "peek":
+        _p = plan_footage(0, peek_only=True)
+        print(_p.get("file_id", ""))
     # Manual check: python drive_clip_manager.py list
-    if len(os.sys.argv) > 1 and os.sys.argv[1] == "list":
+    elif len(os.sys.argv) > 1 and os.sys.argv[1] == "list":
         files = get_footage_files()
         print(f"{len(files)} footage file(s):")
         for f in files:
