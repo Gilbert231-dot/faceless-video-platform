@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-24T07:19:09Z",
+  "generated_at": "2026-09-24T08:36:50Z",
   "total_stories": 367,
-  "unused_stories": 278,
-  "used_stories": 89,
+  "unused_stories": 277,
+  "used_stories": 90,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 139,
-  "runway_date": "2027-02-10",
+  "days_of_stories": 138,
+  "runway_date": "2027-02-09",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -83,6 +83,11 @@
     },
     {
       "name": "ProRevenge",
+      "total": 2,
+      "unused": 2
+    },
+    {
+      "name": "ProRevenge",
       "total": 3,
       "unused": 3
     },
@@ -123,14 +128,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-09-24T12:00:00Z",
+      "2026-09-24T18:00:00Z",
       "2026-09-24T21:00:00Z",
       "2026-09-25T21:00:00Z",
       "2026-09-24T15:00:00Z",
@@ -156,18 +163,6 @@
       "video_id": "122114999355447442",
       "url": "https://www.facebook.com/reel/28052717167762258",
       "posted_at": "2026-09-24T07:19:09Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-24T21:00:00Z"
-    },
-    {
-      "video_file": "output_1790234285_captioned_1790234285.mp4",
-      "title": "[FULL STORY] Everyone assumed I’d always drive—until I finally said no and they gas‑pedaled.",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "C49sje-U2r4",
-      "url": "https://youtu.be/C49sje-U2r4",
-      "posted_at": "2026-09-24T07:18:52Z",
       "hook_score": 26,
       "publish_at": "2026-09-24T21:00:00Z"
     },
@@ -268,18 +263,6 @@
       "publish_at": "2026-09-22T15:00:00Z"
     },
     {
-      "video_file": "output_1790230696_captioned_1790230696.mp4",
-      "title": "[FULL STORY] I begged theaters for intermissions—my request got brutally rejected.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "nxjQncQDffQ",
-      "url": "https://youtu.be/nxjQncQDffQ",
-      "posted_at": "2026-09-24T06:19:25Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-24T15:00:00Z"
-    },
-    {
       "video_file": "output_1789986179_captioned_1789986179.mp4",
       "title": "[FULL STORY] \"Will Ferrell’s man‑child routine ruined every movie—this is why I’m done watching.\"",
       "subreddit": "unpopularopinion",
@@ -290,6 +273,30 @@
       "posted_at": "2026-09-21T10:25:42Z",
       "hook_score": 39,
       "publish_at": "2026-09-22T03:00:00Z"
+    },
+    {
+      "video_file": "output_1790234285_captioned_1790234285.mp4",
+      "title": "[FULL STORY] Everyone assumed I’d always drive—until I finally said no and they gas‑pedaled.",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "C49sje-U2r4",
+      "url": "https://youtu.be/C49sje-U2r4",
+      "posted_at": "2026-09-24T07:18:52Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-24T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790230696_captioned_1790230696.mp4",
+      "title": "[FULL STORY] I begged theaters for intermissions—my request got brutally rejected.",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "nxjQncQDffQ",
+      "url": "https://youtu.be/nxjQncQDffQ",
+      "posted_at": "2026-09-24T06:19:25Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-24T15:00:00Z"
     },
     {
       "video_file": "output_1790162255_captioned_1790162255.mp4",
