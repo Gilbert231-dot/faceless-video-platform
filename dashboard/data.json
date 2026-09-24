@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-09-23T11:22:20Z",
+  "generated_at": "2026-09-24T06:19:47Z",
   "total_stories": 367,
-  "unused_stories": 280,
-  "used_stories": 87,
+  "unused_stories": 279,
+  "used_stories": 88,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 140,
+  "days_of_stories": 139,
   "runway_date": "2027-02-10",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -63,8 +63,8 @@
     },
     {
       "name": "unpopularopinion",
-      "total": 23,
-      "unused": 21
+      "total": 22,
+      "unused": 20
     },
     {
       "name": "EntitledPeople",
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 3,
       "unused": 3
+    },
+    {
+      "name": "unpopularopinion",
+      "total": 23,
+      "unused": 21
     },
     {
       "name": "AITAH",
@@ -108,19 +113,21 @@
     }
   ],
   "schedule": {
-    "next_index": 115
+    "next_index": 116
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-09-24T15:00:00Z",
+      "2026-09-25T15:00:00Z",
       "2026-09-24T03:00:00Z",
       "2026-09-25T03:00:00Z",
       "2026-09-23T23:00:00Z",
@@ -130,11 +137,34 @@
       "2026-09-23T21:00:00Z",
       "2026-09-24T21:00:00Z",
       "2026-09-23T15:00:00Z",
-      "2026-09-24T15:00:00Z",
       "2026-09-23T03:00:00Z"
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1790230696_captioned_1790230696.mp4",
+      "title": "[FULL STORY] I begged theaters for intermissions—my request got brutally rejected.",
+      "subreddit": "unpopularopinion",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122114984745447442",
+      "url": "https://www.facebook.com/reel/1222603310086601",
+      "posted_at": "2026-09-24T06:19:46Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-24T15:00:00Z"
+    },
+    {
+      "video_file": "output_1790230696_captioned_1790230696.mp4",
+      "title": "[FULL STORY] I begged theaters for intermissions—my request got brutally rejected.",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "nxjQncQDffQ",
+      "url": "https://youtu.be/nxjQncQDffQ",
+      "posted_at": "2026-09-24T06:19:25Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-24T15:00:00Z"
+    },
     {
       "video_file": "output_1790162255_captioned_1790162255.mp4",
       "title": "[FULL STORY] BIL removed me, my sister exposed, and my world is ruined.\n\nAbstract?\n\nSure! Here's a concise, abstract hook that follows the guidelines:\n\n\"Mom betrayed me—BIL vanished, my sister exposed, and my life shattered.\"",
@@ -144,18 +174,6 @@
       "video_id": "984517197991399",
       "url": "https://www.facebook.com/1272041649331476/videos/984517197991399",
       "posted_at": "2026-09-23T11:22:20Z",
-      "hook_score": 47,
-      "publish_at": "2026-09-24T03:00:00Z"
-    },
-    {
-      "video_file": "output_1790162255_captioned_1790162255.mp4",
-      "title": "[FULL STORY] BIL removed me, my sister exposed, and my world is ruined.\n\nAbstract?\n\nSure! Here's a concise, abstract hook that follows the guidelines:\n\n\"Mom betrayed me—BIL vanished, my sister exposed, and my life shattered.\"",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "ZjsoLhWWvDg",
-      "url": "https://youtu.be/ZjsoLhWWvDg",
-      "posted_at": "2026-09-23T11:18:48Z",
       "hook_score": 47,
       "publish_at": "2026-09-24T03:00:00Z"
     },
@@ -242,6 +260,18 @@
       "posted_at": "2026-09-21T10:25:42Z",
       "hook_score": 39,
       "publish_at": "2026-09-22T03:00:00Z"
+    },
+    {
+      "video_file": "output_1790162255_captioned_1790162255.mp4",
+      "title": "[FULL STORY] BIL removed me, my sister exposed, and my world is ruined.\n\nAbstract?\n\nSure! Here's a concise, abstract hook that follows the guidelines:\n\n\"Mom betrayed me—BIL vanished, my sister exposed, and my life shattered.\"",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ZjsoLhWWvDg",
+      "url": "https://youtu.be/ZjsoLhWWvDg",
+      "posted_at": "2026-09-23T11:18:48Z",
+      "hook_score": 47,
+      "publish_at": "2026-09-24T03:00:00Z"
     },
     {
       "video_file": "output_1789981496_captioned_1789981496.mp4",
