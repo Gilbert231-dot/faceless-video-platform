@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-24T08:37:37Z",
+  "generated_at": "2026-09-24T10:22:45Z",
   "total_stories": 367,
-  "unused_stories": 277,
-  "used_stories": 90,
+  "unused_stories": 276,
+  "used_stories": 91,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 138,
@@ -12,13 +12,13 @@
   "newest_added_at": null,
   "subreddits": [
     {
-      "name": "TrueOffMyChest",
-      "total": 25,
+      "name": "offmychest",
+      "total": 24,
       "unused": 24
     },
     {
-      "name": "offmychest",
-      "total": 24,
+      "name": "TrueOffMyChest",
+      "total": 25,
       "unused": 24
     },
     {
@@ -27,12 +27,7 @@
       "unused": 23
     },
     {
-      "name": "TalesFromRetail",
-      "total": 22,
-      "unused": 22
-    },
-    {
-      "name": "self",
+      "name": "AITAH",
       "total": 22,
       "unused": 22
     },
@@ -42,7 +37,7 @@
       "unused": 22
     },
     {
-      "name": "AITAH",
+      "name": "tifu",
       "total": 22,
       "unused": 22
     },
@@ -52,7 +47,12 @@
       "unused": 22
     },
     {
-      "name": "tifu",
+      "name": "TalesFromRetail",
+      "total": 22,
+      "unused": 22
+    },
+    {
+      "name": "self",
       "total": 22,
       "unused": 22
     },
@@ -78,13 +78,18 @@
     },
     {
       "name": "pettyrevenge",
-      "total": 9,
-      "unused": 8
+      "total": 8,
+      "unused": 7
     },
     {
       "name": "ProRevenge",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "pettyrevenge",
+      "total": 9,
+      "unused": 8
     },
     {
       "name": "ProRevenge",
@@ -123,19 +128,21 @@
     }
   ],
   "schedule": {
-    "next_index": 118
+    "next_index": 119
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-09-25T03:00:00Z",
+      "2026-09-26T03:00:00Z",
       "2026-09-24T23:00:00Z",
       "2026-09-25T23:00:00Z",
       "2026-09-24T12:00:00Z",
@@ -145,7 +152,6 @@
       "2026-09-24T15:00:00Z",
       "2026-09-25T15:00:00Z",
       "2026-09-24T03:00:00Z",
-      "2026-09-25T03:00:00Z",
       "2026-09-23T23:00:00Z",
       "2026-09-23T12:00:00Z",
       "2026-09-23T18:00:00Z",
@@ -156,6 +162,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1790245071_captioned_1790245071.mp4",
+      "title": "[FULL STORY] I quietly unscrewed bulbs daily, then their reaction shocked me…",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1834827560839355",
+      "url": "https://www.facebook.com/1272041649331476/videos/1834827560839355",
+      "posted_at": "2026-09-24T10:22:45Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-25T03:00:00Z"
+    },
+    {
+      "video_file": "output_1790245071_captioned_1790245071.mp4",
+      "title": "[FULL STORY] I quietly unscrewed bulbs daily, then their reaction shocked me…",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "XvHEVgCvYj4",
+      "url": "https://youtu.be/XvHEVgCvYj4",
+      "posted_at": "2026-09-24T10:19:58Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-25T03:00:00Z"
+    },
+    {
       "video_file": "output_1790238893_captioned_1790238893.mp4",
       "title": "[FULL STORY] “New kid’s uncle stole our games… and the next day he sent us a fake letter that left us all stunned.”",
       "subreddit": "ProRevenge",
@@ -164,18 +194,6 @@
       "video_id": "122115018471447442",
       "url": "https://www.facebook.com/reel/1400995188245638",
       "posted_at": "2026-09-24T08:37:37Z",
-      "hook_score": 21,
-      "publish_at": "2026-09-24T23:00:00Z"
-    },
-    {
-      "video_file": "output_1790238893_captioned_1790238893.mp4",
-      "title": "[FULL STORY] “New kid’s uncle stole our games… and the next day he sent us a fake letter that left us all stunned.”",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "D4dmkWIcANE",
-      "url": "https://youtu.be/D4dmkWIcANE",
-      "posted_at": "2026-09-24T08:35:51Z",
       "hook_score": 21,
       "publish_at": "2026-09-24T23:00:00Z"
     },
@@ -262,6 +280,18 @@
       "posted_at": "2026-09-22T11:17:48Z",
       "hook_score": 26,
       "publish_at": "2026-09-23T03:00:00Z"
+    },
+    {
+      "video_file": "output_1790238893_captioned_1790238893.mp4",
+      "title": "[FULL STORY] “New kid’s uncle stole our games… and the next day he sent us a fake letter that left us all stunned.”",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "D4dmkWIcANE",
+      "url": "https://youtu.be/D4dmkWIcANE",
+      "posted_at": "2026-09-24T08:35:51Z",
+      "hook_score": 21,
+      "publish_at": "2026-09-24T23:00:00Z"
     },
     {
       "video_file": "output_1790064367_captioned_1790064367.mp4",
