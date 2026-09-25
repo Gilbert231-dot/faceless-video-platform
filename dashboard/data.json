@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T08:37:48Z",
+  "generated_at": "2026-09-25T08:58:27Z",
   "total_stories": 367,
   "unused_stories": 274,
   "used_stories": 93,
@@ -143,14 +143,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-09-25T12:00:00Z",
+      "2026-09-25T18:00:00Z",
       "2026-09-25T21:00:00Z",
       "2026-09-26T21:00:00Z",
       "2026-09-25T15:00:00Z",
@@ -182,18 +184,6 @@
       "video_id": "1745000503380581",
       "url": "https://www.facebook.com/1272041649331476/videos/1745000503380581",
       "posted_at": "2026-09-25T08:37:48Z",
-      "hook_score": 52,
-      "publish_at": "2026-09-25T21:00:00Z"
-    },
-    {
-      "video_file": "output_1790325183_captioned_1790325183.mp4",
-      "title": "[FULL STORY] My ex stole my 401k, I’m about to expose a hidden revenge plan.",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "88j186-tY2Y",
-      "url": "https://youtu.be/88j186-tY2Y",
-      "posted_at": "2026-09-25T08:34:12Z",
       "hook_score": 52,
       "publish_at": "2026-09-25T21:00:00Z"
     },
@@ -294,18 +284,6 @@
       "publish_at": "2026-09-23T21:00:00Z"
     },
     {
-      "video_file": "output_1790317681_captioned_1790317681.mp4",
-      "title": "[FULL STORY] I needed one cart, but the grumpy owner turned trip into chaos.",
-      "subreddit": "MaliciousCompliance",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "aIoCaBvUwbk",
-      "url": "https://youtu.be/aIoCaBvUwbk",
-      "posted_at": "2026-09-25T06:28:56Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-25T15:00:00Z"
-    },
-    {
       "video_file": "output_1790146366_captioned_1790146366.mp4",
       "title": "[FULL STORY] I staged a bombastic revenge, and the bully’s reaction stunned everyone.",
       "subreddit": "ProRevenge",
@@ -316,6 +294,30 @@
       "posted_at": "2026-09-23T06:56:32Z",
       "hook_score": 13,
       "publish_at": "2026-09-23T15:00:00Z"
+    },
+    {
+      "video_file": "output_1790325183_captioned_1790325183.mp4",
+      "title": "[FULL STORY] My ex stole my 401k, I’m about to expose a hidden revenge plan.",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "88j186-tY2Y",
+      "url": "https://youtu.be/88j186-tY2Y",
+      "posted_at": "2026-09-25T08:34:12Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-25T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790317681_captioned_1790317681.mp4",
+      "title": "[FULL STORY] I needed one cart, but the grumpy owner turned trip into chaos.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "aIoCaBvUwbk",
+      "url": "https://youtu.be/aIoCaBvUwbk",
+      "posted_at": "2026-09-25T06:28:56Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-25T15:00:00Z"
     },
     {
       "video_file": "output_1790245071_captioned_1790245071.mp4",
