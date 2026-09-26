@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-26T08:44:18Z",
+  "generated_at": "2026-09-26T08:50:21Z",
   "total_stories": 367,
-  "unused_stories": 271,
-  "used_stories": 96,
+  "unused_stories": 270,
+  "used_stories": 97,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 135,
@@ -52,14 +52,14 @@
       "unused": 22
     },
     {
-      "name": "tifu",
+      "name": "confession",
       "total": 21,
       "unused": 21
     },
     {
-      "name": "confession",
-      "total": 21,
-      "unused": 21
+      "name": "tifu",
+      "total": 20,
+      "unused": 20
     },
     {
       "name": "unpopularopinion",
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "tifu",
+      "total": 21,
+      "unused": 21
     },
     {
       "name": "MaliciousCompliance",
@@ -153,19 +158,21 @@
     }
   ],
   "schedule": {
-    "next_index": 124
+    "next_index": 125
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "12:00",
       "18:00",
       "15:00",
       "03:00",
-      "23:00",
-      "21:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-09-26T21:00:00Z",
+      "2026-09-27T21:00:00Z",
       "2026-09-26T12:00:00Z",
       "2026-09-26T18:00:00Z",
       "2026-09-26T15:00:00Z",
@@ -177,7 +184,6 @@
       "2026-09-25T12:00:00Z",
       "2026-09-25T18:00:00Z",
       "2026-09-25T21:00:00Z",
-      "2026-09-26T21:00:00Z",
       "2026-09-25T15:00:00Z",
       "2026-09-25T03:00:00Z",
       "2026-09-24T23:00:00Z",
@@ -195,6 +201,30 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1790412293_captioned_1790412293.mp4",
+      "title": "[FULL STORY] My robot baby exploded on the bus—watch the chaos that followed.",
+      "subreddit": "tifu",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1064170413160346",
+      "url": "https://www.facebook.com/1272041649331476/videos/1064170413160346",
+      "posted_at": "2026-09-26T08:50:21Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-26T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790412293_captioned_1790412293.mp4",
+      "title": "[FULL STORY] My robot baby exploded on the bus—watch the chaos that followed.",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "A32VGuW0D5k",
+      "url": "https://youtu.be/A32VGuW0D5k",
+      "posted_at": "2026-09-26T08:46:06Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-26T21:00:00Z"
+    },
     {
       "video_file": "output_1790403932_captioned_1790403932.mp4",
       "title": "[FULL STORY] My flight crew vanished mid‑air—was it sabotage, betrayal, or a hidden trap?",
