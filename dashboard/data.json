@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-27T09:12:44Z",
+  "generated_at": "2026-09-27T09:25:02Z",
   "total_stories": 367,
   "unused_stories": 265,
   "used_stories": 102,
@@ -188,14 +188,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "23:00",
       "21:00",
       "15:00",
-      "03:00",
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-09-27T12:00:00Z",
+      "2026-09-27T18:00:00Z",
       "2026-09-27T23:00:00Z",
       "2026-09-28T23:00:00Z",
       "2026-09-27T21:00:00Z",
@@ -240,18 +242,6 @@
       "video_id": "122116096497447442",
       "url": "https://www.facebook.com/reel/1298283592328304",
       "posted_at": "2026-09-27T09:12:44Z",
-      "hook_score": 47,
-      "publish_at": "2026-09-27T23:00:00Z"
-    },
-    {
-      "video_file": "output_1790500187_captioned_1790500187.mp4",
-      "title": "[FULL STORY] Dogs got the freedom I never did—until the day the owner tried to cage them.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "WXmPsp0GTuE",
-      "url": "https://youtu.be/WXmPsp0GTuE",
-      "posted_at": "2026-09-27T09:10:42Z",
       "hook_score": 47,
       "publish_at": "2026-09-27T23:00:00Z"
     },
@@ -352,18 +342,6 @@
       "publish_at": "2026-09-25T23:00:00Z"
     },
     {
-      "video_file": "output_1790495310_captioned_1790495310.mp4",
-      "title": "[FULL STORY] My boss banned coaching. I started returning incomplete forms—then something happened.",
-      "subreddit": "MaliciousCompliance",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "a3T8H_VYkvc",
-      "url": "https://youtu.be/a3T8H_VYkvc",
-      "posted_at": "2026-09-27T07:49:27Z",
-      "hook_score": 52,
-      "publish_at": "2026-09-27T21:00:00Z"
-    },
-    {
       "video_file": "output_1790325183_captioned_1790325183.mp4",
       "title": "[FULL STORY] My ex stole my 401k, I’m about to expose a hidden revenge plan.",
       "subreddit": "ProRevenge",
@@ -374,6 +352,30 @@
       "posted_at": "2026-09-25T08:37:48Z",
       "hook_score": 52,
       "publish_at": "2026-09-25T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790500187_captioned_1790500187.mp4",
+      "title": "[FULL STORY] Dogs got the freedom I never did—until the day the owner tried to cage them.",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "WXmPsp0GTuE",
+      "url": "https://youtu.be/WXmPsp0GTuE",
+      "posted_at": "2026-09-27T09:10:42Z",
+      "hook_score": 47,
+      "publish_at": "2026-09-27T23:00:00Z"
+    },
+    {
+      "video_file": "output_1790495310_captioned_1790495310.mp4",
+      "title": "[FULL STORY] My boss banned coaching. I started returning incomplete forms—then something happened.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "a3T8H_VYkvc",
+      "url": "https://youtu.be/a3T8H_VYkvc",
+      "posted_at": "2026-09-27T07:49:27Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-27T21:00:00Z"
     },
     {
       "video_file": "output_1790492165_captioned_1790492165.mp4",
