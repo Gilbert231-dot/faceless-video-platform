@@ -1,0 +1,4 @@
+{
+  "voice_id": "loZFKb410q0XFUiYDx8U",
+  "script": "I hacked my coworker's solitaire, and it crashed—now I am the villain.. The same arrogant co‑worker who had snatched an office from two people spent most of the day playing solitaire in his office. We caught him because he was supposedly having performance issues, so we pulled logs from his machine. Spoiler: solitaire was running non‑stop. I opened the solitaire executable in Notepad, deleted a few characters, saved it. The next time he tried to launch it, the program crashed instantly. (Obviously I'd corrupted it.) Within a few hours, IT sent a ticket: \"Programs are crashing on his machine, fix ASAP.\" I slid into his desk, asked which programs were crashing. He said, \"lots of them.\" I told him to call me every time a crash happened, jot down what he was doing, and leave the crash popup on the screen. I'd swing by to investigate. He never called back. He never called back."
+}
