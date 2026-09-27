@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-27T06:58:34Z",
+  "generated_at": "2026-09-27T07:49:43Z",
   "total_stories": 367,
-  "unused_stories": 267,
-  "used_stories": 100,
+  "unused_stories": 266,
+  "used_stories": 101,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 133,
@@ -78,13 +78,18 @@
     },
     {
       "name": "MaliciousCompliance",
-      "total": 4,
-      "unused": 4
+      "total": 3,
+      "unused": 3
     },
     {
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "MaliciousCompliance",
+      "total": 4,
+      "unused": 4
     },
     {
       "name": "offmychest",
@@ -173,19 +178,21 @@
     }
   ],
   "schedule": {
-    "next_index": 128
+    "next_index": 129
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "23:00",
-      "21:00",
       "12:00",
       "18:00"
     ],
     "next_publish_utc": [
+      "2026-09-27T21:00:00Z",
+      "2026-09-28T21:00:00Z",
       "2026-09-27T15:00:00Z",
       "2026-09-28T15:00:00Z",
       "2026-09-27T03:00:00Z",
@@ -193,7 +200,6 @@
       "2026-09-26T23:00:00Z",
       "2026-09-27T23:00:00Z",
       "2026-09-26T21:00:00Z",
-      "2026-09-27T21:00:00Z",
       "2026-09-26T12:00:00Z",
       "2026-09-26T18:00:00Z",
       "2026-09-26T15:00:00Z",
@@ -220,6 +226,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1790495310_captioned_1790495310.mp4",
+      "title": "[FULL STORY] My boss banned coaching. I started returning incomplete forms—then something happened.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122116078953447442",
+      "url": "https://www.facebook.com/reel/1399363405679188",
+      "posted_at": "2026-09-27T07:49:43Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-27T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790495310_captioned_1790495310.mp4",
+      "title": "[FULL STORY] My boss banned coaching. I started returning incomplete forms—then something happened.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "a3T8H_VYkvc",
+      "url": "https://youtu.be/a3T8H_VYkvc",
+      "posted_at": "2026-09-27T07:49:27Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-27T21:00:00Z"
+    },
+    {
       "video_file": "output_1790492165_captioned_1790492165.mp4",
       "title": "[FULL STORY] I watched the Odyssey remake… they ruined the hero, exposed the gods.",
       "subreddit": "offmychest",
@@ -228,18 +258,6 @@
       "video_id": "122116067463447442",
       "url": "https://www.facebook.com/reel/1630898048688118",
       "posted_at": "2026-09-27T06:58:34Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-27T15:00:00Z"
-    },
-    {
-      "video_file": "output_1790492165_captioned_1790492165.mp4",
-      "title": "[FULL STORY] I watched the Odyssey remake… they ruined the hero, exposed the gods.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "vnhWMbZ2MkI",
-      "url": "https://youtu.be/vnhWMbZ2MkI",
-      "posted_at": "2026-09-27T06:56:56Z",
       "hook_score": 26,
       "publish_at": "2026-09-27T15:00:00Z"
     },
@@ -326,6 +344,18 @@
       "posted_at": "2026-09-25T08:37:48Z",
       "hook_score": 52,
       "publish_at": "2026-09-25T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790492165_captioned_1790492165.mp4",
+      "title": "[FULL STORY] I watched the Odyssey remake… they ruined the hero, exposed the gods.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "vnhWMbZ2MkI",
+      "url": "https://youtu.be/vnhWMbZ2MkI",
+      "posted_at": "2026-09-27T06:56:56Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-27T15:00:00Z"
     },
     {
       "video_file": "output_1790317681_captioned_1790317681.mp4",

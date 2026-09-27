@@ -254,6 +254,103 @@
     }
    ]
   },
+  "1nUSJIrXcd1z3ZuZAiqX_4sLjJbB2ONQy": {
+   "duration": 1177.5,
+   "probe_len": 90.0,
+   "probed_at": "2026-09-27T07:34:36Z",
+   "used": [
+    {
+     "at": "2026-09-27T07:34:36Z",
+     "start": 1087.47
+    }
+   ],
+   "windows": [
+    {
+     "detail": 9.599,
+     "motion": 31.324,
+     "score": 5.383,
+     "start": 0.0
+    },
+    {
+     "detail": 7.664,
+     "motion": 27.516,
+     "score": 4.541,
+     "start": 418.26
+    },
+    {
+     "detail": 8.422,
+     "motion": 30.915,
+     "score": 4.751,
+     "start": 836.52
+    },
+    {
+     "detail": 8.966,
+     "motion": 39.734,
+     "score": 4.498,
+     "start": 167.3
+    },
+    {
+     "detail": 5.719,
+     "motion": 19.591,
+     "score": 3.839,
+     "start": 585.56
+    },
+    {
+     "detail": 9.893,
+     "motion": 23.2,
+     "score": 6.261,
+     "start": 1003.82
+    },
+    {
+     "detail": 6.729,
+     "motion": 19.698,
+     "score": 4.509,
+     "start": 334.61
+    },
+    {
+     "detail": 9.856,
+     "motion": 30.584,
+     "score": 5.585,
+     "start": 752.87
+    },
+    {
+     "detail": 9.357,
+     "motion": 31.154,
+     "score": 5.26,
+     "start": 83.65
+    },
+    {
+     "detail": 8.199,
+     "motion": 20.829,
+     "score": 5.392,
+     "start": 501.91
+    },
+    {
+     "detail": 7.241,
+     "motion": 21.111,
+     "score": 4.739,
+     "start": 920.17
+    },
+    {
+     "detail": 5.367,
+     "motion": 19.845,
+     "score": 3.587,
+     "start": 250.96
+    },
+    {
+     "detail": 7.267,
+     "motion": 30.403,
+     "score": 4.129,
+     "start": 669.21
+    },
+    {
+     "detail": 9.193,
+     "motion": 16.435,
+     "score": 6.516,
+     "start": 1087.47
+    }
+   ]
+  },
   "1pN74Hxmsl8JIOHN5T8O0Z2ztDGGY827N": {
    "duration": 1827.3,
    "probe_len": 90.0,
