@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-29T09:35:04Z",
+  "generated_at": "2026-09-29T10:00:33Z",
   "total_stories": 367,
   "unused_stories": 257,
   "used_stories": 110,
@@ -228,14 +228,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "23:00",
       "21:00",
       "15:00",
-      "03:00",
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-09-29T12:00:00Z",
+      "2026-09-29T18:00:00Z",
       "2026-09-29T23:00:00Z",
       "2026-09-30T23:00:00Z",
       "2026-09-29T21:00:00Z",
@@ -292,18 +294,6 @@
       "video_id": "122117052411447442",
       "url": "https://www.facebook.com/reel/936063012530664",
       "posted_at": "2026-09-29T09:35:03Z",
-      "hook_score": 13,
-      "publish_at": "2026-09-29T23:00:00Z"
-    },
-    {
-      "video_file": "output_1790674431_captioned_1790674431.mp4",
-      "title": "[FULL STORY] My passport vanished after I donated the book that hid it. 😱🥴",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "cI4EcATCjRc",
-      "url": "https://youtu.be/cI4EcATCjRc",
-      "posted_at": "2026-09-29T09:34:41Z",
       "hook_score": 13,
       "publish_at": "2026-09-29T23:00:00Z"
     },
@@ -404,18 +394,6 @@
       "publish_at": "2026-09-27T23:00:00Z"
     },
     {
-      "video_file": "output_1790670538_captioned_1790670538.mp4",
-      "title": "[FULL STORY] I said no, but her sister’s move will destroy my love.",
-      "subreddit": "AmItheAsshole",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "1XQmqUQAinw",
-      "url": "https://youtu.be/1XQmqUQAinw",
-      "posted_at": "2026-09-29T08:29:49Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-29T21:00:00Z"
-    },
-    {
       "video_file": "output_1790495310_captioned_1790495310.mp4",
       "title": "[FULL STORY] My boss banned coaching. I started returning incomplete forms—then something happened.",
       "subreddit": "MaliciousCompliance",
@@ -426,6 +404,30 @@
       "posted_at": "2026-09-27T07:49:43Z",
       "hook_score": 52,
       "publish_at": "2026-09-27T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790674431_captioned_1790674431.mp4",
+      "title": "[FULL STORY] My passport vanished after I donated the book that hid it. 😱🥴",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "cI4EcATCjRc",
+      "url": "https://youtu.be/cI4EcATCjRc",
+      "posted_at": "2026-09-29T09:34:41Z",
+      "hook_score": 13,
+      "publish_at": "2026-09-29T23:00:00Z"
+    },
+    {
+      "video_file": "output_1790670538_captioned_1790670538.mp4",
+      "title": "[FULL STORY] I said no, but her sister’s move will destroy my love.",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "1XQmqUQAinw",
+      "url": "https://youtu.be/1XQmqUQAinw",
+      "posted_at": "2026-09-29T08:29:49Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-29T21:00:00Z"
     },
     {
       "video_file": "output_1790666426_captioned_1790666426.mp4",
