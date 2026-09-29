@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-29T07:24:20Z",
+  "generated_at": "2026-09-29T08:30:33Z",
   "total_stories": 367,
-  "unused_stories": 259,
-  "used_stories": 108,
+  "unused_stories": 258,
+  "used_stories": 109,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 129,
@@ -47,12 +47,12 @@
       "unused": 22
     },
     {
-      "name": "AmItheAsshole",
-      "total": 21,
-      "unused": 21
+      "name": "tifu",
+      "total": 20,
+      "unused": 20
     },
     {
-      "name": "tifu",
+      "name": "AmItheAsshole",
       "total": 20,
       "unused": 20
     },
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "AmItheAsshole",
+      "total": 21,
+      "unused": 21
     },
     {
       "name": "AmItheAsshole",
@@ -213,19 +218,21 @@
     }
   ],
   "schedule": {
-    "next_index": 136
+    "next_index": 137
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "12:00",
       "18:00",
-      "23:00",
-      "21:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-09-29T21:00:00Z",
+      "2026-09-30T21:00:00Z",
       "2026-09-29T15:00:00Z",
       "2026-09-30T15:00:00Z",
       "2026-09-29T03:00:00Z",
@@ -235,7 +242,6 @@
       "2026-09-28T23:00:00Z",
       "2026-09-29T23:00:00Z",
       "2026-09-28T21:00:00Z",
-      "2026-09-29T21:00:00Z",
       "2026-09-28T15:00:00Z",
       "2026-09-28T03:00:00Z",
       "2026-09-27T12:00:00Z",
@@ -272,6 +278,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1790670538_captioned_1790670538.mp4",
+      "title": "[FULL STORY] I said no, but her sister’s move will destroy my love.",
+      "subreddit": "AmItheAsshole",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122117037069447442",
+      "url": "https://www.facebook.com/reel/1428687875371762",
+      "posted_at": "2026-09-29T08:30:33Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-29T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790670538_captioned_1790670538.mp4",
+      "title": "[FULL STORY] I said no, but her sister’s move will destroy my love.",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "1XQmqUQAinw",
+      "url": "https://youtu.be/1XQmqUQAinw",
+      "posted_at": "2026-09-29T08:29:49Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-29T21:00:00Z"
+    },
+    {
       "video_file": "output_1790666426_captioned_1790666426.mp4",
       "title": "[FULL STORY] My brother said racial slurs, I made him walk home—this changed everything.",
       "subreddit": "AmItheAsshole",
@@ -280,18 +310,6 @@
       "video_id": "122117022915447442",
       "url": "https://www.facebook.com/reel/2132583394010151",
       "posted_at": "2026-09-29T07:24:20Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-29T15:00:00Z"
-    },
-    {
-      "video_file": "output_1790666426_captioned_1790666426.mp4",
-      "title": "[FULL STORY] My brother said racial slurs, I made him walk home—this changed everything.",
-      "subreddit": "AmItheAsshole",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "Aika6JpzKOI",
-      "url": "https://youtu.be/Aika6JpzKOI",
-      "posted_at": "2026-09-29T07:22:26Z",
       "hook_score": 26,
       "publish_at": "2026-09-29T15:00:00Z"
     },
@@ -378,6 +396,18 @@
       "posted_at": "2026-09-27T07:49:43Z",
       "hook_score": 52,
       "publish_at": "2026-09-27T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790666426_captioned_1790666426.mp4",
+      "title": "[FULL STORY] My brother said racial slurs, I made him walk home—this changed everything.",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Aika6JpzKOI",
+      "url": "https://youtu.be/Aika6JpzKOI",
+      "posted_at": "2026-09-29T07:22:26Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-29T15:00:00Z"
     },
     {
       "video_file": "output_1790492165_captioned_1790492165.mp4",
