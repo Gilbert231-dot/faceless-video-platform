@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-29T10:00:33Z",
+  "generated_at": "2026-09-29T11:00:44Z",
   "total_stories": 367,
-  "unused_stories": 257,
-  "used_stories": 110,
+  "unused_stories": 256,
+  "used_stories": 111,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 128,
@@ -27,11 +27,6 @@
       "unused": 22
     },
     {
-      "name": "offmychest",
-      "total": 22,
-      "unused": 22
-    },
-    {
       "name": "relationship_advice",
       "total": 22,
       "unused": 22
@@ -45,6 +40,11 @@
       "name": "self",
       "total": 22,
       "unused": 22
+    },
+    {
+      "name": "offmychest",
+      "total": 21,
+      "unused": 21
     },
     {
       "name": "AmItheAsshole",
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "offmychest",
+      "total": 22,
+      "unused": 22
     },
     {
       "name": "tifu",
@@ -223,19 +228,21 @@
     }
   ],
   "schedule": {
-    "next_index": 138
+    "next_index": 139
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "12:00",
       "18:00",
       "23:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-09-30T03:00:00Z",
+      "2026-10-01T03:00:00Z",
       "2026-09-29T12:00:00Z",
       "2026-09-29T18:00:00Z",
       "2026-09-29T23:00:00Z",
@@ -245,7 +252,6 @@
       "2026-09-29T15:00:00Z",
       "2026-09-30T15:00:00Z",
       "2026-09-29T03:00:00Z",
-      "2026-09-30T03:00:00Z",
       "2026-09-28T12:00:00Z",
       "2026-09-28T18:00:00Z",
       "2026-09-28T23:00:00Z",
@@ -285,6 +291,30 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1790679434_captioned_1790679434.mp4",
+      "title": "[FULL STORY] \"People died in ICE custody, yet I voted—now my conscience is ruined.\"",
+      "subreddit": "offmychest",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122117073339447442",
+      "url": "https://www.facebook.com/reel/1295713245931624",
+      "posted_at": "2026-09-29T11:00:44Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-30T03:00:00Z"
+    },
+    {
+      "video_file": "output_1790679434_captioned_1790679434.mp4",
+      "title": "[FULL STORY] \"People died in ICE custody, yet I voted—now my conscience is ruined.\"",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "XEAKpmiFwGQ",
+      "url": "https://youtu.be/XEAKpmiFwGQ",
+      "posted_at": "2026-09-29T10:58:31Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-30T03:00:00Z"
+    },
     {
       "video_file": "output_1790674431_captioned_1790674431.mp4",
       "title": "[FULL STORY] My passport vanished after I donated the book that hid it. 😱🥴",
