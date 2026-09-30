@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-30T09:17:54Z",
+  "generated_at": "2026-09-30T09:52:52Z",
   "total_stories": 367,
   "unused_stories": 253,
   "used_stories": 114,
@@ -248,14 +248,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "23:00",
       "21:00",
       "15:00",
-      "03:00",
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-09-30T12:00:00Z",
+      "2026-09-30T18:00:00Z",
       "2026-09-30T23:00:00Z",
       "2026-10-01T23:00:00Z",
       "2026-09-30T21:00:00Z",
@@ -318,18 +320,6 @@
       "video_id": "122117313009447442",
       "url": "https://www.facebook.com/reel/1842831243373366",
       "posted_at": "2026-09-30T09:17:54Z",
-      "hook_score": 52,
-      "publish_at": "2026-09-30T23:00:00Z"
-    },
-    {
-      "video_file": "output_1790759698_captioned_1790759698.mp4",
-      "title": "[FULL STORY] I thought my mom was redeemed, until she got arrested—shocking truth revealed.",
-      "subreddit": "TrueOffMyChest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "_q8ssAPrmSs",
-      "url": "https://youtu.be/_q8ssAPrmSs",
-      "posted_at": "2026-09-30T09:15:53Z",
       "hook_score": 52,
       "publish_at": "2026-09-30T23:00:00Z"
     },
@@ -430,18 +420,6 @@
       "publish_at": "2026-09-28T23:00:00Z"
     },
     {
-      "video_file": "output_1790754601_captioned_1790754601.mp4",
-      "title": "[FULL STORY] \"She screamed: ‘This Sprite is lemon‑lime—what’s you store hiding?’\"",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "CAUBT43fAZk",
-      "url": "https://youtu.be/CAUBT43fAZk",
-      "posted_at": "2026-09-30T07:50:49Z",
-      "hook_score": 14,
-      "publish_at": "2026-09-30T21:00:00Z"
-    },
-    {
       "video_file": "output_1790584590_captioned_1790584590.mp4",
       "title": "[FULL STORY] My boss tried to destroy us; I caught his ruthless secret—watch.",
       "subreddit": "pettyrevenge",
@@ -452,6 +430,30 @@
       "posted_at": "2026-09-28T08:37:52Z",
       "hook_score": 52,
       "publish_at": "2026-09-28T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790759698_captioned_1790759698.mp4",
+      "title": "[FULL STORY] I thought my mom was redeemed, until she got arrested—shocking truth revealed.",
+      "subreddit": "TrueOffMyChest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "_q8ssAPrmSs",
+      "url": "https://youtu.be/_q8ssAPrmSs",
+      "posted_at": "2026-09-30T09:15:53Z",
+      "hook_score": 52,
+      "publish_at": "2026-09-30T23:00:00Z"
+    },
+    {
+      "video_file": "output_1790754601_captioned_1790754601.mp4",
+      "title": "[FULL STORY] \"She screamed: ‘This Sprite is lemon‑lime—what’s you store hiding?’\"",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "CAUBT43fAZk",
+      "url": "https://youtu.be/CAUBT43fAZk",
+      "posted_at": "2026-09-30T07:50:49Z",
+      "hook_score": 14,
+      "publish_at": "2026-09-30T21:00:00Z"
     },
     {
       "video_file": "output_1790750714_captioned_1790750714.mp4",
