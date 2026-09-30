@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-09-30T06:46:28Z",
+  "generated_at": "2026-09-30T07:51:12Z",
   "total_stories": 367,
-  "unused_stories": 255,
-  "used_stories": 112,
+  "unused_stories": 254,
+  "used_stories": 113,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 127,
@@ -32,17 +32,17 @@
       "unused": 22
     },
     {
-      "name": "TalesFromRetail",
-      "total": 22,
-      "unused": 22
-    },
-    {
       "name": "self",
       "total": 22,
       "unused": 22
     },
     {
       "name": "offmychest",
+      "total": 21,
+      "unused": 21
+    },
+    {
+      "name": "TalesFromRetail",
       "total": 21,
       "unused": 21
     },
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 22,
+      "unused": 22
     },
     {
       "name": "unpopularopinion",
@@ -233,19 +238,21 @@
     }
   ],
   "schedule": {
-    "next_index": 140
+    "next_index": 141
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "12:00",
       "18:00",
-      "23:00",
-      "21:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-09-30T21:00:00Z",
+      "2026-10-01T21:00:00Z",
       "2026-09-30T15:00:00Z",
       "2026-10-01T15:00:00Z",
       "2026-09-30T03:00:00Z",
@@ -255,7 +262,6 @@
       "2026-09-29T23:00:00Z",
       "2026-09-30T23:00:00Z",
       "2026-09-29T21:00:00Z",
-      "2026-09-30T21:00:00Z",
       "2026-09-29T15:00:00Z",
       "2026-09-29T03:00:00Z",
       "2026-09-28T12:00:00Z",
@@ -298,6 +304,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1790754601_captioned_1790754601.mp4",
+      "title": "[FULL STORY] \"She screamed: ‘This Sprite is lemon‑lime—what’s you store hiding?’\"",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122117296761447442",
+      "url": "https://www.facebook.com/reel/1955449418485603",
+      "posted_at": "2026-09-30T07:51:12Z",
+      "hook_score": 14,
+      "publish_at": "2026-09-30T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790754601_captioned_1790754601.mp4",
+      "title": "[FULL STORY] \"She screamed: ‘This Sprite is lemon‑lime—what’s you store hiding?’\"",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "CAUBT43fAZk",
+      "url": "https://youtu.be/CAUBT43fAZk",
+      "posted_at": "2026-09-30T07:50:49Z",
+      "hook_score": 14,
+      "publish_at": "2026-09-30T21:00:00Z"
+    },
+    {
       "video_file": "output_1790750714_captioned_1790750714.mp4",
       "title": "[FULL STORY] I uncovered Bear’s hidden motive—now the whole film is ruined.",
       "subreddit": "unpopularopinion",
@@ -306,18 +336,6 @@
       "video_id": "122117278443447442",
       "url": "https://www.facebook.com/reel/1455901003019218",
       "posted_at": "2026-09-30T06:46:28Z",
-      "hook_score": 26,
-      "publish_at": "2026-09-30T15:00:00Z"
-    },
-    {
-      "video_file": "output_1790750714_captioned_1790750714.mp4",
-      "title": "[FULL STORY] I uncovered Bear’s hidden motive—now the whole film is ruined.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "HNwv8mxrJ1o",
-      "url": "https://youtu.be/HNwv8mxrJ1o",
-      "posted_at": "2026-09-30T06:46:05Z",
       "hook_score": 26,
       "publish_at": "2026-09-30T15:00:00Z"
     },
@@ -404,6 +422,18 @@
       "posted_at": "2026-09-28T08:37:52Z",
       "hook_score": 52,
       "publish_at": "2026-09-28T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790750714_captioned_1790750714.mp4",
+      "title": "[FULL STORY] I uncovered Bear’s hidden motive—now the whole film is ruined.",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "HNwv8mxrJ1o",
+      "url": "https://youtu.be/HNwv8mxrJ1o",
+      "posted_at": "2026-09-30T06:46:05Z",
+      "hook_score": 26,
+      "publish_at": "2026-09-30T15:00:00Z"
     },
     {
       "video_file": "output_1790580352_captioned_1790580352.mp4",
