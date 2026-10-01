@@ -1,0 +1,14 @@
+{
+  "im_regions_checked": 17,
+  "transcribed_ale_words": [],
+  "gap_artifacts": [
+    {
+      "after": "I,",
+      "next_word": "at",
+      "gap_sec": 0.157,
+      "mute_from": 2.653,
+      "mute_to": 2.79
+    }
+  ],
+  "verdict": "FAIL"
+}
