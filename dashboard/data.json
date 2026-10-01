@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-01T09:18:44Z",
+  "generated_at": "2026-10-01T10:20:00Z",
   "total_stories": 367,
   "unused_stories": 250,
   "used_stories": 117,
@@ -263,14 +263,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "12:00",
-      "18:00",
       "23:00"
     ],
     "next_publish_utc": [
+      "2026-10-01T12:00:00Z",
+      "2026-10-01T18:00:00Z",
       "2026-10-01T21:00:00Z",
       "2026-10-02T21:00:00Z",
       "2026-10-01T15:00:00Z",
@@ -338,18 +340,6 @@
       "video_id": "122117579043447442",
       "url": "https://www.facebook.com/reel/1970433900318825",
       "posted_at": "2026-10-01T09:18:44Z",
-      "hook_score": 39,
-      "publish_at": "2026-10-01T21:00:00Z"
-    },
-    {
-      "video_file": "output_1790846151_captioned_1790846151.mp4",
-      "title": "[FULL STORY] \"They booked a day early, then betrayed us—my staff was STUNNED by the fallout!\"",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "wkjjER-0JuE",
-      "url": "https://youtu.be/wkjjER-0JuE",
-      "posted_at": "2026-10-01T09:16:47Z",
       "hook_score": 39,
       "publish_at": "2026-10-01T21:00:00Z"
     },
@@ -450,18 +440,6 @@
       "publish_at": "2026-09-29T21:00:00Z"
     },
     {
-      "video_file": "output_1790841114_captioned_1790841114.mp4",
-      "title": "[FULL STORY] My parents saw my new cabin, but I didn’t invite them—why?",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "Ol-chc6ZFJI",
-      "url": "https://youtu.be/Ol-chc6ZFJI",
-      "posted_at": "2026-10-01T07:52:45Z",
-      "hook_score": 52,
-      "publish_at": "2026-10-01T15:00:00Z"
-    },
-    {
       "video_file": "output_1790666426_captioned_1790666426.mp4",
       "title": "[FULL STORY] My brother said racial slurs, I made him walk home—this changed everything.",
       "subreddit": "AmItheAsshole",
@@ -472,6 +450,30 @@
       "posted_at": "2026-09-29T07:24:20Z",
       "hook_score": 26,
       "publish_at": "2026-09-29T15:00:00Z"
+    },
+    {
+      "video_file": "output_1790846151_captioned_1790846151.mp4",
+      "title": "[FULL STORY] \"They booked a day early, then betrayed us—my staff was STUNNED by the fallout!\"",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "wkjjER-0JuE",
+      "url": "https://youtu.be/wkjjER-0JuE",
+      "posted_at": "2026-10-01T09:16:47Z",
+      "hook_score": 39,
+      "publish_at": "2026-10-01T21:00:00Z"
+    },
+    {
+      "video_file": "output_1790841114_captioned_1790841114.mp4",
+      "title": "[FULL STORY] My parents saw my new cabin, but I didn’t invite them—why?",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Ol-chc6ZFJI",
+      "url": "https://youtu.be/Ol-chc6ZFJI",
+      "posted_at": "2026-10-01T07:52:45Z",
+      "hook_score": 52,
+      "publish_at": "2026-10-01T15:00:00Z"
     },
     {
       "video_file": "output_1790763875_captioned_1790763875.mp4",
