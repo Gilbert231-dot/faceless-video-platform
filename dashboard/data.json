@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-01T11:45:07Z",
+  "generated_at": "2026-10-02T09:56:53Z",
   "total_stories": 367,
   "unused_stories": 248,
   "used_stories": 119,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 124,
-  "runway_date": "2027-02-02",
+  "runway_date": "2027-02-03",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -273,14 +273,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
-      "03:00",
-      "23:00",
       "12:00",
       "18:00",
+      "03:00",
+      "23:00",
       "21:00",
       "15:00"
     ],
     "next_publish_utc": [
+      "2026-10-02T12:00:00Z",
+      "2026-10-02T18:00:00Z",
       "2026-10-02T03:00:00Z",
       "2026-10-03T03:00:00Z",
       "2026-10-01T23:00:00Z",
@@ -352,18 +354,6 @@
       "video_id": "122117623767447442",
       "url": "https://www.facebook.com/reel/1816899932988620",
       "posted_at": "2026-10-01T11:45:07Z",
-      "hook_score": 39,
-      "publish_at": "2026-10-02T03:00:00Z"
-    },
-    {
-      "video_file": "output_1790855036_captioned_1790855036.mp4",
-      "title": "[FULL STORY] I lied about prescriptions—my husband caught me, and the truth stunned everyone.",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "pMnm33hduwY",
-      "url": "https://youtu.be/pMnm33hduwY",
-      "posted_at": "2026-10-01T11:44:46Z",
       "hook_score": 39,
       "publish_at": "2026-10-02T03:00:00Z"
     },
@@ -464,18 +454,6 @@
       "publish_at": "2026-09-30T03:00:00Z"
     },
     {
-      "video_file": "output_1790850811_captioned_1790850811.mp4",
-      "title": "[FULL STORY] “I sued for $100,000 after a taco ruined me—judge blew my case!”",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "jnK4MXMuHCY",
-      "url": "https://youtu.be/jnK4MXMuHCY",
-      "posted_at": "2026-10-01T10:34:27Z",
-      "hook_score": 39,
-      "publish_at": "2026-10-01T23:00:00Z"
-    },
-    {
       "video_file": "output_1790674431_captioned_1790674431.mp4",
       "title": "[FULL STORY] My passport vanished after I donated the book that hid it. 😱🥴",
       "subreddit": "tifu",
@@ -486,6 +464,30 @@
       "posted_at": "2026-09-29T09:35:03Z",
       "hook_score": 13,
       "publish_at": "2026-09-29T23:00:00Z"
+    },
+    {
+      "video_file": "output_1790855036_captioned_1790855036.mp4",
+      "title": "[FULL STORY] I lied about prescriptions—my husband caught me, and the truth stunned everyone.",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "pMnm33hduwY",
+      "url": "https://youtu.be/pMnm33hduwY",
+      "posted_at": "2026-10-01T11:44:46Z",
+      "hook_score": 39,
+      "publish_at": "2026-10-02T03:00:00Z"
+    },
+    {
+      "video_file": "output_1790850811_captioned_1790850811.mp4",
+      "title": "[FULL STORY] “I sued for $100,000 after a taco ruined me—judge blew my case!”",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "jnK4MXMuHCY",
+      "url": "https://youtu.be/jnK4MXMuHCY",
+      "posted_at": "2026-10-01T10:34:27Z",
+      "hook_score": 39,
+      "publish_at": "2026-10-01T23:00:00Z"
     },
     {
       "video_file": "output_1790670538_captioned_1790670538.mp4",
