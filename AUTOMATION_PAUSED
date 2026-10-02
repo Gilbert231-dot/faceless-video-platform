@@ -1,0 +1,21 @@
+PAUSED — video generation is switched OFF until ElevenLabs is funded again.
+
+Why: the ElevenLabs subscription lapsed (not renewed), and every rendered video
+spends ElevenLabs credits. While this file exists at the repo root, the whole
+pipeline refuses to render, so no credits are spent and no story is consumed.
+
+Honoured in BOTH places, from this one file:
+  * CI     — .github/workflows/generate_video.yml and performance.yml skip their
+             jobs (this is what the "pause-check" job reads).
+  * LOCAL  — tasks.py, main.py, voiceover.py and narrate_story.py refuse to
+             render (config.py reads this same file).
+
+TO RESUME (once the subscription is paid):
+  * Local:  delete this file, or run `python -c "import os;os.remove('AUTOMATION_PAUSED')"`
+            from faceless-video-platform/.
+  * CI:     delete this file in the GitHub repo (repo root -> AUTOMATION_PAUSED
+            -> trash icon -> commit). The next scheduled run then renders as normal.
+  * One-off override without deleting the file: set AUTOMATION_PAUSED=false in
+    the environment (e.g. `AUTOMATION_PAUSED=false python narrate_story.py ...`).
+
+Paused on: 2026-10-02 (ElevenLabs subscription ended).
