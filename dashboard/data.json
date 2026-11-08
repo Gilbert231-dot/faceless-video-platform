@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-08T09:31:53Z",
+  "generated_at": "2026-11-08T10:38:00Z",
   "total_stories": 367,
   "unused_stories": 246,
   "used_stories": 121,
@@ -283,14 +283,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "12:00",
-      "18:00",
       "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-08T12:00:00Z",
+      "2026-11-08T18:00:00Z",
       "2026-11-08T21:00:00Z",
       "2026-11-09T21:00:00Z",
       "2026-11-08T15:00:00Z",
@@ -370,18 +372,6 @@
       "video_id": "1915446226092255",
       "url": "https://www.facebook.com/1272041649331476/videos/1915446226092255",
       "posted_at": "2026-11-08T09:31:53Z",
-      "hook_score": 52,
-      "publish_at": "2026-11-08T21:00:00Z"
-    },
-    {
-      "video_file": "output_1794130065_captioned_1794130065.mp4",
-      "title": "[FULL STORY] I’d skip my dad’s kids, but babysitting my niece exposed a dark secret.",
-      "subreddit": "AmItheAsshole",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "17GqnvT2U-w",
-      "url": "https://youtu.be/17GqnvT2U-w",
-      "posted_at": "2026-11-08T09:29:34Z",
       "hook_score": 52,
       "publish_at": "2026-11-08T21:00:00Z"
     },
@@ -481,18 +471,6 @@
       "publish_at": "2026-09-30T23:00:00Z"
     },
     {
-      "video_file": "output_1794123973_captioned_1794123973.mp4",
-      "title": "[FULL STORY] My sister‑in‑law demanded a full day of free labor, and I…",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "trFNgXqROko",
-      "url": "https://youtu.be/trFNgXqROko",
-      "posted_at": "2026-11-08T07:47:30Z",
-      "hook_score": 52,
-      "publish_at": "2026-11-08T15:00:00Z"
-    },
-    {
       "video_file": "output_1790754601_captioned_1790754601.mp4",
       "title": "[FULL STORY] \"She screamed: ‘This Sprite is lemon‑lime—what’s you store hiding?’\"",
       "subreddit": "TalesFromRetail",
@@ -503,6 +481,30 @@
       "posted_at": "2026-09-30T07:51:12Z",
       "hook_score": 14,
       "publish_at": "2026-09-30T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794130065_captioned_1794130065.mp4",
+      "title": "[FULL STORY] I’d skip my dad’s kids, but babysitting my niece exposed a dark secret.",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "17GqnvT2U-w",
+      "url": "https://youtu.be/17GqnvT2U-w",
+      "posted_at": "2026-11-08T09:29:34Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-08T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794123973_captioned_1794123973.mp4",
+      "title": "[FULL STORY] My sister‑in‑law demanded a full day of free labor, and I…",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "trFNgXqROko",
+      "url": "https://youtu.be/trFNgXqROko",
+      "posted_at": "2026-11-08T07:47:30Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-08T15:00:00Z"
     },
     {
       "video_file": "output_1794107332_captioned_1794107332.mp4",
