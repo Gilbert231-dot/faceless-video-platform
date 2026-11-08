@@ -280,6 +280,9 @@ TTS_REF_FEMALE = os.getenv("TTS_REF_FEMALE", os.path.join(REPO_ROOT, "assets", "
 # piece well inside that window and inside one breath.
 TTS_CHUNK_CHARS = int(os.getenv("TTS_CHUNK_CHARS", "200"))
 
+# Quality of the mp3 the local engine hands downstream (ffmpeg -q:a scale, 2 = ~190k).
+TTS_MP3_QUALITY = os.getenv("TTS_MP3_QUALITY", "2")
+
 # --- Dynamic Paths (Works in Codespace, GitHub Actions, and locally) ---
 PROJECT_ROOT = os.getcwd()  # Current working directory
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "output")
