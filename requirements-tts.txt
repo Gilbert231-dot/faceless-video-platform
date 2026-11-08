@@ -16,3 +16,13 @@ chatterbox-tts==0.1.7
 
 # The slicer and the mp3 encode use ffmpeg, which the workflow already installs.
 # soundfile arrives with librosa (a chatterbox dependency) and is what writes the wav.
+
+# NOT the voice engine, but required by it on a modern runner: chatterbox's turbo
+# model constructs perth's audio watermarker while it loads, and perth does
+# `from pkg_resources import resource_filename`. setuptools 81 dropped pkg_resources,
+# and the runner ships setuptools 84, so without this pin the weights download, the
+# network builds, and then construction dies with the unhelpful
+#     TypeError: 'NoneType' object is not callable
+# (perth swallows the real ImportError and sets the class to None). Verified by
+# unzipping the wheels: 80.9.0 has pkg_resources, 84.2.1 has none.
+setuptools<81

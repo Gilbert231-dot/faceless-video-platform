@@ -140,9 +140,20 @@ jobs:
           # requirements-tts.txt is one line (chatterbox-tts) on purpose: it pins
           # torch, so it decides torch's version for the whole environment.
           pip install -r requirements-tts.txt
-          # Prove the engine imports NOW, not after two hours of rendering: a broken
-          # install must fail here, at the top, where it costs minutes.
-          python -c "import torch, chatterbox, tts_local; print('local voice engine ready:', torch.__version__)"
+          # Prove the engine can actually BUILD its model, not just import: chatterbox
+          # constructs perth's watermarker while loading, and perth needs pkg_resources,
+          # which setuptools 81+ dropped. That mismatch is invisible until the first
+          # narration (TypeError: 'NoneType' object is not callable), so it is asserted
+          # here, where it costs seconds instead of a whole render. A broken install must
+          # fail at the top.
+          python - <<'PY'
+          import torch, chatterbox, tts_local
+          from perth import PerthImplicitWatermarker
+          assert PerthImplicitWatermarker is not None, (
+              "perth's watermarker is unavailable - it imports pkg_resources, so this "
+              "environment has setuptools>=81. requirements-tts.txt pins setuptools<81.")
+          print("local voice engine ready:", torch.__version__)
+          PY
           python tts_local.py --selftest
           # Refuse to start with a reference clip that is not actually speech (the
           # old drone passed a length-and-level check and cloned into a bell).
