@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-08T03:13:20Z",
+  "generated_at": "2026-11-08T07:49:07Z",
   "total_stories": 367,
-  "unused_stories": 248,
-  "used_stories": 119,
+  "unused_stories": 247,
+  "used_stories": 120,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 124,
-  "runway_date": "2027-03-12",
+  "days_of_stories": 123,
+  "runway_date": "2027-03-11",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -68,8 +68,8 @@
     },
     {
       "name": "EntitledPeople",
-      "total": 14,
-      "unused": 14
+      "total": 13,
+      "unused": 13
     },
     {
       "name": "pettyrevenge",
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "EntitledPeople",
+      "total": 14,
+      "unused": 14
     },
     {
       "name": "relationship_advice",
@@ -268,19 +273,21 @@
     }
   ],
   "schedule": {
-    "next_index": 148
+    "next_index": 149
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "12:00",
       "18:00",
       "23:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-08T15:00:00Z",
+      "2026-11-09T15:00:00Z",
       "2026-11-09T03:00:00Z",
       "2026-11-10T03:00:00Z",
       "2026-10-02T12:00:00Z",
@@ -348,6 +355,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794123973_captioned_1794123973.mp4",
+      "title": "[FULL STORY] My sister‑in‑law demanded a full day of free labor, and I…",
+      "subreddit": "EntitledPeople",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1432238685178897",
+      "url": "https://www.facebook.com/1272041649331476/videos/1432238685178897",
+      "posted_at": "2026-11-08T07:49:06Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-08T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794123973_captioned_1794123973.mp4",
+      "title": "[FULL STORY] My sister‑in‑law demanded a full day of free labor, and I…",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "trFNgXqROko",
+      "url": "https://youtu.be/trFNgXqROko",
+      "posted_at": "2026-11-08T07:47:30Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-08T15:00:00Z"
+    },
+    {
       "video_file": "output_1794107332_captioned_1794107332.mp4",
       "title": "[TEST] I confessed love after she’d already moved on—her reply shattered me.",
       "subreddit": "TrueOffMyChest",
@@ -356,17 +387,6 @@
       "video_id": "2228078424806493",
       "url": "https://www.facebook.com/1272041649331476/videos/2228078424806493",
       "posted_at": "2026-11-08T03:13:20Z",
-      "hook_score": 13
-    },
-    {
-      "video_file": "output_1794107332_captioned_1794107332.mp4",
-      "title": "[TEST] I confessed love after she’d already moved on—her reply shattered me.",
-      "subreddit": "TrueOffMyChest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "_mex0ZkX2Iw",
-      "url": "https://youtu.be/_mex0ZkX2Iw",
-      "posted_at": "2026-11-08T03:10:23Z",
       "hook_score": 13
     },
     {
@@ -452,6 +472,17 @@
       "posted_at": "2026-09-30T07:51:12Z",
       "hook_score": 14,
       "publish_at": "2026-09-30T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794107332_captioned_1794107332.mp4",
+      "title": "[TEST] I confessed love after she’d already moved on—her reply shattered me.",
+      "subreddit": "TrueOffMyChest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "_mex0ZkX2Iw",
+      "url": "https://youtu.be/_mex0ZkX2Iw",
+      "posted_at": "2026-11-08T03:10:23Z",
+      "hook_score": 13
     },
     {
       "video_file": "output_1790750714_captioned_1790750714.mp4",
