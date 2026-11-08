@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-08T10:38:00Z",
+  "generated_at": "2026-11-08T11:10:13Z",
   "total_stories": 367,
-  "unused_stories": 246,
-  "used_stories": 121,
+  "unused_stories": 245,
+  "used_stories": 122,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 123,
-  "runway_date": "2027-03-11",
+  "days_of_stories": 122,
+  "runway_date": "2027-03-10",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -37,17 +37,17 @@
       "unused": 21
     },
     {
-      "name": "AITAH",
-      "total": 21,
-      "unused": 21
-    },
-    {
       "name": "TalesFromRetail",
       "total": 21,
       "unused": 21
     },
     {
       "name": "confession",
+      "total": 20,
+      "unused": 20
+    },
+    {
+      "name": "AITAH",
       "total": 20,
       "unused": 20
     },
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "AITAH",
+      "total": 21,
+      "unused": 21
     },
     {
       "name": "AmItheAsshole",
@@ -278,19 +283,21 @@
     }
   ],
   "schedule": {
-    "next_index": 150
+    "next_index": 151
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "23:00",
       "12:00",
       "18:00",
       "21:00",
       "15:00",
-      "03:00",
-      "23:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-08T23:00:00Z",
+      "2026-11-09T23:00:00Z",
       "2026-11-08T12:00:00Z",
       "2026-11-08T18:00:00Z",
       "2026-11-08T21:00:00Z",
@@ -363,6 +370,30 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1794136006_captioned_1794136006.mp4",
+      "title": "[FULL STORY] I said “be nicer” to his mom, and the whole family turned on me.",
+      "subreddit": "AITAH",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1029248540244354",
+      "url": "https://www.facebook.com/1272041649331476/videos/1029248540244354",
+      "posted_at": "2026-11-08T11:10:13Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-08T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794136006_captioned_1794136006.mp4",
+      "title": "[FULL STORY] I said “be nicer” to his mom, and the whole family turned on me.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "hAdasad9peQ",
+      "url": "https://youtu.be/hAdasad9peQ",
+      "posted_at": "2026-11-08T11:07:52Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-08T23:00:00Z"
+    },
     {
       "video_file": "output_1794130065_captioned_1794130065.mp4",
       "title": "[FULL STORY] I’d skip my dad’s kids, but babysitting my niece exposed a dark secret.",
