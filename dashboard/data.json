@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-10-02T09:56:53Z",
+  "generated_at": "2026-11-08T03:13:20Z",
   "total_stories": 367,
   "unused_stories": 248,
   "used_stories": 119,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 124,
-  "runway_date": "2027-02-03",
+  "runway_date": "2027-03-12",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -22,7 +22,7 @@
       "unused": 22
     },
     {
-      "name": "AITAH",
+      "name": "TalesFromTheFrontDesk",
       "total": 21,
       "unused": 21
     },
@@ -37,7 +37,7 @@
       "unused": 21
     },
     {
-      "name": "TalesFromTheFrontDesk",
+      "name": "AITAH",
       "total": 21,
       "unused": 21
     },
@@ -268,19 +268,21 @@
     }
   ],
   "schedule": {
-    "next_index": 147
+    "next_index": 148
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "12:00",
       "18:00",
-      "03:00",
       "23:00",
       "21:00",
       "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-09T03:00:00Z",
+      "2026-11-10T03:00:00Z",
       "2026-10-02T12:00:00Z",
       "2026-10-02T18:00:00Z",
       "2026-10-02T03:00:00Z",
@@ -345,6 +347,28 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1794107332_captioned_1794107332.mp4",
+      "title": "[TEST] I confessed love after she’d already moved on—her reply shattered me.",
+      "subreddit": "TrueOffMyChest",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "2228078424806493",
+      "url": "https://www.facebook.com/1272041649331476/videos/2228078424806493",
+      "posted_at": "2026-11-08T03:13:20Z",
+      "hook_score": 13
+    },
+    {
+      "video_file": "output_1794107332_captioned_1794107332.mp4",
+      "title": "[TEST] I confessed love after she’d already moved on—her reply shattered me.",
+      "subreddit": "TrueOffMyChest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "_mex0ZkX2Iw",
+      "url": "https://youtu.be/_mex0ZkX2Iw",
+      "posted_at": "2026-11-08T03:10:23Z",
+      "hook_score": 13
+    },
     {
       "video_file": "output_1790855036_captioned_1790855036.mp4",
       "title": "[FULL STORY] I lied about prescriptions—my husband caught me, and the truth stunned everyone.",
