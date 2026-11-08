@@ -1,0 +1,18 @@
+# The free local voice engine (tts_local.py): Chatterbox, MIT licence for code AND
+# weights, no account, no key, no per-character bill.
+#
+#   pip install -r requirements-tts.txt
+#   python tts_local.py --text "Hello there." --out hello.mp3
+#
+# It is kept OUT of requirements.txt because it is heavy (torch, transformers, gradio)
+# and entirely optional: with TTS_ENGINE=elevenlabs the pipeline never imports it, and
+# a machine that only runs the forge, the checks or the dashboard does not need it.
+#
+# chatterbox-tts carries its own pinned torch/transformers/diffusers, so this file is
+# deliberately ONE line: letting it resolve its own versions is the only way to keep
+# the engine working as it is updated. Install it AFTER requirements.txt, and note that
+# it pins torch, so it decides torch's version for the whole environment.
+chatterbox-tts==0.1.7
+
+# The slicer and the mp3 encode use ffmpeg, which the workflow already installs.
+# soundfile arrives with librosa (a chatterbox dependency) and is what writes the wav.

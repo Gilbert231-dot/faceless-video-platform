@@ -124,17 +124,50 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # The voice engine. TTS_ENGINE=chatterbox (the default) is free and local:
+      # MIT code and weights, no account, no per-character bill. TTS_ENGINE=elevenlabs
+      # skips this install and uses the paid API instead.
+      - name: Cache the local voice model
+        if: ${{ vars.TTS_ENGINE != 'elevenlabs' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-chatterbox-${{ hashFiles('requirements-tts.txt') }}
+
+      - name: Install the local voice engine
+        if: ${{ vars.TTS_ENGINE != 'elevenlabs' }}
+        run: |
+          # requirements-tts.txt is one line (chatterbox-tts) on purpose: it pins
+          # torch, so it decides torch's version for the whole environment.
+          pip install -r requirements-tts.txt
+          # Prove the engine imports NOW, not after two hours of rendering: a broken
+          # install must fail here, at the top, where it costs minutes.
+          python -c "import torch, chatterbox, tts_local; print('local voice engine ready:', torch.__version__)"
+          python tts_local.py --selftest
+          # Refuse to start with a reference clip that is not actually speech (the
+          # old drone passed a length-and-level check and cloned into a bell).
+          python make_voice_ref.py --check
+
       - name: Set up environment variables
         run: |
           echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
           echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> $GITHUB_ENV
-          echo "ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }}" >> $GITHUB_ENV
-          # Fail fast if the ElevenLabs key is missing/empty — otherwise the
-          # run would burn 2-3 h rendering before dying at the TTS step.
-          if [ -z "${{ secrets.ELEVENLABS_API_KEY }}" ]; then
-            echo "❌ ELEVENLABS_API_KEY secret is missing or empty."
-            echo "   Add it, or pause the automation (create AUTOMATION_PAUSED) until you've topped up credits."
-            exit 1
+          # chatterbox (free, local) unless the repo variable says otherwise.
+          echo "TTS_ENGINE=${{ vars.TTS_ENGINE || 'chatterbox' }}" >> $GITHUB_ENV
+          echo "TTS_DEVICE=cpu" >> $GITHUB_ENV
+          # The settled pace: 1.10x lands the narration at ~250 wpm, the rate the
+          # forge writes to. Read by config.py, so it reaches the renderer, the
+          # footage planning and the caption timing together.
+          echo "VOICE_SPEED=1.10" >> $GITHUB_ENV
+          if [ "${{ vars.TTS_ENGINE || 'chatterbox' }}" = "elevenlabs" ]; then
+            echo "ELEVENLABS_API_KEY=${{ secrets.ELEVENLABS_API_KEY }}" >> $GITHUB_ENV
+            # Fail fast if the paid engine is selected and its key is empty —
+            # otherwise the run would burn 2-3 h rendering before dying at the TTS step.
+            if [ -z "${{ secrets.ELEVENLABS_API_KEY }}" ]; then
+              echo "❌ TTS_ENGINE=elevenlabs but the ELEVENLABS_API_KEY secret is empty."
+              echo "   Set TTS_ENGINE=chatterbox (free, local) or add the key."
+              exit 1
+            fi
           fi
           echo "FAL_KEY=${{ secrets.FAL_KEY }}" >> $GITHUB_ENV
           # Dynamic background-footage listing (drive_clip_manager.py): when

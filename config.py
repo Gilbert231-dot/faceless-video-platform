@@ -21,10 +21,17 @@ FAST_MODE = False  # Set to False for production quality
 DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() in ("true", "1", "yes")
 
 # Voice speed (used in video_compile and tasks). 1.06 was the calm baseline;
-# 1.08 at the first "tiny bit" request; 1.12 now at the user's "a bit" bump.
+# 1.08 at the first "tiny bit" request; 1.15 rendered 284 wpm and was judged too
+# rushed by ear. 1.10 is the settle point: measured on the shipped audio it lands
+# at ~250 wpm, the rate RANT_SHAPE_SPEC.md already writes to.
 # Captions are timed to this exact value (whisper timestamps are divided by
 # it) so they stay in sync no matter the value.
-VOICE_SPEED = 1.15
+#
+# Env-overridable (VOICE_SPEED=1.25) so one audition render can try a different
+# read WITHOUT editing this file - the value has to reach the renderer, the
+# footage planning and the caption timing, and the environment is the one place
+# all three read from.
+VOICE_SPEED = float(os.getenv("VOICE_SPEED", "1.10"))
 
 # ===========================
 # WHICH FOOTAGE CODECS RENDER DIRECTLY (one source of truth)
@@ -199,6 +206,79 @@ PEXELS_API_KEY = os.getenv('PEXELS_API_KEY')
 REDDIT_CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
 REDDIT_CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
 REDDIT_USER_AGENT = "python:faceless-video-generator:v1.0 (by u/Gilbert_Poet4518)"
+
+# --- Dynamic Paths (Works in Codespace, GitHub Actions, and locally) ---
+# ===========================
+# AUTOMATION PAUSE SWITCH
+# ===========================
+# The CI workflow has its own pause-check job; this is the same switch for the
+# code paths that run OUTSIDE the workflow (a local run, a Celery worker), so a
+# paused repo cannot quietly render through a side door. It is ON when either a
+# file named AUTOMATION_PAUSED sits next to this file, or env AUTOMATION_PAUSED
+# is truthy. env AUTOMATION_PAUSED=0/false resumes even with the file present.
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+AUTOMATION_PAUSED_FILE = os.path.join(REPO_ROOT, "AUTOMATION_PAUSED")
+
+_env_pause = os.getenv("AUTOMATION_PAUSED")
+if _env_pause is not None:
+    AUTOMATION_PAUSED = _env_pause.strip().lower() in ("1", "true", "yes", "on")
+    AUTOMATION_PAUSE_SOURCE = "the AUTOMATION_PAUSED environment variable"
+else:
+    AUTOMATION_PAUSED = os.path.exists(AUTOMATION_PAUSED_FILE)
+    AUTOMATION_PAUSE_SOURCE = f"the file {AUTOMATION_PAUSED_FILE}"
+
+
+class AutomationPaused(RuntimeError):
+    """Raised when video generation is attempted with the pause switch on."""
+
+
+def automation_pause_reason() -> str:
+    """A one-line, actionable explanation of why generation is paused."""
+    if _env_pause is not None and AUTOMATION_PAUSED:
+        resume = "Unset AUTOMATION_PAUSED (or set it to false) to resume."
+    else:
+        resume = ("Delete the AUTOMATION_PAUSED file (or set AUTOMATION_PAUSED=false) "
+                  "to resume.")
+    return (f"Automation is PAUSED ({AUTOMATION_PAUSE_SOURCE} is in place) - "
+            f"no video is generated and no story is consumed. {resume}")
+
+
+def require_automation_active() -> None:
+    """Raise AutomationPaused if the kill switch is on. Call before spending."""
+    if AUTOMATION_PAUSED:
+        raise AutomationPaused(automation_pause_reason())
+
+
+if AUTOMATION_PAUSED:
+    print("\u23f8\ufe0f " + automation_pause_reason())
+
+# ===========================
+# TEXT TO SPEECH ENGINE
+# ===========================
+# "chatterbox" is the free local engine (MIT licence, code AND weights): no account,
+# no key, no per-character bill, and it clones a voice from a short reference clip.
+# "elevenlabs" is the paid API the pipeline used before; kept as a switch so a voice
+# can still be auditioned there, but nothing needs it and an unset ELEVENLABS_API_KEY
+# no longer stops a run.
+TTS_ENGINE = os.getenv("TTS_ENGINE", "chatterbox").strip().lower()
+
+# cpu everywhere; "cuda" if a GPU is present (GitHub's runner has none).
+TTS_DEVICE = os.getenv("TTS_DEVICE", "cpu").strip().lower()
+
+# turbo = the small fast model (recommended on CPU); standard = the original one.
+TTS_MODEL = os.getenv("TTS_MODEL", "turbo").strip().lower()
+
+# Reference clips the local engine clones: 10-20 s of continuous speech each, in
+# assets/voices/. Absolute by default (built from REPO_ROOT, not the cwd) so a step
+# that changes directory cannot silently lose the voice and fall back to the model's
+# own. Missing files are not fatal - the engine says so and speaks in its default.
+TTS_REF_MALE = os.getenv("TTS_REF_MALE", os.path.join(REPO_ROOT, "assets", "voices", "male.wav"))
+TTS_REF_FEMALE = os.getenv("TTS_REF_FEMALE", os.path.join(REPO_ROOT, "assets", "voices", "female.wav"))
+
+# Chunk size for the local engine. The model truncates its input at its token limit,
+# so a whole narration is spoken in pieces and joined; ~200 characters keeps each
+# piece well inside that window and inside one breath.
+TTS_CHUNK_CHARS = int(os.getenv("TTS_CHUNK_CHARS", "200"))
 
 # --- Dynamic Paths (Works in Codespace, GitHub Actions, and locally) ---
 PROJECT_ROOT = os.getcwd()  # Current working directory

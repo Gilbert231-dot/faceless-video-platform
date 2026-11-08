@@ -11,24 +11,48 @@ from config import (
     PAUSE_MIN_KEPT_SEC, PAUSE_THRESHOLD,
     VOICE_LEVEL_NORMALIZE, VOICE_LUFS_TARGET, VOICE_TP_MAX, VOICE_LRA_TARGET,
     FEMALE_VOICE_BOOST_DB,
+    TTS_ENGINE,
+    require_automation_active,
 )
 
-# Try the new ElevenLabs import style (v1.0.0+)
+# Try the new ElevenLabs import style (v1.0.0+). The paid engine is now OPTIONAL: the
+# pipeline speaks with the free local engine (tts_local.py) unless TTS_ENGINE says
+# otherwise, so neither this import nor the key may be a condition of importing this
+# module. Before 2026-11-02 both were, which made "don't pay" impossible to even start.
 try:
     from elevenlabs.client import ElevenLabs
     from elevenlabs import play, save
     from elevenlabs.types import VoiceSettings
     ELEVENLABS_V1 = True
 except ImportError:
-    # Fallback to old style (v0.x)
-    from elevenlabs import generate, save
-    ELEVENLABS_V1 = False
+    try:
+        # Fallback to old style (v0.x)
+        from elevenlabs import generate, save
+        ELEVENLABS_V1 = False
+    except ImportError:
+        ElevenLabs = None
+        generate = None
+        save = None
+        VoiceSettings = None
+        ELEVENLABS_V1 = False
 
-# API Key (set in environment)
+# API Key (set in environment). Read when it is used, not when this module loads.
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
-if not ELEVENLABS_API_KEY:
-    raise ValueError("ELEVENLABS_API_KEY not set in environment variables!")
+
+def require_elevenlabs():
+    """The paid engine's preconditions, raised only when it is the one being used."""
+    if ElevenLabs is None and generate is None:
+        raise RuntimeError(
+            "the ElevenLabs SDK is not installed (`pip install elevenlabs`), and "
+            "TTS_ENGINE is set to elevenlabs. Set TTS_ENGINE=chatterbox to use the "
+            "free local engine instead.")
+    key = os.getenv("ELEVENLABS_API_KEY") or ELEVENLABS_API_KEY
+    if not key:
+        raise RuntimeError(
+            "ELEVENLABS_API_KEY is not set, so the paid engine cannot be used. "
+            "Set TTS_ENGINE=chatterbox (the default) to speak locally for free.")
+    return key
 
 # Voice IDs
 MALE_VOICE_ID = "loZFKb410q0XFUiYDx8U"      # Custom Gen Z voice
@@ -260,45 +284,86 @@ def normalize_voice_loudness(audio_path: str,
         return audio_path
 
 
-def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str, Optional[str]]:
+def generate_voiceover(script: str, voice_id: Optional[str] = None,
+                       engine: Optional[str] = None) -> Tuple[str, Optional[str]]:
     """
-    Generate voiceover using ElevenLabs.
-    
+    Generate the narration, with whichever engine TTS_ENGINE names.
+
     Args:
         script: Text to convert to speech
-        voice_id: ElevenLabs voice ID (if None, uses default)
-    
+        voice_id: voice ID (if None, uses default). With the local engine this picks
+                  which reference clip is cloned; with ElevenLabs it is its own id.
+        engine: override TTS_ENGINE for one call ("chatterbox" | "elevenlabs")
+
     Returns:
         audio_path: Path to the generated MP3
         subtitle_path: None
     """
     if voice_id is None:
         voice_id = DEFAULT_VOICE_ID
-    
+
+    engine = (engine or TTS_ENGINE or "chatterbox").strip().lower()
+    if engine in ("elevenlabs", "eleven", "paid"):
+        spoken = "elevenlabs"
+    elif engine in ("local", "chatterbox", "free"):
+        spoken = "chatterbox"
+    else:
+        raise ValueError("TTS_ENGINE=%r is not an engine; use chatterbox or elevenlabs"
+                         % (engine,))
+
+    # THE LAST GATE BEFORE SYNTHESIS: this is the one function that actually speaks,
+    # so it honours the pause switch itself rather than trusting every caller to have
+    # checked. Nothing above this line has spent anything, so the failure costs nothing.
+    require_automation_active()
+
     # LAST-LINE DEFENSE (belt and suspenders): re-run the full tts_clean pass
     # even if a script somehow slipped past clean_script_for_tts — "ale" -> "",
     # markdown/brackets stripped, acronyms expanded, "I'm" -> "I am". The
     # post-generation audio mute (caption step) remains as the second layer.
     script = clean_for_tts(script)
-    
-    # Ship the EXACT text sent to ElevenLabs (output/tts_script_*.json) so
-    # the run's artifact proves what the narrator was asked to say — if a
-    # glitch is ever heard, we can tell instantly whether it came from the
-    # text or the voice model.
+
+    # Ship the EXACT text the narrator was asked to say (output/tts_script_*.json), and
+    # which engine said it, so the run's artifact proves it — if a glitch is ever heard,
+    # we can tell instantly whether it came from the text or the voice model.
     try:
         out_dir = os.environ.get("OUTPUT_DIR", "output")
         os.makedirs(out_dir, exist_ok=True)
         script_path = os.path.join(out_dir, f"tts_script_{int(time.time())}.json")
         with open(script_path, "w", encoding="utf-8") as f:
-            json.dump({"voice_id": voice_id, "script": script}, f,
+            json.dump({"engine": spoken, "voice_id": voice_id, "script": script}, f,
                       indent=2, ensure_ascii=False)
     except Exception:
         pass
+
+    if spoken == "chatterbox":
+        return _generate_local(script, voice_id)
+    return _generate_elevenlabs(script, voice_id)
+
+
+def _generate_local(script: str, voice_id: str) -> Tuple[str, Optional[str]]:
+    """The free engine: Chatterbox on this machine. No key, no account, no credits.
+
+    The same two things happen around it as around the paid one - the pause compressor
+    runs on the raw audio, then the loudness normaliser, because the rest of the
+    pipeline (footage length, the atempo speed-up, whisper's caption timing) was tuned
+    against that shape and does not care who spoke.
+    """
+    import tts_local
+
+    print("\U0001f3a4 Narrating with the local engine (chatterbox, %s, %s)"
+          % (tts_local.config.TTS_MODEL, tts_local.config.TTS_DEVICE))
+    clip = tts_local.synthesize(script, voice_id=voice_id)
+    return normalize_voice_loudness(compress_narrator_pauses(clip), voice_id), None
+
+
+def _generate_elevenlabs(script: str, voice_id: str) -> Tuple[str, Optional[str]]:
+    """The paid engine, unchanged - kept so a voice can still be auditioned there."""
+    key = require_elevenlabs()
     
     try:
         if ELEVENLABS_V1:
             # New ElevenLabs v1.0.0+ API
-            client = ElevenLabs(api_key=ELEVENLABS_API_KEY)
+            client = ElevenLabs(api_key=key)
             
             # VoiceSettings: stability 0.65 (up from the ~0.5 default) is the
             # lever against the glottal-stop artifact that inserts the "ale"
@@ -334,7 +399,7 @@ def generate_voiceover(script: str, voice_id: Optional[str] = None) -> Tuple[str
                 text=script,
                 voice=voice_id,
                 model="eleven_flash_v2",
-                api_key=ELEVENLABS_API_KEY
+                api_key=key
             )
             
             audio_path = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name

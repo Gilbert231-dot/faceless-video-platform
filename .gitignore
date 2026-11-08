@@ -68,3 +68,7 @@ forge_logs/
 # Scratch patch and probe scripts written while changing the forge (no tracked file starts
 # with an underscore, so this cannot swallow anything real).
 _*.py
+
+# The local voice engine's requirements (chatterbox) must ship: the workflow's
+# install step reads it, and *.txt is ignored above.
+!requirements-tts.txt
