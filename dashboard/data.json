@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-08T12:23:55Z",
+  "generated_at": "2026-11-09T02:10:36Z",
   "total_stories": 367,
   "unused_stories": 244,
   "used_stories": 123,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 122,
-  "runway_date": "2027-03-10",
+  "runway_date": "2027-03-11",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -288,7 +288,7 @@
     }
   ],
   "schedule": {
-    "next_index": 152
+    "next_index": 153
   },
   "youtube": {
     "privacy": "public",
@@ -301,8 +301,9 @@
       "15:00"
     ],
     "next_publish_utc": [
-      "2026-11-09T03:00:00Z",
       "2026-11-10T03:00:00Z",
+      "2026-11-11T03:00:00Z",
+      "2026-11-09T03:00:00Z",
       "2026-11-08T23:00:00Z",
       "2026-11-09T23:00:00Z",
       "2026-11-08T12:00:00Z",
@@ -376,6 +377,28 @@
   },
   "videos": [
     {
+      "video_file": "output_1794190166_captioned_1794190166.mp4",
+      "title": "[TEST] I watched my life crumble—then a secret plan exposed Iran’s hidden escape.",
+      "subreddit": "self",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122132280627447442",
+      "url": "https://www.facebook.com/reel/29363928849892866",
+      "posted_at": "2026-11-09T02:10:36Z",
+      "hook_score": 39
+    },
+    {
+      "video_file": "output_1794190166_captioned_1794190166.mp4",
+      "title": "[TEST] I watched my life crumble—then a secret plan exposed Iran’s hidden escape.",
+      "subreddit": "self",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "qfvZ0wdn4k8",
+      "url": "https://youtu.be/qfvZ0wdn4k8",
+      "posted_at": "2026-11-09T02:10:18Z",
+      "hook_score": 39
+    },
+    {
       "video_file": "output_1794140481_captioned_1794140481.mp4",
       "title": "[FULL STORY] I watched Nolan's Odyssey and felt utterly betrayed by its grim silence.",
       "subreddit": "unpopularopinion",
@@ -384,18 +407,6 @@
       "video_id": "122132171451447442",
       "url": "https://www.facebook.com/reel/1128660819947635",
       "posted_at": "2026-11-08T12:23:55Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-09T03:00:00Z"
-    },
-    {
-      "video_file": "output_1794140481_captioned_1794140481.mp4",
-      "title": "[FULL STORY] I watched Nolan's Odyssey and felt utterly betrayed by its grim silence.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "nqKE0iFbDb0",
-      "url": "https://youtu.be/nqKE0iFbDb0",
-      "posted_at": "2026-11-08T12:22:36Z",
       "hook_score": 26,
       "publish_at": "2026-11-09T03:00:00Z"
     },
@@ -481,6 +492,18 @@
       "posted_at": "2026-10-01T09:18:44Z",
       "hook_score": 39,
       "publish_at": "2026-10-01T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794140481_captioned_1794140481.mp4",
+      "title": "[FULL STORY] I watched Nolan's Odyssey and felt utterly betrayed by its grim silence.",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "nqKE0iFbDb0",
+      "url": "https://youtu.be/nqKE0iFbDb0",
+      "posted_at": "2026-11-08T12:22:36Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-09T03:00:00Z"
     },
     {
       "video_file": "output_1790841114_captioned_1790841114.mp4",
