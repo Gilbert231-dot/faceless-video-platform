@@ -113,7 +113,11 @@ PAUSE_THRESHOLD = 0.01      # |sample| below this (of full scale) counts as sile
 # and limits the peaks together), then measured and corrected to the target.
 # Set VOICE_LEVEL_NORMALIZE=False to fall back to gain-only behaviour.
 VOICE_LEVEL_NORMALIZE = os.getenv("VOICE_LEVEL_NORMALIZE", "True").lower() in ("true", "1", "yes")
-VOICE_LUFS_TARGET = float(os.getenv("VOICE_LUFS_TARGET", "-20.0"))  # integrated loudness
+# -16 rather than -20: the narration was the quiet element of the mix (music sits
+# 13-14 dB under it at MUSIC_VOLUME 0.20), and YouTube plays back at ~-14 LUFS
+# regardless, so the old target only made the voice feel distant. Peaks are still
+# limited by VOICE_TP_MAX below, so raising the target cannot clip.
+VOICE_LUFS_TARGET = float(os.getenv("VOICE_LUFS_TARGET", "-16.0"))  # integrated loudness
 VOICE_TP_MAX = float(os.getenv("VOICE_TP_MAX", "-1.5"))            # max true peak (dBFS)
 VOICE_LRA_TARGET = float(os.getenv("VOICE_LRA_TARGET", "11"))      # loudness range
 # Extra offset for the female narrator, ON TOP of the target. 0.0 = identical
@@ -265,15 +269,28 @@ TTS_ENGINE = os.getenv("TTS_ENGINE", "chatterbox").strip().lower()
 # cpu everywhere; "cuda" if a GPU is present (GitHub's runner has none).
 TTS_DEVICE = os.getenv("TTS_DEVICE", "cpu").strip().lower()
 
-# turbo = the small fast model (recommended on CPU); standard = the original one.
+# turbo = the small fast model (recommended on CPU); standard = the original one,
+# noticeably fuller at roughly 2-3x the render time.
+#
+# The two voice slots no longer share a model. A six-sample audition (same paragraph,
+# same pace, only the voice source changing) picked the STANDARD model for the male
+# clone - it is the one that stopped sounding like a machine - while the female slot
+# runs in the model's own turbo voice, which is where it sounded best. TTS_MODEL
+# stays as the fallback for a slot that is not given one.
 TTS_MODEL = os.getenv("TTS_MODEL", "turbo").strip().lower()
+TTS_MODEL_MALE = os.getenv("TTS_MODEL_MALE", "standard").strip().lower()
+TTS_MODEL_FEMALE = os.getenv("TTS_MODEL_FEMALE", "turbo").strip().lower()
 
 # Reference clips the local engine clones: 10-20 s of continuous speech each, in
 # assets/voices/. Absolute by default (built from REPO_ROOT, not the cwd) so a step
 # that changes directory cannot silently lose the voice and fall back to the model's
 # own. Missing files are not fatal - the engine says so and speaks in its default.
 TTS_REF_MALE = os.getenv("TTS_REF_MALE", os.path.join(REPO_ROOT, "assets", "voices", "male.wav"))
-TTS_REF_FEMALE = os.getenv("TTS_REF_FEMALE", os.path.join(REPO_ROOT, "assets", "voices", "female.wav"))
+# "none" (the default now) means DO NOT CLONE: the engine speaks in its own voice.
+# That is the female slot on purpose - its own voice measured 216 Hz and was the
+# clearest female sample in the audition, better than the old reference did. Set a
+# path here to go back to cloning a female clip.
+TTS_REF_FEMALE = os.getenv("TTS_REF_FEMALE", "none").strip()
 
 # Chunk size for the local engine. The model truncates its input at its token limit,
 # so a whole narration is spoken in pieces and joined; ~200 characters keeps each
