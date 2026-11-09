@@ -1,26 +1,30 @@
 name: Voice audition (reference A/B)
 
 # Not part of the daily pipeline and never scheduled: it is dispatched by hand to
-# answer one question — does a candidate reference clip clone better than the one
-# currently installed? It speaks the SAME paragraph twice, once from
-# assets/voices/male.wav, once from the candidate, so the only variable is the
-# reference. Both mp3s come back as one artifact; nothing is rendered or published.
+# answer one question — which voice source sounds least robotic? It speaks the SAME
+# paragraph with every variant below, so only the voice changes between samples:
 #
-# Why not run this locally? The clone model is ~1 GB from the Hugging Face Hub, and
-# the model cache this repo already keeps (hf-chatterbox-*, restored below) makes the
-# runner's start-up about two minutes instead of an overnight download.
+#   1 installed Brian reference, turbo model        (what the pipeline uses today)
+#   2 processed TikTok cut, turbo                   (the loudnorm'd cut)
+#   3 raw TikTok cut, turbo                          (no filtering at all)
+#   4 raw TikTok cut from a different window, turbo
+#   5 no reference at all, turbo                     (the model's stock voice)
+#   6 raw TikTok cut, standard model                 (bigger, slower, livelier)
+#
+# 1.10x speed is NOT applied here: video_compile.py does that with atempo at render
+# time, so these are all natural pace.
+#
+# Why not run this locally? The clone models are ~1 GB from the Hugging Face Hub, and
+# the cache this repo already keeps (hf-chatterbox-*, restored below) makes the
+# runner's start-up a couple of minutes instead of an overnight download.
 
 on:
   workflow_dispatch:
     inputs:
-      candidate:
-        description: 'Candidate reference clip, path in the repo'
-        required: true
-        default: 'assets/voices/_candidates/tiktok_male_35s.wav'
       label:
-        description: 'Short label for the candidate file name'
+        description: 'Short label for the artifact'
         required: false
-        default: 'candidate'
+        default: 'v2'
 
 jobs:
   audition:
@@ -61,40 +65,58 @@ jobs:
           print("local voice engine ready:", torch.__version__)
           PY
 
-      - name: Check both references hold speech
-        env:
-          TTS_REF_MALE: ${{ github.workspace }}/${{ inputs.candidate }}
+      - name: Check every reference holds speech
         run: |
           python make_voice_ref.py --check
-          python -c "import os; p=os.environ['TTS_REF_MALE']; assert os.path.isfile(p), 'missing: '+p; print('candidate:', p)"
+          for c in assets/voices/_candidates/*.wav; do
+            echo "== $c"
+            TTS_REF_MALE="$PWD/$c" python make_voice_ref.py --check
+          done
 
-      - name: Speak the same paragraph with both references
+      - name: Speak the paragraph with every variant
         env:
           SCRIPT: 'The nurse said my mother had been asking for me every night. I had not spoken to her in eleven years. I told myself I was ready for whatever she had to say. I was not.'
-          CANDIDATE: ${{ github.workspace }}/${{ inputs.candidate }}
-          LABEL: ${{ inputs.label }}
         run: |
           mkdir -p out
-          # 1) the reference the pipeline uses today
-          python tts_local.py --text "$SCRIPT" --voice male --out out/1_installed.mp3
-          # 2) the candidate, same voice slot, same engine settings
-          TTS_REF_MALE="$CANDIDATE" \
-            python tts_local.py --text "$SCRIPT" --voice male --out "out/2_${LABEL}.mp3"
+          say () {
+            # $1 = output name, $2 = reference clip ("none" = model's own voice),
+            # $3 = model (turbo | standard)
+            out="$1"; ref="$2"; model="$3"
+            if [ "$ref" = "none" ]; then
+              TTS_MODEL="$model" TTS_REF_MALE=/tmp/no-such-voice.wav \
+                python tts_local.py --text "$SCRIPT" --voice male --out "out/$out"
+            else
+              TTS_MODEL="$model" TTS_REF_MALE="$PWD/$ref" \
+                python tts_local.py --text "$SCRIPT" --voice male --out "out/$out"
+            fi
+          }
+          say 1_installed_turbo.mp3  assets/voices/male.wav                              turbo
+          say 2_tiktok_turbo.mp3     assets/voices/_candidates/tiktok_male_35s.wav      turbo
+          say 3_raw35_turbo.mp3      assets/voices/_candidates/tiktok_raw_35s.wav       turbo
+          say 4_raw20_turbo.mp3      assets/voices/_candidates/tiktok_raw_20s.wav       turbo
+          say 5_stock_turbo.mp3      none                                               turbo
+          say 6_raw35_standard.mp3   assets/voices/_candidates/tiktok_raw_35s.wav       standard
           ls -l out
 
       - uses: actions/upload-artifact@v4
         with:
-          name: voice-audition
+          name: voice-audition-${{ inputs.label }}
           path: out/*.mp3
           if-no-files-found: error
 
       - name: Summary
         run: |
           {
-            echo "### Voice audition"
+            echo "### Voice audition v2"
             echo ""
-            echo "Both samples say the same paragraph with the same engine settings."
+            echo "Same paragraph, same pace, six voice sources."
             echo ""
-            echo "- installed: \`assets/voices/male.wav\`"
-            echo "- candidate: \`${{ inputs.candidate }}\`"
+            echo "| # | reference | model |"
+            echo "|---|---|---|"
+            echo "| 1 | installed Brian | turbo |"
+            echo "| 2 | processed TikTok cut | turbo |"
+            echo "| 3 | raw TikTok cut | turbo |"
+            echo "| 4 | raw TikTok, other window | turbo |"
+            echo "| 5 | none (stock voice) | turbo |"
+            echo "| 6 | raw TikTok cut | standard |"
           } >> "$GITHUB_STEP_SUMMARY"
