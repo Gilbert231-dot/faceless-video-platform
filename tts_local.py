@@ -131,17 +131,22 @@ def chunk_text(text, limit=None):
 # which reference clip speaks
 # ---------------------------------------------------------------------------
 
-def reference_for(voice_id):
-    """The reference clip for this voice, or None when the model's own voice is used.
+# A configured reference value the engine must read as "do not clone": the model's
+# own voice. "none" is deliberate, a missing file is an accident - both end up as None
+# here, but only the accident is worth a warning (and _prepare says so once).
+NO_REFERENCE = {"", "none", "off", "no", "-"}
+
+
+def _slot(voice_id):
+    """"male" or "female" - which slot's reference and model apply to this voice.
 
     The pipeline chooses a voice by ElevenLabs id (or by whatever id the caller was
-    configured with), so the mapping is by id: the configured female id maps to the
-    female reference and everything else to the male one. Files that are not there are
-    reported once and then ignored, so a machine without reference clips still speaks.
+    configured with), so the slot is decided by id: the configured female id is the
+    female slot, and everything else - including an id this module has never seen -
+    falls to the male slot, which is also the pipeline's default.
     """
     female = os.getenv("ELEVENLABS_VOICE_FEMALE_ID", "").strip()
     male = os.getenv("ELEVENLABS_VOICE_MALE_ID", "").strip()
-    path = config.TTS_REF_MALE
     try:
         import voiceover  # local import: voiceover imports this module
         female = female or voiceover.FEMALE_VOICE_ID
@@ -149,14 +154,27 @@ def reference_for(voice_id):
     except Exception:
         pass
     if female and voice_id == female:
-        path = config.TTS_REF_FEMALE
-    elif male and voice_id == male:
-        path = config.TTS_REF_MALE
-    elif voice_id and voice_id != male:
-        # an id this module has never seen: treat it as the female slot if it matches
-        # the configured female reference's sibling name, otherwise keep the default
-        path = config.TTS_REF_FEMALE if "female" in str(voice_id).lower() else path
-    if path and os.path.isfile(path):
+        return "female"
+    if voice_id and voice_id != male and "female" in str(voice_id).lower():
+        # an id this module has never seen, but named like the female slot
+        return "female"
+    return "male"
+
+
+def reference_for(voice_id):
+    """The reference clip for this voice, or None when the model's own voice is used.
+
+    A value of "none" is a decision, not a missing file: the female slot speaks in the
+    model's own voice on purpose (it measured 216 Hz and out-cloned the old reference
+    clip). Missing files are still reported once by _prepare, so a machine without
+    clips still narrates instead of failing at the last step.
+    """
+    path = config.TTS_REF_FEMALE if _slot(voice_id) == "female" else config.TTS_REF_MALE
+    if path is None:
+        return None
+    if str(path).strip().lower() in NO_REFERENCE:
+        return None
+    if os.path.isfile(path):
         return path
     return None
 
@@ -165,19 +183,32 @@ def reference_for(voice_id):
 # the model
 # ---------------------------------------------------------------------------
 
-_MODEL = None
+_MODELS = {}                # model name -> the loaded engine
 _PREPARED = None            # (model id, reference path) the conditionals belong to
 _WARNED = set()
 
 
-def _load():
-    """Load (and keep) the model. Importing here keeps the rest of the pipeline free."""
-    global _MODEL
-    if _MODEL is not None:
-        return _MODEL
+def model_name_for(voice_id):
+    """Which model speaks this voice: "turbo" or "standard".
+
+    The slots can differ - the male clone was chosen on the standard model and the
+    female slot on turbo's own voice - so the model is chosen per voice, falling back
+    to TTS_MODEL. Only the model actually used is loaded, so a run that speaks one
+    voice still pays for one model.
+    """
+    name = (config.TTS_MODEL_FEMALE if _slot(voice_id) == "female"
+            else config.TTS_MODEL_MALE)
+    return (name or config.TTS_MODEL).strip().lower()
+
+
+def _load(name=None):
+    """Load (and keep) a model. Importing here keeps the rest of the pipeline free."""
+    name = (name or config.TTS_MODEL).strip().lower()
+    if name in _MODELS:
+        return _MODELS[name]
     try:
         import torch  # noqa: F401
-        if config.TTS_MODEL == "standard":
+        if name == "standard":
             from chatterbox.tts import ChatterboxTTS as Engine
         else:
             from chatterbox.tts_turbo import ChatterboxTurboTTS as Engine
@@ -188,11 +219,11 @@ def _load():
             "use the paid API instead." % exc)
     device = config.TTS_DEVICE
     print("   loading the local voice model (%s, %s) - the first run downloads it"
-          % (config.TTS_MODEL, device))
+          % (name, device))
     started = time.time()
-    _MODEL = Engine.from_pretrained(device=device)
+    _MODELS[name] = Engine.from_pretrained(device=device)
     print("   model ready in %.0fs" % (time.time() - started))
-    return _MODEL
+    return _MODELS[name]
 
 
 def _prepare(model, reference):
@@ -239,7 +270,7 @@ def synthesize(text, voice_id=None, out_dir=None, verbose=True):
     if not chunks:
         raise LocalTTSError("nothing to speak - the script is empty")
     reference = reference_for(voice_id)
-    model = _load()
+    model = _load(model_name_for(voice_id))
     _prepare(model, reference)
 
     out_dir = out_dir or os.environ.get("OUTPUT_DIR") or tempfile.gettempdir()
@@ -318,14 +349,24 @@ def selftest():
     config.TTS_REF_MALE, config.TTS_REF_FEMALE = _Cfg.TTS_REF_MALE, _Cfg.TTS_REF_FEMALE
     try:
         import voiceover
-        checks.append(("the female id maps to the female slot",
-                       reference_for(voiceover.FEMALE_VOICE_ID) == "female.wav"
-                       or not os.path.isfile("female.wav")))
-        checks.append(("the male id maps to the male slot",
-                       reference_for(voiceover.MALE_VOICE_ID) == "male.wav"
-                       or not os.path.isfile("male.wav")))
-        checks.append(("a missing clip is not an exception", reference_for("nope") is None
-                       or not os.path.isfile(config.TTS_REF_MALE)))
+        # A real file for the male slot and the sentinel for the female one: that is
+        # the shipped arrangement, and it is what these checks must describe.
+        tmp_ref = os.path.join(tempfile.mkdtemp(prefix="tts_ref_"), "male.wav")
+        io.open(tmp_ref, "wb").close()
+        config.TTS_REF_MALE, config.TTS_REF_FEMALE = tmp_ref, "none"
+        checks.append(("the male id maps to the male clip",
+                       reference_for(voiceover.MALE_VOICE_ID) == tmp_ref))
+        checks.append(("'none' means the model's own voice, not a missing clip",
+                       reference_for(voiceover.FEMALE_VOICE_ID) is None))
+        checks.append(("each slot can pick its own model",
+                       model_name_for(voiceover.MALE_VOICE_ID) == config.TTS_MODEL_MALE
+                       and model_name_for(voiceover.FEMALE_VOICE_ID)
+                       == config.TTS_MODEL_FEMALE))
+        checks.append(("an unknown id falls to the male slot",
+                       reference_for("nope") == tmp_ref))
+        config.TTS_REF_MALE = os.path.join(os.path.dirname(tmp_ref), "gone.wav")
+        checks.append(("a missing clip is not an exception",
+                       reference_for(voiceover.MALE_VOICE_ID) is None))
     except Exception as exc:                                    # pragma: no cover
         checks.append(("voiceover imports for the id mapping (%s)" % exc, False))
     finally:
