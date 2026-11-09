@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-09T10:29:17Z",
+  "generated_at": "2026-11-09T11:54:35Z",
   "total_stories": 367,
   "unused_stories": 241,
   "used_stories": 126,
@@ -308,14 +308,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "23:00",
       "21:00",
       "15:00",
-      "03:00",
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-09T18:00:00Z",
+      "2026-11-10T12:00:00Z",
       "2026-11-09T23:00:00Z",
       "2026-11-10T23:00:00Z",
       "2026-11-09T21:00:00Z",
@@ -403,18 +405,6 @@
       "video_id": "122132382585447442",
       "url": "https://www.facebook.com/reel/1537690031716030",
       "posted_at": "2026-11-09T10:29:17Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-09T23:00:00Z"
-    },
-    {
-      "video_file": "output_1794220074_captioned_1794220074.mp4",
-      "title": "[FULL STORY] \"She hid a $300 scam—now she's begging for $100. My heart shattered.\"",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "QljTV_njtXs",
-      "url": "https://youtu.be/QljTV_njtXs",
-      "posted_at": "2026-11-09T10:28:55Z",
       "hook_score": 39,
       "publish_at": "2026-11-09T23:00:00Z"
     },
@@ -513,18 +503,6 @@
       "hook_score": 13
     },
     {
-      "video_file": "output_1794215845_captioned_1794215845.mp4",
-      "title": "[FULL STORY] I discovered Toronto’s coffee shops are a sham—fast‑food beats them all.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "2ieNi7A6nQ4",
-      "url": "https://youtu.be/2ieNi7A6nQ4",
-      "posted_at": "2026-11-09T09:18:19Z",
-      "hook_score": 13,
-      "publish_at": "2026-11-09T21:00:00Z"
-    },
-    {
       "video_file": "output_1790855036_captioned_1790855036.mp4",
       "title": "[FULL STORY] I lied about prescriptions—my husband caught me, and the truth stunned everyone.",
       "subreddit": "relationship_advice",
@@ -535,6 +513,30 @@
       "posted_at": "2026-10-01T11:45:07Z",
       "hook_score": 39,
       "publish_at": "2026-10-02T03:00:00Z"
+    },
+    {
+      "video_file": "output_1794220074_captioned_1794220074.mp4",
+      "title": "[FULL STORY] \"She hid a $300 scam—now she's begging for $100. My heart shattered.\"",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "QljTV_njtXs",
+      "url": "https://youtu.be/QljTV_njtXs",
+      "posted_at": "2026-11-09T10:28:55Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-09T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794215845_captioned_1794215845.mp4",
+      "title": "[FULL STORY] I discovered Toronto’s coffee shops are a sham—fast‑food beats them all.",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "2ieNi7A6nQ4",
+      "url": "https://youtu.be/2ieNi7A6nQ4",
+      "posted_at": "2026-11-09T09:18:19Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-09T21:00:00Z"
     },
     {
       "video_file": "output_1794212134_captioned_1794212134.mp4",
