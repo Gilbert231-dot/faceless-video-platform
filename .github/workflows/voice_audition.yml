@@ -1,0 +1,91 @@
+name: Voice audition (reference A/B)
+
+# Not part of the daily pipeline and never scheduled: it is dispatched by hand to
+# answer one question — does a candidate reference clip clone better than the one
+# currently installed? It speaks the SAME paragraph twice, once from
+# assets/voices/male.wav, once from the candidate, so the only variable is the
+# reference. Both mp3s come back as one artifact; nothing is rendered or published.
+#
+# Why not run this locally? The clone model is ~1 GB from the Hugging Face Hub, and
+# the model cache this repo already keeps (hf-chatterbox-*, restored below) makes the
+# runner's start-up about two minutes instead of an overnight download.
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate:
+        description: 'Candidate reference clip, path in the repo'
+        required: true
+        default: 'assets/voices/_candidates/tiktok_male_35s.wav'
+      label:
+        description: 'Short label for the candidate file name'
+        required: false
+        default: 'candidate'
+
+jobs:
+  audition:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache the local voice model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-chatterbox-${{ hashFiles('requirements-tts.txt') }}
+
+      - name: Install the local voice engine
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-tts.txt
+          python - <<'PY'
+          import torch, chatterbox, tts_local
+          from perth import PerthImplicitWatermarker
+          assert PerthImplicitWatermarker is not None, (
+              "perth's watermarker is unavailable - it imports pkg_resources, so this "
+              "environment has setuptools>=81. requirements-tts.txt pins setuptools<81.")
+          print("local voice engine ready:", torch.__version__)
+          PY
+
+      - name: Check both references hold speech
+        env:
+          TTS_REF_MALE: ${{ github.workspace }}/${{ inputs.candidate }}
+        run: |
+          python make_voice_ref.py --check
+          python -c "import os; p=os.environ['TTS_REF_MALE']; assert os.path.isfile(p), 'missing: '+p; print('candidate:', p)"
+
+      - name: Speak the same paragraph with both references
+        env:
+          SCRIPT: 'The nurse said my mother had been asking for me every night. I had not spoken to her in eleven years. I told myself I was ready for whatever she had to say. I was not.'
+          CANDIDATE: ${{ github.workspace }}/${{ inputs.candidate }}
+          LABEL: ${{ inputs.label }}
+        run: |
+          mkdir -p out
+          # 1) the reference the pipeline uses today
+          python tts_local.py --text "$SCRIPT" --voice male --out out/1_installed.mp3
+          # 2) the candidate, same voice slot, same engine settings
+          TTS_REF_MALE="$CANDIDATE" \
+            python tts_local.py --text "$SCRIPT" --voice male --out "out/2_${LABEL}.mp3"
+          ls -l out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: voice-audition
+          path: out/*.mp3
+          if-no-files-found: error
+
+      - name: Summary
+        run: |
+          {
+            echo "### Voice audition"
+            echo ""
+            echo "Script spoken by both: _the same paragraph, same engine settings_"
+            echo ""
+            echo "- installed: \`assets/voices/male.wav\`"
+            echo "- candidate: \`${{ inputs.candidate }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
