@@ -350,8 +350,11 @@ def _generate_local(script: str, voice_id: str) -> Tuple[str, Optional[str]]:
     """
     import tts_local
 
+    # The model is chosen per voice slot, so name the one that will speak, not the
+    # global default - a log that says "turbo" while the standard model loads is a
+    # log that lies about what a run actually did.
     print("\U0001f3a4 Narrating with the local engine (chatterbox, %s, %s)"
-          % (tts_local.config.TTS_MODEL, tts_local.config.TTS_DEVICE))
+          % (tts_local.model_name_for(voice_id), tts_local.config.TTS_DEVICE))
     clip = tts_local.synthesize(script, voice_id=voice_id)
     return normalize_voice_loudness(compress_narrator_pauses(clip), voice_id), None
 
