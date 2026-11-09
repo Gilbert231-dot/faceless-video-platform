@@ -33,6 +33,15 @@ jobs:
         with:
           python-version: '3.11'
 
+      # make_voice_ref.py profiles a clip through ffmpeg's aspectralstats filter and
+      # tts_local.py encodes the mp3 with it. generate_video.yml installs it for the
+      # same reason; without it every reference here "could not be profiled" in about
+      # 30 ms, because the profile helper finds no binary and gives up silently.
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
       - name: Cache the local voice model
         uses: actions/cache@v4
         with:
@@ -84,7 +93,7 @@ jobs:
           {
             echo "### Voice audition"
             echo ""
-            echo "Script spoken by both: _the same paragraph, same engine settings_"
+            echo "Both samples say the same paragraph with the same engine settings."
             echo ""
             echo "- installed: \`assets/voices/male.wav\`"
             echo "- candidate: \`${{ inputs.candidate }}\`"
