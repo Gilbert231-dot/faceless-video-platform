@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-09T02:10:36Z",
+  "generated_at": "2026-11-09T08:16:39Z",
   "total_stories": 367,
-  "unused_stories": 244,
-  "used_stories": 123,
+  "unused_stories": 243,
+  "used_stories": 124,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 122,
-  "runway_date": "2027-03-11",
+  "days_of_stories": 121,
+  "runway_date": "2027-03-10",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -47,17 +47,17 @@
       "unused": 20
     },
     {
-      "name": "AITAH",
-      "total": 20,
-      "unused": 20
-    },
-    {
       "name": "AmItheAsshole",
       "total": 19,
       "unused": 19
     },
     {
       "name": "tifu",
+      "total": 19,
+      "unused": 19
+    },
+    {
+      "name": "AITAH",
       "total": 19,
       "unused": 19
     },
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "AITAH",
+      "total": 20,
+      "unused": 20
     },
     {
       "name": "unpopularopinion",
@@ -288,19 +293,21 @@
     }
   ],
   "schedule": {
-    "next_index": 153
+    "next_index": 154
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-09T15:00:00Z",
+      "2026-11-10T15:00:00Z",
       "2026-11-10T03:00:00Z",
       "2026-11-11T03:00:00Z",
       "2026-11-09T03:00:00Z",
@@ -311,7 +318,6 @@
       "2026-11-08T21:00:00Z",
       "2026-11-09T21:00:00Z",
       "2026-11-08T15:00:00Z",
-      "2026-11-09T15:00:00Z",
       "2026-10-02T12:00:00Z",
       "2026-10-02T18:00:00Z",
       "2026-10-02T03:00:00Z",
@@ -377,6 +383,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794212134_captioned_1794212134.mp4",
+      "title": "[FULL STORY] My husband vanished, eviction papers arrived—what I did next shocked us both.",
+      "subreddit": "AITAH",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122132326851447442",
+      "url": "https://www.facebook.com/reel/1010873638724785",
+      "posted_at": "2026-11-09T08:16:39Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-09T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794212134_captioned_1794212134.mp4",
+      "title": "[FULL STORY] My husband vanished, eviction papers arrived—what I did next shocked us both.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "A-WvG9PRe-I",
+      "url": "https://youtu.be/A-WvG9PRe-I",
+      "posted_at": "2026-11-09T08:16:21Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-09T15:00:00Z"
+    },
+    {
       "video_file": "output_1794190166_captioned_1794190166.mp4",
       "title": "[TEST] I watched my life crumble—then a secret plan exposed Iran’s hidden escape.",
       "subreddit": "self",
@@ -385,17 +415,6 @@
       "video_id": "122132280627447442",
       "url": "https://www.facebook.com/reel/29363928849892866",
       "posted_at": "2026-11-09T02:10:36Z",
-      "hook_score": 39
-    },
-    {
-      "video_file": "output_1794190166_captioned_1794190166.mp4",
-      "title": "[TEST] I watched my life crumble—then a secret plan exposed Iran’s hidden escape.",
-      "subreddit": "self",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "qfvZ0wdn4k8",
-      "url": "https://youtu.be/qfvZ0wdn4k8",
-      "posted_at": "2026-11-09T02:10:18Z",
       "hook_score": 39
     },
     {
@@ -480,6 +499,17 @@
       "posted_at": "2026-10-01T10:36:16Z",
       "hook_score": 39,
       "publish_at": "2026-10-01T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794190166_captioned_1794190166.mp4",
+      "title": "[TEST] I watched my life crumble—then a secret plan exposed Iran’s hidden escape.",
+      "subreddit": "self",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "qfvZ0wdn4k8",
+      "url": "https://youtu.be/qfvZ0wdn4k8",
+      "posted_at": "2026-11-09T02:10:18Z",
+      "hook_score": 39
     },
     {
       "video_file": "output_1790846151_captioned_1790846151.mp4",
