@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-09T12:04:18Z",
+  "generated_at": "2026-11-10T08:58:24Z",
   "total_stories": 367,
-  "unused_stories": 240,
-  "used_stories": 127,
+  "unused_stories": 239,
+  "used_stories": 128,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 120,
+  "days_of_stories": 119,
   "runway_date": "2027-03-09",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -63,8 +63,8 @@
     },
     {
       "name": "unpopularopinion",
-      "total": 17,
-      "unused": 15
+      "total": 16,
+      "unused": 14
     },
     {
       "name": "EntitledPeople",
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "unpopularopinion",
+      "total": 17,
+      "unused": 15
     },
     {
       "name": "TalesFromRetail",
@@ -308,19 +313,21 @@
     }
   ],
   "schedule": {
-    "next_index": 157
+    "next_index": 158
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "12:00",
       "18:00",
       "23:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-10T15:00:00Z",
+      "2026-11-11T15:00:00Z",
       "2026-11-10T03:00:00Z",
       "2026-11-11T03:00:00Z",
       "2026-11-09T18:00:00Z",
@@ -330,7 +337,6 @@
       "2026-11-09T21:00:00Z",
       "2026-11-10T21:00:00Z",
       "2026-11-09T15:00:00Z",
-      "2026-11-10T15:00:00Z",
       "2026-11-09T03:00:00Z",
       "2026-11-08T23:00:00Z",
       "2026-11-08T12:00:00Z",
@@ -402,6 +408,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794300931_captioned_1794300931.mp4",
+      "title": "[FULL STORY] I’m tired of “future will be Mad‑Max.” What’s really ruining our optimism?",
+      "subreddit": "unpopularopinion",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122132580027447442",
+      "url": "https://www.facebook.com/reel/1709163953976138",
+      "posted_at": "2026-11-10T08:58:24Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-10T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794300931_captioned_1794300931.mp4",
+      "title": "[FULL STORY] I’m tired of “future will be Mad‑Max.” What’s really ruining our optimism?",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "D3gEAmTKQnw",
+      "url": "https://youtu.be/D3gEAmTKQnw",
+      "posted_at": "2026-11-10T08:56:46Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-10T15:00:00Z"
+    },
+    {
       "video_file": "output_1794225784_captioned_1794225784.mp4",
       "title": "[FULL STORY] I saw her stare, then she asked for something I never sold.",
       "subreddit": "TalesFromRetail",
@@ -410,18 +440,6 @@
       "video_id": "122132395161447442",
       "url": "https://www.facebook.com/reel/1438196391857438",
       "posted_at": "2026-11-09T12:04:18Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-10T03:00:00Z"
-    },
-    {
-      "video_file": "output_1794225784_captioned_1794225784.mp4",
-      "title": "[FULL STORY] I saw her stare, then she asked for something I never sold.",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "q89d4EACYkM",
-      "url": "https://youtu.be/q89d4EACYkM",
-      "posted_at": "2026-11-09T12:03:56Z",
       "hook_score": 26,
       "publish_at": "2026-11-10T03:00:00Z"
     },
@@ -507,6 +525,18 @@
       "posted_at": "2026-11-08T09:31:53Z",
       "hook_score": 52,
       "publish_at": "2026-11-08T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794225784_captioned_1794225784.mp4",
+      "title": "[FULL STORY] I saw her stare, then she asked for something I never sold.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "q89d4EACYkM",
+      "url": "https://youtu.be/q89d4EACYkM",
+      "posted_at": "2026-11-09T12:03:56Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-10T03:00:00Z"
     },
     {
       "video_file": "output_1794123973_captioned_1794123973.mp4",
