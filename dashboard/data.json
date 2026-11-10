@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-10T10:39:15Z",
+  "generated_at": "2026-11-10T11:28:19Z",
   "total_stories": 367,
   "unused_stories": 238,
   "used_stories": 129,
@@ -323,14 +323,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "12:00",
-      "18:00",
       "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-10T18:00:00Z",
+      "2026-11-11T12:00:00Z",
       "2026-11-10T21:00:00Z",
       "2026-11-11T21:00:00Z",
       "2026-11-10T15:00:00Z",
@@ -422,18 +424,6 @@
       "video_id": "122132592801447442",
       "url": "https://www.facebook.com/reel/1693669705661641",
       "posted_at": "2026-11-10T10:39:15Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-10T21:00:00Z"
-    },
-    {
-      "video_file": "output_1794306995_captioned_1794306995.mp4",
-      "title": "[FULL STORY] I got banned for a harmless comment—this policy ruined my life.",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "IiDr0CxdEtw",
-      "url": "https://youtu.be/IiDr0CxdEtw",
-      "posted_at": "2026-11-10T10:37:29Z",
       "hook_score": 39,
       "publish_at": "2026-11-10T21:00:00Z"
     },
@@ -533,18 +523,6 @@
       "publish_at": "2026-11-08T23:00:00Z"
     },
     {
-      "video_file": "output_1794300931_captioned_1794300931.mp4",
-      "title": "[FULL STORY] I’m tired of “future will be Mad‑Max.” What’s really ruining our optimism?",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "D3gEAmTKQnw",
-      "url": "https://youtu.be/D3gEAmTKQnw",
-      "posted_at": "2026-11-10T08:56:46Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-10T15:00:00Z"
-    },
-    {
       "video_file": "output_1794130065_captioned_1794130065.mp4",
       "title": "[FULL STORY] I’d skip my dad’s kids, but babysitting my niece exposed a dark secret.",
       "subreddit": "AmItheAsshole",
@@ -555,6 +533,30 @@
       "posted_at": "2026-11-08T09:31:53Z",
       "hook_score": 52,
       "publish_at": "2026-11-08T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794306995_captioned_1794306995.mp4",
+      "title": "[FULL STORY] I got banned for a harmless comment—this policy ruined my life.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "IiDr0CxdEtw",
+      "url": "https://youtu.be/IiDr0CxdEtw",
+      "posted_at": "2026-11-10T10:37:29Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-10T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794300931_captioned_1794300931.mp4",
+      "title": "[FULL STORY] I’m tired of “future will be Mad‑Max.” What’s really ruining our optimism?",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "D3gEAmTKQnw",
+      "url": "https://youtu.be/D3gEAmTKQnw",
+      "posted_at": "2026-11-10T08:56:46Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-10T15:00:00Z"
     },
     {
       "video_file": "output_1794225784_captioned_1794225784.mp4",
