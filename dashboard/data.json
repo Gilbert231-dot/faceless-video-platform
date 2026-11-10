@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-10T11:52:08Z",
+  "generated_at": "2026-11-10T12:58:50Z",
   "total_stories": 367,
-  "unused_stories": 237,
-  "used_stories": 130,
+  "unused_stories": 236,
+  "used_stories": 131,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 118,
@@ -42,12 +42,12 @@
       "unused": 20
     },
     {
-      "name": "TalesFromRetail",
-      "total": 20,
-      "unused": 20
+      "name": "AmItheAsshole",
+      "total": 19,
+      "unused": 19
     },
     {
-      "name": "AmItheAsshole",
+      "name": "TalesFromRetail",
       "total": 19,
       "unused": 19
     },
@@ -85,6 +85,11 @@
       "name": "ProRevenge",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 20,
+      "unused": 20
     },
     {
       "name": "MaliciousCompliance",
@@ -323,19 +328,21 @@
     }
   ],
   "schedule": {
-    "next_index": 160
+    "next_index": 161
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-11T03:00:00Z",
+      "2026-11-12T03:00:00Z",
       "2026-11-10T23:00:00Z",
       "2026-11-11T23:00:00Z",
       "2026-11-10T18:00:00Z",
@@ -345,7 +352,6 @@
       "2026-11-10T15:00:00Z",
       "2026-11-11T15:00:00Z",
       "2026-11-10T03:00:00Z",
-      "2026-11-11T03:00:00Z",
       "2026-11-09T18:00:00Z",
       "2026-11-10T12:00:00Z",
       "2026-11-09T23:00:00Z",
@@ -422,6 +428,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794315447_captioned_1794315447.mp4",
+      "title": "[FULL STORY] \"Three card‑only signs, a coin geyser, and the cashier’s silent scream.\"",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122132611065447442",
+      "url": "https://www.facebook.com/reel/1441241671448944",
+      "posted_at": "2026-11-10T12:58:50Z",
+      "hook_score": 0,
+      "publish_at": "2026-11-11T03:00:00Z"
+    },
+    {
+      "video_file": "output_1794315447_captioned_1794315447.mp4",
+      "title": "[FULL STORY] \"Three card‑only signs, a coin geyser, and the cashier’s silent scream.\"",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "kNU6I6cnVDI",
+      "url": "https://youtu.be/kNU6I6cnVDI",
+      "posted_at": "2026-11-10T12:58:21Z",
+      "hook_score": 0,
+      "publish_at": "2026-11-11T03:00:00Z"
+    },
+    {
       "video_file": "output_1794311456_captioned_1794311456.mp4",
       "title": "[FULL STORY] My hands cramp, I’m trapped… but the doctor’s secret will blow everything.",
       "subreddit": "MaliciousCompliance",
@@ -430,18 +460,6 @@
       "video_id": "122132602821447442",
       "url": "https://www.facebook.com/reel/1597119205431286",
       "posted_at": "2026-11-10T11:52:08Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-10T23:00:00Z"
-    },
-    {
-      "video_file": "output_1794311456_captioned_1794311456.mp4",
-      "title": "[FULL STORY] My hands cramp, I’m trapped… but the doctor’s secret will blow everything.",
-      "subreddit": "MaliciousCompliance",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "IzZtB6TNncA",
-      "url": "https://youtu.be/IzZtB6TNncA",
-      "posted_at": "2026-11-10T11:51:44Z",
       "hook_score": 39,
       "publish_at": "2026-11-10T23:00:00Z"
     },
@@ -527,6 +545,18 @@
       "url": "https://www.facebook.com/reel/29363928849892866",
       "posted_at": "2026-11-09T02:10:36Z",
       "hook_score": 39
+    },
+    {
+      "video_file": "output_1794311456_captioned_1794311456.mp4",
+      "title": "[FULL STORY] My hands cramp, I’m trapped… but the doctor’s secret will blow everything.",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "IzZtB6TNncA",
+      "url": "https://youtu.be/IzZtB6TNncA",
+      "posted_at": "2026-11-10T11:51:44Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-10T23:00:00Z"
     },
     {
       "video_file": "output_1794140481_captioned_1794140481.mp4",
