@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-11T11:17:04Z",
+  "generated_at": "2026-11-11T12:20:49Z",
   "total_stories": 367,
-  "unused_stories": 234,
-  "used_stories": 133,
+  "unused_stories": 233,
+  "used_stories": 134,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 117,
-  "runway_date": "2027-03-08",
+  "days_of_stories": 116,
+  "runway_date": "2027-03-07",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -47,17 +47,17 @@
       "unused": 19
     },
     {
-      "name": "TalesFromRetail",
-      "total": 19,
-      "unused": 19
-    },
-    {
       "name": "tifu",
       "total": 18,
       "unused": 18
     },
     {
       "name": "AITAH",
+      "total": 18,
+      "unused": 18
+    },
+    {
+      "name": "TalesFromRetail",
       "total": 18,
       "unused": 18
     },
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 19,
+      "unused": 19
     },
     {
       "name": "ProRevenge",
@@ -333,19 +338,21 @@
     }
   ],
   "schedule": {
-    "next_index": 163
+    "next_index": 164
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "23:00",
       "12:00",
       "18:00",
       "21:00",
       "15:00",
-      "03:00",
-      "23:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-11T23:00:00Z",
+      "2026-11-12T23:00:00Z",
       "2026-11-11T18:00:00Z",
       "2026-11-12T12:00:00Z",
       "2026-11-11T21:00:00Z",
@@ -355,7 +362,6 @@
       "2026-11-11T03:00:00Z",
       "2026-11-12T03:00:00Z",
       "2026-11-10T23:00:00Z",
-      "2026-11-11T23:00:00Z",
       "2026-11-10T18:00:00Z",
       "2026-11-11T12:00:00Z",
       "2026-11-10T21:00:00Z",
@@ -436,6 +442,30 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1794399423_captioned_1794399423.mp4",
+      "title": "[FULL STORY] I was caught in a warehouse nightmare—my boss tried to destroy my life.",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "4423817501216689",
+      "url": "https://www.facebook.com/1272041649331476/videos/4423817501216689",
+      "posted_at": "2026-11-11T12:20:49Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-11T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794399423_captioned_1794399423.mp4",
+      "title": "[FULL STORY] I was caught in a warehouse nightmare—my boss tried to destroy my life.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "fxB52NDJiMY",
+      "url": "https://youtu.be/fxB52NDJiMY",
+      "posted_at": "2026-11-11T12:18:32Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-11T23:00:00Z"
+    },
     {
       "video_file": "output_1794393071_captioned_1794393071.mp4",
       "title": "[FULL STORY] I exposed the creep—snorting baking soda ruined his internet reputation forever.",
