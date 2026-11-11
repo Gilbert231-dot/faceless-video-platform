@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-11T12:20:49Z",
+  "generated_at": "2026-11-11T13:30:11Z",
   "total_stories": 367,
-  "unused_stories": 233,
-  "used_stories": 134,
+  "unused_stories": 232,
+  "used_stories": 135,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 116,
@@ -73,13 +73,18 @@
     },
     {
       "name": "pettyrevenge",
-      "total": 5,
-      "unused": 4
+      "total": 4,
+      "unused": 3
     },
     {
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "pettyrevenge",
+      "total": 5,
+      "unused": 4
     },
     {
       "name": "TalesFromRetail",
@@ -338,19 +343,21 @@
     }
   ],
   "schedule": {
-    "next_index": 164
+    "next_index": 165
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-12T03:00:00Z",
+      "2026-11-13T03:00:00Z",
       "2026-11-11T23:00:00Z",
       "2026-11-12T23:00:00Z",
       "2026-11-11T18:00:00Z",
@@ -360,7 +367,6 @@
       "2026-11-11T15:00:00Z",
       "2026-11-12T15:00:00Z",
       "2026-11-11T03:00:00Z",
-      "2026-11-12T03:00:00Z",
       "2026-11-10T23:00:00Z",
       "2026-11-10T18:00:00Z",
       "2026-11-11T12:00:00Z",
@@ -443,6 +449,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794403742_captioned_1794403742.mp4",
+      "title": "[FULL STORY] I crashed my ex’s 21st, she exploded—now I’m stuck in a nightmare.",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122133361227447442",
+      "url": "https://www.facebook.com/reel/1108547792156150",
+      "posted_at": "2026-11-11T13:30:11Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-12T03:00:00Z"
+    },
+    {
+      "video_file": "output_1794403742_captioned_1794403742.mp4",
+      "title": "[FULL STORY] I crashed my ex’s 21st, she exploded—now I’m stuck in a nightmare.",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Wh-CkX0tuA4",
+      "url": "https://youtu.be/Wh-CkX0tuA4",
+      "posted_at": "2026-11-11T13:29:53Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-12T03:00:00Z"
+    },
+    {
       "video_file": "output_1794399423_captioned_1794399423.mp4",
       "title": "[FULL STORY] I was caught in a warehouse nightmare—my boss tried to destroy my life.",
       "subreddit": "TalesFromRetail",
@@ -451,18 +481,6 @@
       "video_id": "4423817501216689",
       "url": "https://www.facebook.com/1272041649331476/videos/4423817501216689",
       "posted_at": "2026-11-11T12:20:49Z",
-      "hook_score": 52,
-      "publish_at": "2026-11-11T23:00:00Z"
-    },
-    {
-      "video_file": "output_1794399423_captioned_1794399423.mp4",
-      "title": "[FULL STORY] I was caught in a warehouse nightmare—my boss tried to destroy my life.",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "fxB52NDJiMY",
-      "url": "https://youtu.be/fxB52NDJiMY",
-      "posted_at": "2026-11-11T12:18:32Z",
       "hook_score": 52,
       "publish_at": "2026-11-11T23:00:00Z"
     },
@@ -549,6 +567,18 @@
       "posted_at": "2026-11-09T12:04:18Z",
       "hook_score": 26,
       "publish_at": "2026-11-10T03:00:00Z"
+    },
+    {
+      "video_file": "output_1794399423_captioned_1794399423.mp4",
+      "title": "[FULL STORY] I was caught in a warehouse nightmare—my boss tried to destroy my life.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "fxB52NDJiMY",
+      "url": "https://youtu.be/fxB52NDJiMY",
+      "posted_at": "2026-11-11T12:18:32Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-11T23:00:00Z"
     },
     {
       "video_file": "output_1794220074_captioned_1794220074.mp4",
