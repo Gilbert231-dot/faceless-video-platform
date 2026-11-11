@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-11T10:34:28Z",
+  "generated_at": "2026-11-11T11:17:04Z",
   "total_stories": 367,
   "unused_stories": 234,
   "used_stories": 133,
@@ -338,14 +338,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-11T18:00:00Z",
+      "2026-11-12T12:00:00Z",
       "2026-11-11T21:00:00Z",
       "2026-11-12T21:00:00Z",
       "2026-11-11T15:00:00Z",
@@ -447,18 +449,6 @@
       "publish_at": "2026-11-11T21:00:00Z"
     },
     {
-      "video_file": "output_1794393071_captioned_1794393071.mp4",
-      "title": "[FULL STORY] I exposed the creep—snorting baking soda ruined his internet reputation forever.",
-      "subreddit": "ProRevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "57hAX745hx0",
-      "url": "https://youtu.be/57hAX745hx0",
-      "posted_at": "2026-11-11T10:32:07Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-11T21:00:00Z"
-    },
-    {
       "video_file": "output_1794386121_captioned_1794386121.mp4",
       "title": "[FULL STORY] “That rude guest tried to book a room, but I exposed the killer secret…”",
       "subreddit": "TalesFromTheFrontDesk",
@@ -555,18 +545,6 @@
       "publish_at": "2026-11-09T21:00:00Z"
     },
     {
-      "video_file": "output_1794386121_captioned_1794386121.mp4",
-      "title": "[FULL STORY] “That rude guest tried to book a room, but I exposed the killer secret…”",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "eP2GYZnV0_g",
-      "url": "https://youtu.be/eP2GYZnV0_g",
-      "posted_at": "2026-11-11T08:36:17Z",
-      "hook_score": 52,
-      "publish_at": "2026-11-11T15:00:00Z"
-    },
-    {
       "video_file": "output_1794212134_captioned_1794212134.mp4",
       "title": "[FULL STORY] My husband vanished, eviction papers arrived—what I did next shocked us both.",
       "subreddit": "AITAH",
@@ -577,6 +555,30 @@
       "posted_at": "2026-11-09T08:16:39Z",
       "hook_score": 39,
       "publish_at": "2026-11-09T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794393071_captioned_1794393071.mp4",
+      "title": "[FULL STORY] I exposed the creep—snorting baking soda ruined his internet reputation forever.",
+      "subreddit": "ProRevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "57hAX745hx0",
+      "url": "https://youtu.be/57hAX745hx0",
+      "posted_at": "2026-11-11T10:32:07Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-11T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794386121_captioned_1794386121.mp4",
+      "title": "[FULL STORY] “That rude guest tried to book a room, but I exposed the killer secret…”",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "eP2GYZnV0_g",
+      "url": "https://youtu.be/eP2GYZnV0_g",
+      "posted_at": "2026-11-11T08:36:17Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-11T15:00:00Z"
     },
     {
       "video_file": "output_1794315447_captioned_1794315447.mp4",
