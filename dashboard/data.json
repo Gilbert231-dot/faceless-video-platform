@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-12T11:35:09Z",
+  "generated_at": "2026-11-12T12:17:50Z",
   "total_stories": 367,
-  "unused_stories": 230,
-  "used_stories": 137,
+  "unused_stories": 229,
+  "used_stories": 138,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 115,
-  "runway_date": "2027-03-07",
+  "days_of_stories": 114,
+  "runway_date": "2027-03-06",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -42,17 +42,17 @@
       "unused": 20
     },
     {
-      "name": "AmItheAsshole",
-      "total": 19,
-      "unused": 19
-    },
-    {
       "name": "AITAH",
       "total": 18,
       "unused": 18
     },
     {
       "name": "tifu",
+      "total": 18,
+      "unused": 18
+    },
+    {
+      "name": "AmItheAsshole",
       "total": 18,
       "unused": 18
     },
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "AmItheAsshole",
+      "total": 19,
+      "unused": 19
     },
     {
       "name": "offmychest",
@@ -353,19 +358,21 @@
     }
   ],
   "schedule": {
-    "next_index": 167
+    "next_index": 168
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "23:00",
       "12:00",
       "18:00",
       "21:00",
       "15:00",
-      "03:00",
-      "23:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-12T23:00:00Z",
+      "2026-11-13T23:00:00Z",
       "2026-11-12T18:00:00Z",
       "2026-11-13T12:00:00Z",
       "2026-11-12T21:00:00Z",
@@ -375,7 +382,6 @@
       "2026-11-12T03:00:00Z",
       "2026-11-13T03:00:00Z",
       "2026-11-11T23:00:00Z",
-      "2026-11-12T23:00:00Z",
       "2026-11-11T18:00:00Z",
       "2026-11-12T12:00:00Z",
       "2026-11-11T21:00:00Z",
@@ -462,6 +468,30 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1794485704_captioned_1794485704.mp4",
+      "title": "[FULL STORY] They begged me after everyone bailed—my refusal turned their wedding into chaos.",
+      "subreddit": "AmItheAsshole",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122133647841447442",
+      "url": "https://www.facebook.com/reel/996969006816019",
+      "posted_at": "2026-11-12T12:17:50Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-12T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794485704_captioned_1794485704.mp4",
+      "title": "[FULL STORY] They begged me after everyone bailed—my refusal turned their wedding into chaos.",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "TjMes918eg0",
+      "url": "https://youtu.be/TjMes918eg0",
+      "posted_at": "2026-11-12T12:16:04Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-12T23:00:00Z"
+    },
     {
       "video_file": "output_1794479832_captioned_1794479832.mp4",
       "title": "[FULL STORY] My wealthy father refused help—now I’m fighting brain cancer alone, stunned.",
