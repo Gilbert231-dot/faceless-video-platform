@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-12T10:39:39Z",
+  "generated_at": "2026-11-12T11:35:09Z",
   "total_stories": 367,
   "unused_stories": 230,
   "used_stories": 137,
@@ -27,11 +27,6 @@
       "unused": 21
     },
     {
-      "name": "confession",
-      "total": 20,
-      "unused": 20
-    },
-    {
       "name": "TalesFromTheFrontDesk",
       "total": 20,
       "unused": 20
@@ -42,17 +37,22 @@
       "unused": 20
     },
     {
+      "name": "confession",
+      "total": 20,
+      "unused": 20
+    },
+    {
       "name": "AmItheAsshole",
       "total": 19,
       "unused": 19
     },
     {
-      "name": "tifu",
+      "name": "AITAH",
       "total": 18,
       "unused": 18
     },
     {
-      "name": "AITAH",
+      "name": "tifu",
       "total": 18,
       "unused": 18
     },
@@ -358,14 +358,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-12T18:00:00Z",
+      "2026-11-13T12:00:00Z",
       "2026-11-12T21:00:00Z",
       "2026-11-13T21:00:00Z",
       "2026-11-12T15:00:00Z",
@@ -473,18 +475,6 @@
       "publish_at": "2026-11-12T21:00:00Z"
     },
     {
-      "video_file": "output_1794479832_captioned_1794479832.mp4",
-      "title": "[FULL STORY] My wealthy father refused help—now I’m fighting brain cancer alone, stunned.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "uCysbU-CspA",
-      "url": "https://youtu.be/uCysbU-CspA",
-      "posted_at": "2026-11-12T10:38:09Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-12T21:00:00Z"
-    },
-    {
       "video_file": "output_1794474373_captioned_1794474373.mp4",
       "title": "[FULL STORY] I told them it was out of stock—then I got a surprise offer!",
       "subreddit": "TalesFromRetail",
@@ -581,18 +571,6 @@
       "publish_at": "2026-11-10T21:00:00Z"
     },
     {
-      "video_file": "output_1794474373_captioned_1794474373.mp4",
-      "title": "[FULL STORY] I told them it was out of stock—then I got a surprise offer!",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "4HTeFGX-Vgo",
-      "url": "https://youtu.be/4HTeFGX-Vgo",
-      "posted_at": "2026-11-12T09:07:17Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-12T15:00:00Z"
-    },
-    {
       "video_file": "output_1794300931_captioned_1794300931.mp4",
       "title": "[FULL STORY] I’m tired of “future will be Mad‑Max.” What’s really ruining our optimism?",
       "subreddit": "unpopularopinion",
@@ -603,6 +581,30 @@
       "posted_at": "2026-11-10T08:58:24Z",
       "hook_score": 26,
       "publish_at": "2026-11-10T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794479832_captioned_1794479832.mp4",
+      "title": "[FULL STORY] My wealthy father refused help—now I’m fighting brain cancer alone, stunned.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "uCysbU-CspA",
+      "url": "https://youtu.be/uCysbU-CspA",
+      "posted_at": "2026-11-12T10:38:09Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-12T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794474373_captioned_1794474373.mp4",
+      "title": "[FULL STORY] I told them it was out of stock—then I got a surprise offer!",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "4HTeFGX-Vgo",
+      "url": "https://youtu.be/4HTeFGX-Vgo",
+      "posted_at": "2026-11-12T09:07:17Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-12T15:00:00Z"
     },
     {
       "video_file": "output_1794403742_captioned_1794403742.mp4",
