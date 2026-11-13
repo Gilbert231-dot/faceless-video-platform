@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-13T08:56:42Z",
+  "generated_at": "2026-11-13T11:02:20Z",
   "total_stories": 367,
-  "unused_stories": 227,
-  "used_stories": 140,
+  "unused_stories": 226,
+  "used_stories": 141,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 113,
@@ -12,19 +12,24 @@
   "newest_added_at": null,
   "subreddits": [
     {
-      "name": "self",
-      "total": 22,
+      "name": "TrueOffMyChest",
+      "total": 23,
       "unused": 22
     },
     {
-      "name": "TrueOffMyChest",
-      "total": 23,
+      "name": "self",
+      "total": 22,
       "unused": 22
     },
     {
       "name": "relationship_advice",
       "total": 21,
       "unused": 21
+    },
+    {
+      "name": "confession",
+      "total": 20,
+      "unused": 20
     },
     {
       "name": "TalesFromTheFrontDesk",
@@ -37,17 +42,12 @@
       "unused": 20
     },
     {
-      "name": "confession",
-      "total": 20,
-      "unused": 20
-    },
-    {
-      "name": "AITAH",
+      "name": "AmItheAsshole",
       "total": 18,
       "unused": 18
     },
     {
-      "name": "AmItheAsshole",
+      "name": "AITAH",
       "total": 18,
       "unused": 18
     },
@@ -58,8 +58,8 @@
     },
     {
       "name": "TalesFromRetail",
-      "total": 17,
-      "unused": 17
+      "total": 16,
+      "unused": 16
     },
     {
       "name": "unpopularopinion",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 17,
+      "unused": 17
     },
     {
       "name": "tifu",
@@ -368,19 +373,21 @@
     }
   ],
   "schedule": {
-    "next_index": 170
+    "next_index": 171
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "23:00",
       "12:00",
-      "18:00",
-      "21:00"
+      "18:00"
     ],
     "next_publish_utc": [
+      "2026-11-13T21:00:00Z",
+      "2026-11-14T21:00:00Z",
       "2026-11-13T15:00:00Z",
       "2026-11-14T15:00:00Z",
       "2026-11-13T03:00:00Z",
@@ -390,7 +397,6 @@
       "2026-11-12T18:00:00Z",
       "2026-11-13T12:00:00Z",
       "2026-11-12T21:00:00Z",
-      "2026-11-13T21:00:00Z",
       "2026-11-12T15:00:00Z",
       "2026-11-12T03:00:00Z",
       "2026-11-11T23:00:00Z",
@@ -481,6 +487,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794567501_captioned_1794567501.mp4",
+      "title": "[FULL STORY] \"She walked in, and the whole thrift store turned into a nightmare.\"",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1850637882927301",
+      "url": "https://www.facebook.com/1272041649331476/videos/1850637882927301",
+      "posted_at": "2026-11-13T11:02:20Z",
+      "hook_score": 1,
+      "publish_at": "2026-11-13T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794567501_captioned_1794567501.mp4",
+      "title": "[FULL STORY] \"She walked in, and the whole thrift store turned into a nightmare.\"",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "20Qggp6clAg",
+      "url": "https://youtu.be/20Qggp6clAg",
+      "posted_at": "2026-11-13T10:59:23Z",
+      "hook_score": 1,
+      "publish_at": "2026-11-13T21:00:00Z"
+    },
+    {
       "video_file": "output_1794560014_captioned_1794560014.mp4",
       "title": "[FULL STORY] I walked 45km drunk, and what I found in Yeppoon stunned me.",
       "subreddit": "tifu",
@@ -489,18 +519,6 @@
       "video_id": "1150740974487762",
       "url": "https://www.facebook.com/1272041649331476/videos/1150740974487762",
       "posted_at": "2026-11-13T08:56:42Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-13T15:00:00Z"
-    },
-    {
-      "video_file": "output_1794560014_captioned_1794560014.mp4",
-      "title": "[FULL STORY] I walked 45km drunk, and what I found in Yeppoon stunned me.",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "56w9lyDDV0k",
-      "url": "https://youtu.be/56w9lyDDV0k",
-      "posted_at": "2026-11-13T08:54:32Z",
       "hook_score": 26,
       "publish_at": "2026-11-13T15:00:00Z"
     },
@@ -587,6 +605,18 @@
       "posted_at": "2026-11-11T10:34:28Z",
       "hook_score": 26,
       "publish_at": "2026-11-11T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794560014_captioned_1794560014.mp4",
+      "title": "[FULL STORY] I walked 45km drunk, and what I found in Yeppoon stunned me.",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "56w9lyDDV0k",
+      "url": "https://youtu.be/56w9lyDDV0k",
+      "posted_at": "2026-11-13T08:54:32Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-13T15:00:00Z"
     },
     {
       "video_file": "output_1794386121_captioned_1794386121.mp4",
