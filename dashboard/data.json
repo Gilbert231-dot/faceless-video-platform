@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-13T11:19:41Z",
+  "generated_at": "2026-11-13T12:30:22Z",
   "total_stories": 367,
-  "unused_stories": 226,
-  "used_stories": 141,
+  "unused_stories": 225,
+  "used_stories": 142,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 113,
-  "runway_date": "2027-03-06",
+  "days_of_stories": 112,
+  "runway_date": "2027-03-05",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -62,13 +62,13 @@
       "unused": 16
     },
     {
-      "name": "unpopularopinion",
-      "total": 16,
-      "unused": 14
-    },
-    {
       "name": "EntitledPeople",
       "total": 13,
+      "unused": 13
+    },
+    {
+      "name": "unpopularopinion",
+      "total": 15,
       "unused": 13
     },
     {
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "unpopularopinion",
+      "total": 16,
+      "unused": 14
     },
     {
       "name": "TalesFromRetail",
@@ -373,19 +378,21 @@
     }
   ],
   "schedule": {
-    "next_index": 171
+    "next_index": 172
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "23:00",
       "12:00",
       "18:00",
       "21:00",
       "15:00",
-      "03:00",
-      "23:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-13T23:00:00Z",
+      "2026-11-14T23:00:00Z",
       "2026-11-13T18:00:00Z",
       "2026-11-14T12:00:00Z",
       "2026-11-13T21:00:00Z",
@@ -395,7 +402,6 @@
       "2026-11-13T03:00:00Z",
       "2026-11-14T03:00:00Z",
       "2026-11-12T23:00:00Z",
-      "2026-11-13T23:00:00Z",
       "2026-11-12T18:00:00Z",
       "2026-11-13T12:00:00Z",
       "2026-11-12T21:00:00Z",
@@ -488,6 +494,30 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1794572947_captioned_1794572947.mp4",
+      "title": "[FULL STORY] I can't believe they ruined my favorite dessert—this changed everything!",
+      "subreddit": "unpopularopinion",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122134595601447442",
+      "url": "https://www.facebook.com/reel/2635203893667235",
+      "posted_at": "2026-11-13T12:30:22Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-13T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794572947_captioned_1794572947.mp4",
+      "title": "[FULL STORY] I can't believe they ruined my favorite dessert—this changed everything!",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ZkAfROous18",
+      "url": "https://youtu.be/ZkAfROous18",
+      "posted_at": "2026-11-13T12:30:01Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-13T23:00:00Z"
+    },
     {
       "video_file": "output_1794567501_captioned_1794567501.mp4",
       "title": "[FULL STORY] \"She walked in, and the whole thrift store turned into a nightmare.\"",
