@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-14T09:48:15Z",
+  "generated_at": "2026-11-14T10:44:12Z",
   "total_stories": 367,
   "unused_stories": 222,
   "used_stories": 145,
@@ -398,14 +398,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-14T12:00:00Z",
+      "2026-11-14T18:00:00Z",
       "2026-11-14T21:00:00Z",
       "2026-11-15T21:00:00Z",
       "2026-11-14T15:00:00Z",
@@ -415,7 +417,6 @@
       "2026-11-13T23:00:00Z",
       "2026-11-14T23:00:00Z",
       "2026-11-13T18:00:00Z",
-      "2026-11-14T12:00:00Z",
       "2026-11-13T21:00:00Z",
       "2026-11-13T15:00:00Z",
       "2026-11-13T03:00:00Z",
@@ -525,18 +526,6 @@
       "publish_at": "2026-11-14T21:00:00Z"
     },
     {
-      "video_file": "output_1794649632_captioned_1794649632.mp4",
-      "title": "[FULL STORY] They capped pre‑med loans, but my teaching major got a death sentence.",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "_lyWCXrDPMk",
-      "url": "https://youtu.be/_lyWCXrDPMk",
-      "posted_at": "2026-11-14T09:47:57Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-14T21:00:00Z"
-    },
-    {
       "video_file": "output_1794645984_captioned_1794645984.mp4",
       "title": "[FULL STORY] My boyfriend demanded an abortion—now I’m 7 months pregnant, wedding looming.",
       "subreddit": "relationship_advice",
@@ -633,18 +622,6 @@
       "publish_at": "2026-11-12T21:00:00Z"
     },
     {
-      "video_file": "output_1794645984_captioned_1794645984.mp4",
-      "title": "[FULL STORY] My boyfriend demanded an abortion—now I’m 7 months pregnant, wedding looming.",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "6Uf4_5qQaW0",
-      "url": "https://youtu.be/6Uf4_5qQaW0",
-      "posted_at": "2026-11-14T08:47:28Z",
-      "hook_score": 65,
-      "publish_at": "2026-11-14T15:00:00Z"
-    },
-    {
       "video_file": "output_1794474373_captioned_1794474373.mp4",
       "title": "[FULL STORY] I told them it was out of stock—then I got a surprise offer!",
       "subreddit": "TalesFromRetail",
@@ -655,6 +632,30 @@
       "posted_at": "2026-11-12T09:09:12Z",
       "hook_score": 26,
       "publish_at": "2026-11-12T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794649632_captioned_1794649632.mp4",
+      "title": "[FULL STORY] They capped pre‑med loans, but my teaching major got a death sentence.",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "_lyWCXrDPMk",
+      "url": "https://youtu.be/_lyWCXrDPMk",
+      "posted_at": "2026-11-14T09:47:57Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-14T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794645984_captioned_1794645984.mp4",
+      "title": "[FULL STORY] My boyfriend demanded an abortion—now I’m 7 months pregnant, wedding looming.",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "6Uf4_5qQaW0",
+      "url": "https://youtu.be/6Uf4_5qQaW0",
+      "posted_at": "2026-11-14T08:47:28Z",
+      "hook_score": 65,
+      "publish_at": "2026-11-14T15:00:00Z"
     },
     {
       "video_file": "output_1794577551_captioned_1794577551.mp4",
