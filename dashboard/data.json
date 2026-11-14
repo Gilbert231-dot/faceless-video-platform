@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-14T11:04:34Z",
+  "generated_at": "2026-11-14T12:17:48Z",
   "total_stories": 367,
-  "unused_stories": 221,
-  "used_stories": 146,
+  "unused_stories": 220,
+  "used_stories": 147,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 110,
@@ -72,14 +72,19 @@
       "unused": 12
     },
     {
-      "name": "pettyrevenge",
-      "total": 4,
-      "unused": 3
-    },
-    {
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "pettyrevenge",
+      "total": 3,
+      "unused": 2
+    },
+    {
+      "name": "pettyrevenge",
+      "total": 4,
+      "unused": 3
     },
     {
       "name": "TalesFromRetail",
@@ -398,19 +403,21 @@
     }
   ],
   "schedule": {
-    "next_index": 176
+    "next_index": 177
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-15T03:00:00Z",
+      "2026-11-16T03:00:00Z",
       "2026-11-14T23:00:00Z",
       "2026-11-15T23:00:00Z",
       "2026-11-14T12:00:00Z",
@@ -420,7 +427,6 @@
       "2026-11-14T15:00:00Z",
       "2026-11-15T15:00:00Z",
       "2026-11-14T03:00:00Z",
-      "2026-11-15T03:00:00Z",
       "2026-11-13T23:00:00Z",
       "2026-11-13T18:00:00Z",
       "2026-11-13T21:00:00Z",
@@ -520,6 +526,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794658582_captioned_1794658582.mp4",
+      "title": "[FULL STORY] I rode my bike, then the refuse lorry driver swerved—my life went to pieces.",
+      "subreddit": "pettyrevenge",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122135011041447442",
+      "url": "https://www.facebook.com/reel/2222766305112783",
+      "posted_at": "2026-11-14T12:17:48Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-15T03:00:00Z"
+    },
+    {
+      "video_file": "output_1794658582_captioned_1794658582.mp4",
+      "title": "[FULL STORY] I rode my bike, then the refuse lorry driver swerved—my life went to pieces.",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Swug1XLbV9c",
+      "url": "https://youtu.be/Swug1XLbV9c",
+      "posted_at": "2026-11-14T12:17:28Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-15T03:00:00Z"
+    },
+    {
       "video_file": "output_1794654200_captioned_1794654200.mp4",
       "title": "[FULL STORY] \"She ignored a cockroach crawling off her—why would anyone stay silent?\"",
       "subreddit": "TalesFromRetail",
@@ -528,18 +558,6 @@
       "video_id": "122135000829447442",
       "url": "https://www.facebook.com/reel/1829073891478128",
       "posted_at": "2026-11-14T11:04:34Z",
-      "hook_score": 1,
-      "publish_at": "2026-11-14T23:00:00Z"
-    },
-    {
-      "video_file": "output_1794654200_captioned_1794654200.mp4",
-      "title": "[FULL STORY] \"She ignored a cockroach crawling off her—why would anyone stay silent?\"",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "9xAv7kN2MFE",
-      "url": "https://youtu.be/9xAv7kN2MFE",
-      "posted_at": "2026-11-14T11:04:09Z",
       "hook_score": 1,
       "publish_at": "2026-11-14T23:00:00Z"
     },
@@ -626,6 +644,18 @@
       "posted_at": "2026-11-12T13:34:25Z",
       "hook_score": 65,
       "publish_at": "2026-11-13T03:00:00Z"
+    },
+    {
+      "video_file": "output_1794654200_captioned_1794654200.mp4",
+      "title": "[FULL STORY] \"She ignored a cockroach crawling off her—why would anyone stay silent?\"",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "9xAv7kN2MFE",
+      "url": "https://youtu.be/9xAv7kN2MFE",
+      "posted_at": "2026-11-14T11:04:09Z",
+      "hook_score": 1,
+      "publish_at": "2026-11-14T23:00:00Z"
     },
     {
       "video_file": "output_1794485704_captioned_1794485704.mp4",
