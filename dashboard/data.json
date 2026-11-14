@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-13T13:48:11Z",
+  "generated_at": "2026-11-14T08:50:14Z",
   "total_stories": 367,
-  "unused_stories": 224,
-  "used_stories": 143,
+  "unused_stories": 223,
+  "used_stories": 144,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 112,
+  "days_of_stories": 111,
   "runway_date": "2027-03-05",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -20,11 +20,6 @@
       "name": "self",
       "total": 22,
       "unused": 22
-    },
-    {
-      "name": "relationship_advice",
-      "total": 21,
-      "unused": 21
     },
     {
       "name": "confession",
@@ -42,9 +37,9 @@
       "unused": 20
     },
     {
-      "name": "AmItheAsshole",
-      "total": 18,
-      "unused": 18
+      "name": "relationship_advice",
+      "total": 20,
+      "unused": 20
     },
     {
       "name": "AITAH",
@@ -52,9 +47,9 @@
       "unused": 18
     },
     {
-      "name": "tifu",
-      "total": 16,
-      "unused": 16
+      "name": "AmItheAsshole",
+      "total": 18,
+      "unused": 18
     },
     {
       "name": "TalesFromRetail",
@@ -62,13 +57,18 @@
       "unused": 16
     },
     {
-      "name": "unpopularopinion",
-      "total": 15,
-      "unused": 13
+      "name": "tifu",
+      "total": 16,
+      "unused": 16
     },
     {
       "name": "EntitledPeople",
       "total": 13,
+      "unused": 13
+    },
+    {
+      "name": "unpopularopinion",
+      "total": 15,
       "unused": 13
     },
     {
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "relationship_advice",
+      "total": 21,
+      "unused": 21
     },
     {
       "name": "tifu",
@@ -383,19 +388,21 @@
     }
   ],
   "schedule": {
-    "next_index": 173
+    "next_index": 174
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-14T15:00:00Z",
+      "2026-11-15T15:00:00Z",
       "2026-11-14T03:00:00Z",
       "2026-11-15T03:00:00Z",
       "2026-11-13T23:00:00Z",
@@ -405,7 +412,6 @@
       "2026-11-13T21:00:00Z",
       "2026-11-14T21:00:00Z",
       "2026-11-13T15:00:00Z",
-      "2026-11-14T15:00:00Z",
       "2026-11-13T03:00:00Z",
       "2026-11-12T23:00:00Z",
       "2026-11-12T18:00:00Z",
@@ -501,6 +507,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794645984_captioned_1794645984.mp4",
+      "title": "[FULL STORY] My boyfriend demanded an abortion—now I’m 7 months pregnant, wedding looming.",
+      "subreddit": "relationship_advice",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1726343209139931",
+      "url": "https://www.facebook.com/1272041649331476/videos/1726343209139931",
+      "posted_at": "2026-11-14T08:50:14Z",
+      "hook_score": 65,
+      "publish_at": "2026-11-14T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794645984_captioned_1794645984.mp4",
+      "title": "[FULL STORY] My boyfriend demanded an abortion—now I’m 7 months pregnant, wedding looming.",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "6Uf4_5qQaW0",
+      "url": "https://youtu.be/6Uf4_5qQaW0",
+      "posted_at": "2026-11-14T08:47:28Z",
+      "hook_score": 65,
+      "publish_at": "2026-11-14T15:00:00Z"
+    },
+    {
       "video_file": "output_1794577551_captioned_1794577551.mp4",
       "title": "[FULL STORY] \"Micro‑dosing my child with raw chicken? I never imagined the fallout…\"",
       "subreddit": "tifu",
@@ -509,18 +539,6 @@
       "video_id": "122134689687447442",
       "url": "https://www.facebook.com/reel/4154590194672158",
       "posted_at": "2026-11-13T13:48:11Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-14T03:00:00Z"
-    },
-    {
-      "video_file": "output_1794577551_captioned_1794577551.mp4",
-      "title": "[FULL STORY] \"Micro‑dosing my child with raw chicken? I never imagined the fallout…\"",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "EXFXtFx3ZZw",
-      "url": "https://youtu.be/EXFXtFx3ZZw",
-      "posted_at": "2026-11-13T13:46:45Z",
       "hook_score": 26,
       "publish_at": "2026-11-14T03:00:00Z"
     },
@@ -607,6 +625,18 @@
       "posted_at": "2026-11-12T09:09:12Z",
       "hook_score": 26,
       "publish_at": "2026-11-12T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794577551_captioned_1794577551.mp4",
+      "title": "[FULL STORY] \"Micro‑dosing my child with raw chicken? I never imagined the fallout…\"",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "EXFXtFx3ZZw",
+      "url": "https://youtu.be/EXFXtFx3ZZw",
+      "posted_at": "2026-11-13T13:46:45Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-14T03:00:00Z"
     },
     {
       "video_file": "output_1794403742_captioned_1794403742.mp4",
