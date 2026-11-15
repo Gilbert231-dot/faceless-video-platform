@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-14T12:17:48Z",
+  "generated_at": "2026-11-15T08:05:31Z",
   "total_stories": 367,
-  "unused_stories": 220,
-  "used_stories": 147,
+  "unused_stories": 219,
+  "used_stories": 148,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 110,
+  "days_of_stories": 109,
   "runway_date": "2027-03-04",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -63,8 +63,8 @@
     },
     {
       "name": "EntitledPeople",
-      "total": 13,
-      "unused": 13
+      "total": 12,
+      "unused": 12
     },
     {
       "name": "unpopularopinion",
@@ -80,6 +80,11 @@
       "name": "pettyrevenge",
       "total": 3,
       "unused": 2
+    },
+    {
+      "name": "EntitledPeople",
+      "total": 13,
+      "unused": 13
     },
     {
       "name": "pettyrevenge",
@@ -403,19 +408,21 @@
     }
   ],
   "schedule": {
-    "next_index": 177
+    "next_index": 178
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-15T15:00:00Z",
+      "2026-11-16T15:00:00Z",
       "2026-11-15T03:00:00Z",
       "2026-11-16T03:00:00Z",
       "2026-11-14T23:00:00Z",
@@ -425,7 +432,6 @@
       "2026-11-14T21:00:00Z",
       "2026-11-15T21:00:00Z",
       "2026-11-14T15:00:00Z",
-      "2026-11-15T15:00:00Z",
       "2026-11-14T03:00:00Z",
       "2026-11-13T23:00:00Z",
       "2026-11-13T18:00:00Z",
@@ -526,6 +532,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794729862_captioned_1794729862.mp4",
+      "title": "[FULL STORY] I walked home, a 7th grader ambushed me—what happened next shocked everyone.",
+      "subreddit": "EntitledPeople",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122135482677447442",
+      "url": "https://www.facebook.com/reel/2053022145352346",
+      "posted_at": "2026-11-15T08:05:31Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-15T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794729862_captioned_1794729862.mp4",
+      "title": "[FULL STORY] I walked home, a 7th grader ambushed me—what happened next shocked everyone.",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "D2OG8wEb5MU",
+      "url": "https://youtu.be/D2OG8wEb5MU",
+      "posted_at": "2026-11-15T08:05:12Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-15T15:00:00Z"
+    },
+    {
       "video_file": "output_1794658582_captioned_1794658582.mp4",
       "title": "[FULL STORY] I rode my bike, then the refuse lorry driver swerved—my life went to pieces.",
       "subreddit": "pettyrevenge",
@@ -534,18 +564,6 @@
       "video_id": "122135011041447442",
       "url": "https://www.facebook.com/reel/2222766305112783",
       "posted_at": "2026-11-14T12:17:48Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-15T03:00:00Z"
-    },
-    {
-      "video_file": "output_1794658582_captioned_1794658582.mp4",
-      "title": "[FULL STORY] I rode my bike, then the refuse lorry driver swerved—my life went to pieces.",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "Swug1XLbV9c",
-      "url": "https://youtu.be/Swug1XLbV9c",
-      "posted_at": "2026-11-14T12:17:28Z",
       "hook_score": 39,
       "publish_at": "2026-11-15T03:00:00Z"
     },
@@ -632,6 +650,18 @@
       "posted_at": "2026-11-13T08:56:42Z",
       "hook_score": 26,
       "publish_at": "2026-11-13T15:00:00Z"
+    },
+    {
+      "video_file": "output_1794658582_captioned_1794658582.mp4",
+      "title": "[FULL STORY] I rode my bike, then the refuse lorry driver swerved—my life went to pieces.",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Swug1XLbV9c",
+      "url": "https://youtu.be/Swug1XLbV9c",
+      "posted_at": "2026-11-14T12:17:28Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-15T03:00:00Z"
     },
     {
       "video_file": "output_1794490397_captioned_1794490397.mp4",
