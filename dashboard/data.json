@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-16T11:33:52Z",
+  "generated_at": "2026-11-16T11:50:36Z",
   "total_stories": 367,
   "unused_stories": 213,
   "used_stories": 154,
@@ -12,13 +12,13 @@
   "newest_added_at": null,
   "subreddits": [
     {
-      "name": "TrueOffMyChest",
-      "total": 23,
+      "name": "self",
+      "total": 22,
       "unused": 22
     },
     {
-      "name": "self",
-      "total": 22,
+      "name": "TrueOffMyChest",
+      "total": 23,
       "unused": 22
     },
     {
@@ -27,7 +27,7 @@
       "unused": 20
     },
     {
-      "name": "confession",
+      "name": "relationship_advice",
       "total": 19,
       "unused": 19
     },
@@ -37,7 +37,7 @@
       "unused": 19
     },
     {
-      "name": "relationship_advice",
+      "name": "confession",
       "total": 19,
       "unused": 19
     },
@@ -443,14 +443,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "23:00",
       "21:00",
       "15:00",
-      "03:00",
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-16T18:00:00Z",
+      "2026-11-17T12:00:00Z",
       "2026-11-16T23:00:00Z",
       "2026-11-17T23:00:00Z",
       "2026-11-16T21:00:00Z",
@@ -582,18 +584,6 @@
       "publish_at": "2026-11-16T23:00:00Z"
     },
     {
-      "video_file": "output_1794828650_captioned_1794828650.mp4",
-      "title": "[FULL STORY] “Friends vanished overnight—now my texts feel like echoes from a dead world.”",
-      "subreddit": "confession",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "lD4db7Akzbk",
-      "url": "https://youtu.be/lD4db7Akzbk",
-      "posted_at": "2026-11-16T11:31:45Z",
-      "hook_score": 13,
-      "publish_at": "2026-11-16T23:00:00Z"
-    },
-    {
       "video_file": "output_1794822985_captioned_1794822985.mp4",
       "title": "[FULL STORY] I started Ozempic, my best friend exposed a nightmare—now I’m terrified.",
       "subreddit": "offmychest",
@@ -690,18 +680,6 @@
       "publish_at": "2026-11-14T23:00:00Z"
     },
     {
-      "video_file": "output_1794822985_captioned_1794822985.mp4",
-      "title": "[FULL STORY] I started Ozempic, my best friend exposed a nightmare—now I’m terrified.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "yYnlDnd1J-c",
-      "url": "https://youtu.be/yYnlDnd1J-c",
-      "posted_at": "2026-11-16T09:57:32Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-16T21:00:00Z"
-    },
-    {
       "video_file": "output_1794649632_captioned_1794649632.mp4",
       "title": "[FULL STORY] They capped pre‑med loans, but my teaching major got a death sentence.",
       "subreddit": "unpopularopinion",
@@ -712,6 +690,30 @@
       "posted_at": "2026-11-14T09:48:15Z",
       "hook_score": 26,
       "publish_at": "2026-11-14T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794828650_captioned_1794828650.mp4",
+      "title": "[FULL STORY] “Friends vanished overnight—now my texts feel like echoes from a dead world.”",
+      "subreddit": "confession",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "lD4db7Akzbk",
+      "url": "https://youtu.be/lD4db7Akzbk",
+      "posted_at": "2026-11-16T11:31:45Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-16T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794822985_captioned_1794822985.mp4",
+      "title": "[FULL STORY] I started Ozempic, my best friend exposed a nightmare—now I’m terrified.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "yYnlDnd1J-c",
+      "url": "https://youtu.be/yYnlDnd1J-c",
+      "posted_at": "2026-11-16T09:57:32Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-16T21:00:00Z"
     },
     {
       "video_file": "output_1794817372_captioned_1794817372.mp4",
