@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-17T10:53:33Z",
+  "generated_at": "2026-11-17T12:03:39Z",
   "total_stories": 367,
-  "unused_stories": 210,
-  "used_stories": 157,
+  "unused_stories": 209,
+  "used_stories": 158,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 105,
-  "runway_date": "2027-03-02",
+  "days_of_stories": 104,
+  "runway_date": "2027-03-01",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -27,7 +27,7 @@
       "unused": 20
     },
     {
-      "name": "relationship_advice",
+      "name": "confession",
       "total": 19,
       "unused": 19
     },
@@ -37,7 +37,7 @@
       "unused": 19
     },
     {
-      "name": "confession",
+      "name": "relationship_advice",
       "total": 19,
       "unused": 19
     },
@@ -58,8 +58,8 @@
     },
     {
       "name": "TalesFromRetail",
-      "total": 14,
-      "unused": 14
+      "total": 13,
+      "unused": 13
     },
     {
       "name": "unpopularopinion",
@@ -80,6 +80,11 @@
       "name": "pettyrevenge",
       "total": 3,
       "unused": 2
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 14,
+      "unused": 14
     },
     {
       "name": "self",
@@ -453,19 +458,21 @@
     }
   ],
   "schedule": {
-    "next_index": 187
+    "next_index": 188
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "23:00",
       "21:00",
       "15:00",
       "03:00",
       "12:00",
-      "18:00",
-      "23:00"
+      "18:00"
     ],
     "next_publish_utc": [
+      "2026-11-17T23:00:00Z",
+      "2026-11-18T23:00:00Z",
       "2026-11-17T21:00:00Z",
       "2026-11-18T21:00:00Z",
       "2026-11-17T15:00:00Z",
@@ -475,7 +482,6 @@
       "2026-11-16T18:00:00Z",
       "2026-11-17T12:00:00Z",
       "2026-11-16T23:00:00Z",
-      "2026-11-17T23:00:00Z",
       "2026-11-16T21:00:00Z",
       "2026-11-16T15:00:00Z",
       "2026-11-16T03:00:00Z",
@@ -590,6 +596,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1794916900_captioned_1794916900.mp4",
+      "title": "[FULL STORY] I told him I knew nothing—until he threatened to expose my secret.",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122136474249447442",
+      "url": "https://www.facebook.com/reel/1656520562878304",
+      "posted_at": "2026-11-17T12:03:39Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-17T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794916900_captioned_1794916900.mp4",
+      "title": "[FULL STORY] I told him I knew nothing—until he threatened to expose my secret.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "wV6YVH-6fBM",
+      "url": "https://youtu.be/wV6YVH-6fBM",
+      "posted_at": "2026-11-17T12:02:31Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-17T23:00:00Z"
+    },
+    {
       "video_file": "output_1794912734_captioned_1794912734.mp4",
       "title": "[FULL STORY] I was always there—now I'm sick, and everyone vanished.",
       "subreddit": "self",
@@ -598,18 +628,6 @@
       "video_id": "122136465009447442",
       "url": "https://www.facebook.com/reel/2993536161039082",
       "posted_at": "2026-11-17T10:53:33Z",
-      "hook_score": 13,
-      "publish_at": "2026-11-17T21:00:00Z"
-    },
-    {
-      "video_file": "output_1794912734_captioned_1794912734.mp4",
-      "title": "[FULL STORY] I was always there—now I'm sick, and everyone vanished.",
-      "subreddit": "self",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "wTa1OkF9zNI",
-      "url": "https://youtu.be/wTa1OkF9zNI",
-      "posted_at": "2026-11-17T10:53:05Z",
       "hook_score": 13,
       "publish_at": "2026-11-17T21:00:00Z"
     },
@@ -696,6 +714,18 @@
       "posted_at": "2026-11-15T10:35:17Z",
       "hook_score": 39,
       "publish_at": "2026-11-15T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794912734_captioned_1794912734.mp4",
+      "title": "[FULL STORY] I was always there—now I'm sick, and everyone vanished.",
+      "subreddit": "self",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "wTa1OkF9zNI",
+      "url": "https://youtu.be/wTa1OkF9zNI",
+      "posted_at": "2026-11-17T10:53:05Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-17T21:00:00Z"
     },
     {
       "video_file": "output_1794734908_captioned_1794734908.mp4",
