@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-17T12:03:39Z",
+  "generated_at": "2026-11-17T12:11:56Z",
   "total_stories": 367,
   "unused_stories": 209,
   "used_stories": 158,
@@ -27,7 +27,7 @@
       "unused": 20
     },
     {
-      "name": "confession",
+      "name": "relationship_advice",
       "total": 19,
       "unused": 19
     },
@@ -37,7 +37,7 @@
       "unused": 19
     },
     {
-      "name": "relationship_advice",
+      "name": "confession",
       "total": 19,
       "unused": 19
     },
@@ -463,14 +463,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "23:00",
       "21:00",
       "15:00",
-      "03:00",
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-17T18:00:00Z",
+      "2026-11-18T12:00:00Z",
       "2026-11-17T23:00:00Z",
       "2026-11-18T23:00:00Z",
       "2026-11-17T21:00:00Z",
@@ -608,18 +610,6 @@
       "publish_at": "2026-11-17T23:00:00Z"
     },
     {
-      "video_file": "output_1794916900_captioned_1794916900.mp4",
-      "title": "[FULL STORY] I told him I knew nothing—until he threatened to expose my secret.",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "wV6YVH-6fBM",
-      "url": "https://youtu.be/wV6YVH-6fBM",
-      "posted_at": "2026-11-17T12:02:31Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-17T23:00:00Z"
-    },
-    {
       "video_file": "output_1794912734_captioned_1794912734.mp4",
       "title": "[FULL STORY] I was always there—now I'm sick, and everyone vanished.",
       "subreddit": "self",
@@ -716,18 +706,6 @@
       "publish_at": "2026-11-15T23:00:00Z"
     },
     {
-      "video_file": "output_1794912734_captioned_1794912734.mp4",
-      "title": "[FULL STORY] I was always there—now I'm sick, and everyone vanished.",
-      "subreddit": "self",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "wTa1OkF9zNI",
-      "url": "https://youtu.be/wTa1OkF9zNI",
-      "posted_at": "2026-11-17T10:53:05Z",
-      "hook_score": 13,
-      "publish_at": "2026-11-17T21:00:00Z"
-    },
-    {
       "video_file": "output_1794734908_captioned_1794734908.mp4",
       "title": "[FULL STORY] \"She vanished, I stole her plot—now the garden’s secrets are killing us.\"",
       "subreddit": "AmItheAsshole",
@@ -738,6 +716,30 @@
       "posted_at": "2026-11-15T09:30:52Z",
       "hook_score": 26,
       "publish_at": "2026-11-15T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794916900_captioned_1794916900.mp4",
+      "title": "[FULL STORY] I told him I knew nothing—until he threatened to expose my secret.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "wV6YVH-6fBM",
+      "url": "https://youtu.be/wV6YVH-6fBM",
+      "posted_at": "2026-11-17T12:02:31Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-17T23:00:00Z"
+    },
+    {
+      "video_file": "output_1794912734_captioned_1794912734.mp4",
+      "title": "[FULL STORY] I was always there—now I'm sick, and everyone vanished.",
+      "subreddit": "self",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "wTa1OkF9zNI",
+      "url": "https://youtu.be/wTa1OkF9zNI",
+      "posted_at": "2026-11-17T10:53:05Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-17T21:00:00Z"
     },
     {
       "video_file": "output_1794908464_captioned_1794908464.mp4",
