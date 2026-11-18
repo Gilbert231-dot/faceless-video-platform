@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-18T11:34:31Z",
+  "generated_at": "2026-11-18T11:59:57Z",
   "total_stories": 367,
   "unused_stories": 206,
   "used_stories": 161,
@@ -478,14 +478,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "12:00",
-      "18:00",
       "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-18T18:00:00Z",
+      "2026-11-19T12:00:00Z",
       "2026-11-18T21:00:00Z",
       "2026-11-19T21:00:00Z",
       "2026-11-18T15:00:00Z",
@@ -628,18 +630,6 @@
       "publish_at": "2026-11-18T21:00:00Z"
     },
     {
-      "video_file": "output_1795001473_captioned_1795001473.mp4",
-      "title": "[FULL STORY] My heart shattered when cops raided our home—he was arrested for trafficking minors.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "uRXaqlyw750",
-      "url": "https://youtu.be/uRXaqlyw750",
-      "posted_at": "2026-11-18T11:32:29Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-18T21:00:00Z"
-    },
-    {
       "video_file": "output_1794995654_captioned_1794995654.mp4",
       "title": "[FULL STORY] \"Guests begged for beds, hotel denied, and I was forced to charge them.\"",
       "subreddit": "TalesFromTheFrontDesk",
@@ -736,18 +726,6 @@
       "publish_at": "2026-11-16T21:00:00Z"
     },
     {
-      "video_file": "output_1794995654_captioned_1794995654.mp4",
-      "title": "[FULL STORY] \"Guests begged for beds, hotel denied, and I was forced to charge them.\"",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "vmSmvZ41PkU",
-      "url": "https://youtu.be/vmSmvZ41PkU",
-      "posted_at": "2026-11-18T09:55:11Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-18T15:00:00Z"
-    },
-    {
       "video_file": "output_1794817372_captioned_1794817372.mp4",
       "title": "[FULL STORY] My coworker asked me to hold the register for 10 minutes—then everything changed.",
       "subreddit": "TalesFromRetail",
@@ -758,6 +736,30 @@
       "posted_at": "2026-11-16T08:25:15Z",
       "hook_score": 78,
       "publish_at": "2026-11-16T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795001473_captioned_1795001473.mp4",
+      "title": "[FULL STORY] My heart shattered when cops raided our home—he was arrested for trafficking minors.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "uRXaqlyw750",
+      "url": "https://youtu.be/uRXaqlyw750",
+      "posted_at": "2026-11-18T11:32:29Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-18T21:00:00Z"
+    },
+    {
+      "video_file": "output_1794995654_captioned_1794995654.mp4",
+      "title": "[FULL STORY] \"Guests begged for beds, hotel denied, and I was forced to charge them.\"",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "vmSmvZ41PkU",
+      "url": "https://youtu.be/vmSmvZ41PkU",
+      "posted_at": "2026-11-18T09:55:11Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-18T15:00:00Z"
     },
     {
       "video_file": "output_1794920885_captioned_1794920885.mp4",
