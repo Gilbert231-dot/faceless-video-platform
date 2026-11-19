@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-19T09:29:46Z",
+  "generated_at": "2026-11-19T10:41:26Z",
   "total_stories": 367,
-  "unused_stories": 203,
-  "used_stories": 164,
+  "unused_stories": 202,
+  "used_stories": 165,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 101,
@@ -27,11 +27,6 @@
       "unused": 19
     },
     {
-      "name": "TalesFromTheFrontDesk",
-      "total": 18,
-      "unused": 18
-    },
-    {
       "name": "offmychest",
       "total": 18,
       "unused": 18
@@ -52,18 +47,23 @@
       "unused": 17
     },
     {
+      "name": "TalesFromTheFrontDesk",
+      "total": 17,
+      "unused": 17
+    },
+    {
       "name": "tifu",
       "total": 15,
       "unused": 15
     },
     {
-      "name": "unpopularopinion",
-      "total": 14,
+      "name": "TalesFromRetail",
+      "total": 12,
       "unused": 12
     },
     {
-      "name": "TalesFromRetail",
-      "total": 12,
+      "name": "unpopularopinion",
+      "total": 14,
       "unused": 12
     },
     {
@@ -72,14 +72,19 @@
       "unused": 10
     },
     {
+      "name": "MaliciousCompliance",
+      "total": 2,
+      "unused": 2
+    },
+    {
       "name": "pettyrevenge",
       "total": 3,
       "unused": 2
     },
     {
-      "name": "MaliciousCompliance",
-      "total": 2,
-      "unused": 2
+      "name": "TalesFromTheFrontDesk",
+      "total": 18,
+      "unused": 18
     },
     {
       "name": "EntitledPeople",
@@ -488,19 +493,21 @@
     }
   ],
   "schedule": {
-    "next_index": 194
+    "next_index": 195
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "23:00",
       "12:00",
-      "18:00",
-      "21:00"
+      "18:00"
     ],
     "next_publish_utc": [
+      "2026-11-19T21:00:00Z",
+      "2026-11-20T21:00:00Z",
       "2026-11-19T15:00:00Z",
       "2026-11-20T15:00:00Z",
       "2026-11-19T03:00:00Z",
@@ -510,7 +517,6 @@
       "2026-11-18T18:00:00Z",
       "2026-11-19T12:00:00Z",
       "2026-11-18T21:00:00Z",
-      "2026-11-19T21:00:00Z",
       "2026-11-18T15:00:00Z",
       "2026-11-18T03:00:00Z",
       "2026-11-17T18:00:00Z",
@@ -636,6 +642,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795084817_captioned_1795084817.mp4",
+      "title": "[FULL STORY] They demanded my credit card physically—my peace was destroyed.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122136890919447442",
+      "url": "https://www.facebook.com/reel/1778524863450491",
+      "posted_at": "2026-11-19T10:41:26Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-19T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795084817_captioned_1795084817.mp4",
+      "title": "[FULL STORY] They demanded my credit card physically—my peace was destroyed.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "st3Iu5_WpB8",
+      "url": "https://youtu.be/st3Iu5_WpB8",
+      "posted_at": "2026-11-19T10:41:06Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-19T21:00:00Z"
+    },
+    {
       "video_file": "output_1795080449_captioned_1795080449.mp4",
       "title": "[FULL STORY] My phone's volume shattered a quiet restaurant—everyone gasped, leaving me stunned.",
       "subreddit": "EntitledPeople",
@@ -644,18 +674,6 @@
       "video_id": "122136879057447442",
       "url": "https://www.facebook.com/reel/1439985494887156",
       "posted_at": "2026-11-19T09:29:46Z",
-      "hook_score": 13,
-      "publish_at": "2026-11-19T15:00:00Z"
-    },
-    {
-      "video_file": "output_1795080449_captioned_1795080449.mp4",
-      "title": "[FULL STORY] My phone's volume shattered a quiet restaurant—everyone gasped, leaving me stunned.",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "GEmh54_TILs",
-      "url": "https://youtu.be/GEmh54_TILs",
-      "posted_at": "2026-11-19T09:28:21Z",
       "hook_score": 13,
       "publish_at": "2026-11-19T15:00:00Z"
     },
@@ -742,6 +760,18 @@
       "posted_at": "2026-11-17T10:53:33Z",
       "hook_score": 13,
       "publish_at": "2026-11-17T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795080449_captioned_1795080449.mp4",
+      "title": "[FULL STORY] My phone's volume shattered a quiet restaurant—everyone gasped, leaving me stunned.",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "GEmh54_TILs",
+      "url": "https://youtu.be/GEmh54_TILs",
+      "posted_at": "2026-11-19T09:28:21Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-19T15:00:00Z"
     },
     {
       "video_file": "output_1794908464_captioned_1794908464.mp4",
