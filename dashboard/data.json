@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-19T10:41:26Z",
+  "generated_at": "2026-11-19T11:56:56Z",
   "total_stories": 367,
   "unused_stories": 202,
   "used_stories": 165,
@@ -37,17 +37,17 @@
       "unused": 18
     },
     {
-      "name": "AITAH",
-      "total": 17,
-      "unused": 17
-    },
-    {
       "name": "AmItheAsshole",
       "total": 17,
       "unused": 17
     },
     {
       "name": "TalesFromTheFrontDesk",
+      "total": 17,
+      "unused": 17
+    },
+    {
+      "name": "AITAH",
       "total": 17,
       "unused": 17
     },
@@ -72,13 +72,13 @@
       "unused": 10
     },
     {
-      "name": "MaliciousCompliance",
-      "total": 2,
+      "name": "pettyrevenge",
+      "total": 3,
       "unused": 2
     },
     {
-      "name": "pettyrevenge",
-      "total": 3,
+      "name": "MaliciousCompliance",
+      "total": 2,
       "unused": 2
     },
     {
@@ -498,14 +498,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-19T18:00:00Z",
+      "2026-11-20T12:00:00Z",
       "2026-11-19T21:00:00Z",
       "2026-11-20T21:00:00Z",
       "2026-11-19T15:00:00Z",
@@ -654,18 +656,6 @@
       "publish_at": "2026-11-19T21:00:00Z"
     },
     {
-      "video_file": "output_1795084817_captioned_1795084817.mp4",
-      "title": "[FULL STORY] They demanded my credit card physically—my peace was destroyed.",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "st3Iu5_WpB8",
-      "url": "https://youtu.be/st3Iu5_WpB8",
-      "posted_at": "2026-11-19T10:41:06Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-19T21:00:00Z"
-    },
-    {
       "video_file": "output_1795080449_captioned_1795080449.mp4",
       "title": "[FULL STORY] My phone's volume shattered a quiet restaurant—everyone gasped, leaving me stunned.",
       "subreddit": "EntitledPeople",
@@ -762,18 +752,6 @@
       "publish_at": "2026-11-17T21:00:00Z"
     },
     {
-      "video_file": "output_1795080449_captioned_1795080449.mp4",
-      "title": "[FULL STORY] My phone's volume shattered a quiet restaurant—everyone gasped, leaving me stunned.",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "GEmh54_TILs",
-      "url": "https://youtu.be/GEmh54_TILs",
-      "posted_at": "2026-11-19T09:28:21Z",
-      "hook_score": 13,
-      "publish_at": "2026-11-19T15:00:00Z"
-    },
-    {
       "video_file": "output_1794908464_captioned_1794908464.mp4",
       "title": "[FULL STORY] I brought his precious stone, and the teacher did something unimaginable.",
       "subreddit": "EntitledPeople",
@@ -784,6 +762,30 @@
       "posted_at": "2026-11-17T09:43:14Z",
       "hook_score": 13,
       "publish_at": "2026-11-17T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795084817_captioned_1795084817.mp4",
+      "title": "[FULL STORY] They demanded my credit card physically—my peace was destroyed.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "st3Iu5_WpB8",
+      "url": "https://youtu.be/st3Iu5_WpB8",
+      "posted_at": "2026-11-19T10:41:06Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-19T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795080449_captioned_1795080449.mp4",
+      "title": "[FULL STORY] My phone's volume shattered a quiet restaurant—everyone gasped, leaving me stunned.",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "GEmh54_TILs",
+      "url": "https://youtu.be/GEmh54_TILs",
+      "posted_at": "2026-11-19T09:28:21Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-19T15:00:00Z"
     },
     {
       "video_file": "output_1795014067_captioned_1795014067.mp4",
