@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-18T15:03:54Z",
+  "generated_at": "2026-11-19T09:29:46Z",
   "total_stories": 367,
-  "unused_stories": 204,
-  "used_stories": 163,
+  "unused_stories": 203,
+  "used_stories": 164,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 102,
+  "days_of_stories": 101,
   "runway_date": "2027-02-28",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -27,12 +27,12 @@
       "unused": 19
     },
     {
-      "name": "offmychest",
+      "name": "TalesFromTheFrontDesk",
       "total": 18,
       "unused": 18
     },
     {
-      "name": "TalesFromTheFrontDesk",
+      "name": "offmychest",
       "total": 18,
       "unused": 18
     },
@@ -42,12 +42,12 @@
       "unused": 18
     },
     {
-      "name": "AmItheAsshole",
+      "name": "AITAH",
       "total": 17,
       "unused": 17
     },
     {
-      "name": "AITAH",
+      "name": "AmItheAsshole",
       "total": 17,
       "unused": 17
     },
@@ -57,19 +57,19 @@
       "unused": 15
     },
     {
-      "name": "TalesFromRetail",
-      "total": 12,
-      "unused": 12
-    },
-    {
       "name": "unpopularopinion",
       "total": 14,
       "unused": 12
     },
     {
+      "name": "TalesFromRetail",
+      "total": 12,
+      "unused": 12
+    },
+    {
       "name": "EntitledPeople",
-      "total": 11,
-      "unused": 11
+      "total": 10,
+      "unused": 10
     },
     {
       "name": "pettyrevenge",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "EntitledPeople",
+      "total": 11,
+      "unused": 11
     },
     {
       "name": "TalesFromTheFrontDesk",
@@ -483,19 +488,21 @@
     }
   ],
   "schedule": {
-    "next_index": 193
+    "next_index": 194
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-19T15:00:00Z",
+      "2026-11-20T15:00:00Z",
       "2026-11-19T03:00:00Z",
       "2026-11-20T03:00:00Z",
       "2026-11-18T23:00:00Z",
@@ -505,7 +512,6 @@
       "2026-11-18T21:00:00Z",
       "2026-11-19T21:00:00Z",
       "2026-11-18T15:00:00Z",
-      "2026-11-19T15:00:00Z",
       "2026-11-18T03:00:00Z",
       "2026-11-17T18:00:00Z",
       "2026-11-18T12:00:00Z",
@@ -630,6 +636,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795080449_captioned_1795080449.mp4",
+      "title": "[FULL STORY] My phone's volume shattered a quiet restaurant—everyone gasped, leaving me stunned.",
+      "subreddit": "EntitledPeople",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122136879057447442",
+      "url": "https://www.facebook.com/reel/1439985494887156",
+      "posted_at": "2026-11-19T09:29:46Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-19T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795080449_captioned_1795080449.mp4",
+      "title": "[FULL STORY] My phone's volume shattered a quiet restaurant—everyone gasped, leaving me stunned.",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "GEmh54_TILs",
+      "url": "https://youtu.be/GEmh54_TILs",
+      "posted_at": "2026-11-19T09:28:21Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-19T15:00:00Z"
+    },
+    {
       "video_file": "output_1795014067_captioned_1795014067.mp4",
       "title": "[FULL STORY] \"That actor's stalker turned out to be his own guest—my life was destroyed.\"",
       "subreddit": "TalesFromTheFrontDesk",
@@ -638,18 +668,6 @@
       "video_id": "122136731001447442",
       "url": "https://www.facebook.com/reel/4757993231136169",
       "posted_at": "2026-11-18T15:03:54Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-19T03:00:00Z"
-    },
-    {
-      "video_file": "output_1795014067_captioned_1795014067.mp4",
-      "title": "[FULL STORY] \"That actor's stalker turned out to be his own guest—my life was destroyed.\"",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "MrFaIkOb-sQ",
-      "url": "https://youtu.be/MrFaIkOb-sQ",
-      "posted_at": "2026-11-18T15:02:04Z",
       "hook_score": 26,
       "publish_at": "2026-11-19T03:00:00Z"
     },
@@ -736,6 +754,18 @@
       "posted_at": "2026-11-17T09:43:14Z",
       "hook_score": 13,
       "publish_at": "2026-11-17T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795014067_captioned_1795014067.mp4",
+      "title": "[FULL STORY] \"That actor's stalker turned out to be his own guest—my life was destroyed.\"",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "MrFaIkOb-sQ",
+      "url": "https://youtu.be/MrFaIkOb-sQ",
+      "posted_at": "2026-11-18T15:02:04Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-19T03:00:00Z"
     },
     {
       "video_file": "output_1794832399_captioned_1794832399.mp4",
