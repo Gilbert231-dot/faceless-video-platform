@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-19T13:37:32Z",
+  "generated_at": "2026-11-20T09:05:49Z",
   "total_stories": 367,
-  "unused_stories": 200,
-  "used_stories": 167,
+  "unused_stories": 199,
+  "used_stories": 168,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 100,
+  "days_of_stories": 99,
   "runway_date": "2027-02-27",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -22,12 +22,12 @@
       "unused": 21
     },
     {
-      "name": "relationship_advice",
-      "total": 19,
-      "unused": 19
+      "name": "offmychest",
+      "total": 18,
+      "unused": 18
     },
     {
-      "name": "offmychest",
+      "name": "relationship_advice",
       "total": 18,
       "unused": 18
     },
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 2,
       "unused": 2
+    },
+    {
+      "name": "relationship_advice",
+      "total": 19,
+      "unused": 19
     },
     {
       "name": "tifu",
@@ -503,19 +508,21 @@
     }
   ],
   "schedule": {
-    "next_index": 197
+    "next_index": 198
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-20T15:00:00Z",
+      "2026-11-21T15:00:00Z",
       "2026-11-20T03:00:00Z",
       "2026-11-21T03:00:00Z",
       "2026-11-19T23:00:00Z",
@@ -525,7 +532,6 @@
       "2026-11-19T21:00:00Z",
       "2026-11-20T21:00:00Z",
       "2026-11-19T15:00:00Z",
-      "2026-11-20T15:00:00Z",
       "2026-11-19T03:00:00Z",
       "2026-11-18T23:00:00Z",
       "2026-11-18T18:00:00Z",
@@ -656,6 +662,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795165435_captioned_1795165435.mp4",
+      "title": "[FULL STORY] I thought my love was safe—until I read these twisted comments.",
+      "subreddit": "relationship_advice",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122137077621447442",
+      "url": "https://www.facebook.com/reel/2147413059200403",
+      "posted_at": "2026-11-20T09:05:49Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-20T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795165435_captioned_1795165435.mp4",
+      "title": "[FULL STORY] I thought my love was safe—until I read these twisted comments.",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "0SGroO_Uo1A",
+      "url": "https://youtu.be/0SGroO_Uo1A",
+      "posted_at": "2026-11-20T09:04:54Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-20T15:00:00Z"
+    },
+    {
       "video_file": "output_1795095370_captioned_1795095370.mp4",
       "title": "[FULL STORY] I complimented her photo—then I was *caught* in a nightmare.",
       "subreddit": "tifu",
@@ -664,18 +694,6 @@
       "video_id": "122136926247447442",
       "url": "https://www.facebook.com/reel/1020929910265728",
       "posted_at": "2026-11-19T13:37:32Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-20T03:00:00Z"
-    },
-    {
-      "video_file": "output_1795095370_captioned_1795095370.mp4",
-      "title": "[FULL STORY] I complimented her photo—then I was *caught* in a nightmare.",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "8XZQ0vEFVIY",
-      "url": "https://youtu.be/8XZQ0vEFVIY",
-      "posted_at": "2026-11-19T13:37:06Z",
       "hook_score": 39,
       "publish_at": "2026-11-20T03:00:00Z"
     },
@@ -762,6 +780,18 @@
       "posted_at": "2026-11-18T09:57:41Z",
       "hook_score": 26,
       "publish_at": "2026-11-18T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795095370_captioned_1795095370.mp4",
+      "title": "[FULL STORY] I complimented her photo—then I was *caught* in a nightmare.",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "8XZQ0vEFVIY",
+      "url": "https://youtu.be/8XZQ0vEFVIY",
+      "posted_at": "2026-11-19T13:37:06Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-20T03:00:00Z"
     },
     {
       "video_file": "output_1794920885_captioned_1794920885.mp4",
