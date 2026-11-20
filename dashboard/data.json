@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20T10:19:44Z",
+  "generated_at": "2026-11-20T11:58:04Z",
   "total_stories": 367,
   "unused_stories": 198,
   "used_stories": 169,
@@ -518,14 +518,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-20T18:00:00Z",
+      "2026-11-21T12:00:00Z",
       "2026-11-20T21:00:00Z",
       "2026-11-21T21:00:00Z",
       "2026-11-20T15:00:00Z",
@@ -680,18 +682,6 @@
       "publish_at": "2026-11-20T21:00:00Z"
     },
     {
-      "video_file": "output_1795169883_captioned_1795169883.mp4",
-      "title": "[FULL STORY] My dad exposed a hidden secret about Lolita that shattered my world.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "dcsvDY_2D-E",
-      "url": "https://youtu.be/dcsvDY_2D-E",
-      "posted_at": "2026-11-20T10:18:53Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-20T21:00:00Z"
-    },
-    {
       "video_file": "output_1795165435_captioned_1795165435.mp4",
       "title": "[FULL STORY] I thought my love was safe—until I read these twisted comments.",
       "subreddit": "relationship_advice",
@@ -788,18 +778,6 @@
       "publish_at": "2026-11-18T21:00:00Z"
     },
     {
-      "video_file": "output_1795165435_captioned_1795165435.mp4",
-      "title": "[FULL STORY] I thought my love was safe—until I read these twisted comments.",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "0SGroO_Uo1A",
-      "url": "https://youtu.be/0SGroO_Uo1A",
-      "posted_at": "2026-11-20T09:04:54Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-20T15:00:00Z"
-    },
-    {
       "video_file": "output_1794995654_captioned_1794995654.mp4",
       "title": "[FULL STORY] \"Guests begged for beds, hotel denied, and I was forced to charge them.\"",
       "subreddit": "TalesFromTheFrontDesk",
@@ -810,6 +788,30 @@
       "posted_at": "2026-11-18T09:57:41Z",
       "hook_score": 26,
       "publish_at": "2026-11-18T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795169883_captioned_1795169883.mp4",
+      "title": "[FULL STORY] My dad exposed a hidden secret about Lolita that shattered my world.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "dcsvDY_2D-E",
+      "url": "https://youtu.be/dcsvDY_2D-E",
+      "posted_at": "2026-11-20T10:18:53Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-20T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795165435_captioned_1795165435.mp4",
+      "title": "[FULL STORY] I thought my love was safe—until I read these twisted comments.",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "0SGroO_Uo1A",
+      "url": "https://youtu.be/0SGroO_Uo1A",
+      "posted_at": "2026-11-20T09:04:54Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-20T15:00:00Z"
     },
     {
       "video_file": "output_1795095370_captioned_1795095370.mp4",
