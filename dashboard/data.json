@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-21T12:24:37Z",
+  "generated_at": "2026-11-21T13:57:50Z",
   "total_stories": 367,
-  "unused_stories": 193,
-  "used_stories": 174,
+  "unused_stories": 192,
+  "used_stories": 175,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 96,
@@ -27,22 +27,22 @@
       "unused": 18
     },
     {
-      "name": "relationship_advice",
-      "total": 17,
-      "unused": 17
-    },
-    {
       "name": "offmychest",
       "total": 17,
       "unused": 17
     },
     {
-      "name": "AmItheAsshole",
+      "name": "relationship_advice",
       "total": 17,
       "unused": 17
     },
     {
       "name": "AITAH",
+      "total": 16,
+      "unused": 16
+    },
+    {
+      "name": "AmItheAsshole",
       "total": 16,
       "unused": 16
     },
@@ -62,14 +62,19 @@
       "unused": 11
     },
     {
+      "name": "EntitledPeople",
+      "total": 10,
+      "unused": 10
+    },
+    {
       "name": "TalesFromRetail",
       "total": 10,
       "unused": 10
     },
     {
-      "name": "EntitledPeople",
-      "total": 10,
-      "unused": 10
+      "name": "pettyrevenge",
+      "total": 3,
+      "unused": 2
     },
     {
       "name": "MaliciousCompliance",
@@ -77,9 +82,9 @@
       "unused": 2
     },
     {
-      "name": "pettyrevenge",
-      "total": 3,
-      "unused": 2
+      "name": "AmItheAsshole",
+      "total": 17,
+      "unused": 17
     },
     {
       "name": "TalesFromRetail",
@@ -538,19 +543,21 @@
     }
   ],
   "schedule": {
-    "next_index": 204
+    "next_index": 205
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-22T03:00:00Z",
+      "2026-11-23T03:00:00Z",
       "2026-11-21T23:00:00Z",
       "2026-11-22T23:00:00Z",
       "2026-11-21T18:00:00Z",
@@ -560,7 +567,6 @@
       "2026-11-21T15:00:00Z",
       "2026-11-22T15:00:00Z",
       "2026-11-21T03:00:00Z",
-      "2026-11-22T03:00:00Z",
       "2026-11-20T23:00:00Z",
       "2026-11-20T18:00:00Z",
       "2026-11-21T12:00:00Z",
@@ -702,6 +708,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795269289_captioned_1795269289.mp4",
+      "title": "[FULL STORY] \"Pedro betrayed us for money—my friend called me the asshole, but I didn't believe it.\"",
+      "subreddit": "AmItheAsshole",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1447422297371353",
+      "url": "https://www.facebook.com/1272041649331476/videos/1447422297371353",
+      "posted_at": "2026-11-21T13:57:50Z",
+      "hook_score": 60,
+      "publish_at": "2026-11-22T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795269289_captioned_1795269289.mp4",
+      "title": "[FULL STORY] \"Pedro betrayed us for money—my friend called me the asshole, but I didn't believe it.\"",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "e3iZW_DfAYA",
+      "url": "https://youtu.be/e3iZW_DfAYA",
+      "posted_at": "2026-11-21T13:55:53Z",
+      "hook_score": 60,
+      "publish_at": "2026-11-22T03:00:00Z"
+    },
+    {
       "video_file": "output_1795263685_captioned_1795263685.mp4",
       "title": "[FULL STORY] High‑profile visit ruined: I exposed the supermarket’s secret heatwave disaster.",
       "subreddit": "TalesFromRetail",
@@ -710,18 +740,6 @@
       "video_id": "122137296213447442",
       "url": "https://www.facebook.com/reel/2144965749490736",
       "posted_at": "2026-11-21T12:24:37Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-21T23:00:00Z"
-    },
-    {
-      "video_file": "output_1795263685_captioned_1795263685.mp4",
-      "title": "[FULL STORY] High‑profile visit ruined: I exposed the supermarket’s secret heatwave disaster.",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "8cfi1G-God0",
-      "url": "https://youtu.be/8cfi1G-God0",
-      "posted_at": "2026-11-21T12:22:42Z",
       "hook_score": 26,
       "publish_at": "2026-11-21T23:00:00Z"
     },
@@ -808,6 +826,18 @@
       "posted_at": "2026-11-19T13:37:32Z",
       "hook_score": 39,
       "publish_at": "2026-11-20T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795263685_captioned_1795263685.mp4",
+      "title": "[FULL STORY] High‑profile visit ruined: I exposed the supermarket’s secret heatwave disaster.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "8cfi1G-God0",
+      "url": "https://youtu.be/8cfi1G-God0",
+      "posted_at": "2026-11-21T12:22:42Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-21T23:00:00Z"
     },
     {
       "video_file": "output_1795090576_captioned_1795090576.mp4",
