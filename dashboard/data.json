@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-20T13:13:24Z",
+  "generated_at": "2026-11-21T09:00:11Z",
   "total_stories": 367,
-  "unused_stories": 196,
-  "used_stories": 171,
+  "unused_stories": 195,
+  "used_stories": 172,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 98,
+  "days_of_stories": 97,
   "runway_date": "2027-02-26",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -22,14 +22,14 @@
       "unused": 21
     },
     {
-      "name": "relationship_advice",
+      "name": "confession",
       "total": 18,
       "unused": 18
     },
     {
-      "name": "confession",
-      "total": 18,
-      "unused": 18
+      "name": "relationship_advice",
+      "total": 17,
+      "unused": 17
     },
     {
       "name": "offmychest",
@@ -72,14 +72,19 @@
       "unused": 10
     },
     {
+      "name": "MaliciousCompliance",
+      "total": 2,
+      "unused": 2
+    },
+    {
       "name": "pettyrevenge",
       "total": 3,
       "unused": 2
     },
     {
-      "name": "MaliciousCompliance",
-      "total": 2,
-      "unused": 2
+      "name": "relationship_advice",
+      "total": 18,
+      "unused": 18
     },
     {
       "name": "TalesFromRetail",
@@ -523,19 +528,21 @@
     }
   ],
   "schedule": {
-    "next_index": 201
+    "next_index": 202
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-21T15:00:00Z",
+      "2026-11-22T15:00:00Z",
       "2026-11-21T03:00:00Z",
       "2026-11-22T03:00:00Z",
       "2026-11-20T23:00:00Z",
@@ -545,7 +552,6 @@
       "2026-11-20T21:00:00Z",
       "2026-11-21T21:00:00Z",
       "2026-11-20T15:00:00Z",
-      "2026-11-21T15:00:00Z",
       "2026-11-20T03:00:00Z",
       "2026-11-19T23:00:00Z",
       "2026-11-19T18:00:00Z",
@@ -682,6 +688,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795251453_captioned_1795251453.mp4",
+      "title": "[FULL STORY] Her “big penis myth” turned into a confession that shattered everything.",
+      "subreddit": "relationship_advice",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122137261473447442",
+      "url": "https://www.facebook.com/reel/2722168008217668",
+      "posted_at": "2026-11-21T09:00:11Z",
+      "hook_score": 0,
+      "publish_at": "2026-11-21T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795251453_captioned_1795251453.mp4",
+      "title": "[FULL STORY] Her “big penis myth” turned into a confession that shattered everything.",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "BK0zZPipQWo",
+      "url": "https://youtu.be/BK0zZPipQWo",
+      "posted_at": "2026-11-21T08:58:33Z",
+      "hook_score": 0,
+      "publish_at": "2026-11-21T15:00:00Z"
+    },
+    {
       "video_file": "output_1795180335_captioned_1795180335.mp4",
       "title": "[FULL STORY] She threw her entire cart on the floor, yelled at me, and stormed out—what happened next?",
       "subreddit": "TalesFromRetail",
@@ -690,18 +720,6 @@
       "video_id": "122137121319447442",
       "url": "https://www.facebook.com/reel/1758664871859508",
       "posted_at": "2026-11-20T13:13:24Z",
-      "hook_score": 47,
-      "publish_at": "2026-11-21T03:00:00Z"
-    },
-    {
-      "video_file": "output_1795180335_captioned_1795180335.mp4",
-      "title": "[FULL STORY] She threw her entire cart on the floor, yelled at me, and stormed out—what happened next?",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "Zk7nfj9LtMY",
-      "url": "https://youtu.be/Zk7nfj9LtMY",
-      "posted_at": "2026-11-20T13:13:04Z",
       "hook_score": 47,
       "publish_at": "2026-11-21T03:00:00Z"
     },
@@ -788,6 +806,18 @@
       "posted_at": "2026-11-19T09:29:46Z",
       "hook_score": 13,
       "publish_at": "2026-11-19T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795180335_captioned_1795180335.mp4",
+      "title": "[FULL STORY] She threw her entire cart on the floor, yelled at me, and stormed out—what happened next?",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Zk7nfj9LtMY",
+      "url": "https://youtu.be/Zk7nfj9LtMY",
+      "posted_at": "2026-11-20T13:13:04Z",
+      "hook_score": 47,
+      "publish_at": "2026-11-21T03:00:00Z"
     },
     {
       "video_file": "output_1795014067_captioned_1795014067.mp4",
