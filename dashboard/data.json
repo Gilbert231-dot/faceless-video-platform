@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-21T09:00:11Z",
+  "generated_at": "2026-11-21T10:44:44Z",
   "total_stories": 367,
-  "unused_stories": 195,
-  "used_stories": 172,
+  "unused_stories": 194,
+  "used_stories": 173,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 97,
@@ -42,12 +42,12 @@
       "unused": 17
     },
     {
-      "name": "TalesFromTheFrontDesk",
-      "total": 17,
-      "unused": 17
+      "name": "AITAH",
+      "total": 16,
+      "unused": 16
     },
     {
-      "name": "AITAH",
+      "name": "TalesFromTheFrontDesk",
       "total": 16,
       "unused": 16
     },
@@ -80,6 +80,11 @@
       "name": "pettyrevenge",
       "total": 3,
       "unused": 2
+    },
+    {
+      "name": "TalesFromTheFrontDesk",
+      "total": 17,
+      "unused": 17
     },
     {
       "name": "relationship_advice",
@@ -528,19 +533,21 @@
     }
   ],
   "schedule": {
-    "next_index": 202
+    "next_index": 203
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "23:00",
       "12:00",
-      "18:00",
-      "21:00"
+      "18:00"
     ],
     "next_publish_utc": [
+      "2026-11-21T21:00:00Z",
+      "2026-11-22T21:00:00Z",
       "2026-11-21T15:00:00Z",
       "2026-11-22T15:00:00Z",
       "2026-11-21T03:00:00Z",
@@ -550,7 +557,6 @@
       "2026-11-20T18:00:00Z",
       "2026-11-21T12:00:00Z",
       "2026-11-20T21:00:00Z",
-      "2026-11-21T21:00:00Z",
       "2026-11-20T15:00:00Z",
       "2026-11-20T03:00:00Z",
       "2026-11-19T23:00:00Z",
@@ -688,6 +694,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795257716_captioned_1795257716.mp4",
+      "title": "[FULL STORY] I can't believe this mentally ill woman exposed our hotel’s deadly secret.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122137278453447442",
+      "url": "https://www.facebook.com/reel/1771841163914267",
+      "posted_at": "2026-11-21T10:44:44Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-21T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795257716_captioned_1795257716.mp4",
+      "title": "[FULL STORY] I can't believe this mentally ill woman exposed our hotel’s deadly secret.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ANIssuQM9Ro",
+      "url": "https://youtu.be/ANIssuQM9Ro",
+      "posted_at": "2026-11-21T10:42:51Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-21T21:00:00Z"
+    },
+    {
       "video_file": "output_1795251453_captioned_1795251453.mp4",
       "title": "[FULL STORY] Her “big penis myth” turned into a confession that shattered everything.",
       "subreddit": "relationship_advice",
@@ -696,18 +726,6 @@
       "video_id": "122137261473447442",
       "url": "https://www.facebook.com/reel/2722168008217668",
       "posted_at": "2026-11-21T09:00:11Z",
-      "hook_score": 0,
-      "publish_at": "2026-11-21T15:00:00Z"
-    },
-    {
-      "video_file": "output_1795251453_captioned_1795251453.mp4",
-      "title": "[FULL STORY] Her “big penis myth” turned into a confession that shattered everything.",
-      "subreddit": "relationship_advice",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "BK0zZPipQWo",
-      "url": "https://youtu.be/BK0zZPipQWo",
-      "posted_at": "2026-11-21T08:58:33Z",
       "hook_score": 0,
       "publish_at": "2026-11-21T15:00:00Z"
     },
@@ -794,6 +812,18 @@
       "posted_at": "2026-11-19T10:41:26Z",
       "hook_score": 39,
       "publish_at": "2026-11-19T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795251453_captioned_1795251453.mp4",
+      "title": "[FULL STORY] Her “big penis myth” turned into a confession that shattered everything.",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "BK0zZPipQWo",
+      "url": "https://youtu.be/BK0zZPipQWo",
+      "posted_at": "2026-11-21T08:58:33Z",
+      "hook_score": 0,
+      "publish_at": "2026-11-21T15:00:00Z"
     },
     {
       "video_file": "output_1795080449_captioned_1795080449.mp4",
