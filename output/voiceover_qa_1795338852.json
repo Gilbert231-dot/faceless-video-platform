@@ -1,0 +1,14 @@
+{
+  "im_regions_checked": 11,
+  "transcribed_ale_words": [],
+  "gap_artifacts": [
+    {
+      "after": "am,",
+      "next_word": "eating",
+      "gap_sec": 0.236,
+      "mute_from": 61.628,
+      "mute_to": 61.845
+    }
+  ],
+  "verdict": "FAIL"
+}
