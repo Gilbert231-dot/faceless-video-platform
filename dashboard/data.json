@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-22T10:57:29Z",
+  "generated_at": "2026-11-22T11:45:05Z",
   "total_stories": 367,
   "unused_stories": 189,
   "used_stories": 178,
@@ -563,14 +563,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "23:00",
       "21:00",
       "15:00",
-      "03:00",
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-22T18:00:00Z",
+      "2026-11-23T12:00:00Z",
       "2026-11-22T23:00:00Z",
       "2026-11-23T23:00:00Z",
       "2026-11-22T21:00:00Z",
@@ -738,18 +740,6 @@
       "publish_at": "2026-11-22T23:00:00Z"
     },
     {
-      "video_file": "output_1795344930_captioned_1795344930.mp4",
-      "title": "[FULL STORY] I ran my fanfic through a university AI and got stunned.",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "fxdp21ju8r4",
-      "url": "https://youtu.be/fxdp21ju8r4",
-      "posted_at": "2026-11-22T10:56:19Z",
-      "hook_score": 13,
-      "publish_at": "2026-11-22T23:00:00Z"
-    },
-    {
       "video_file": "output_1795340403_captioned_1795340403.mp4",
       "title": "[FULL STORY] I thought I saved my mom—then she vanished, and now I'm terrified.",
       "subreddit": "AITAH",
@@ -846,18 +836,6 @@
       "publish_at": "2026-11-20T23:00:00Z"
     },
     {
-      "video_file": "output_1795340403_captioned_1795340403.mp4",
-      "title": "[FULL STORY] I thought I saved my mom—then she vanished, and now I'm terrified.",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "WR2KTyLMY-U",
-      "url": "https://youtu.be/WR2KTyLMY-U",
-      "posted_at": "2026-11-22T09:40:54Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-22T21:00:00Z"
-    },
-    {
       "video_file": "output_1795169883_captioned_1795169883.mp4",
       "title": "[FULL STORY] My dad exposed a hidden secret about Lolita that shattered my world.",
       "subreddit": "offmychest",
@@ -868,6 +846,30 @@
       "posted_at": "2026-11-20T10:19:44Z",
       "hook_score": 39,
       "publish_at": "2026-11-20T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795344930_captioned_1795344930.mp4",
+      "title": "[FULL STORY] I ran my fanfic through a university AI and got stunned.",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "fxdp21ju8r4",
+      "url": "https://youtu.be/fxdp21ju8r4",
+      "posted_at": "2026-11-22T10:56:19Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-22T23:00:00Z"
+    },
+    {
+      "video_file": "output_1795340403_captioned_1795340403.mp4",
+      "title": "[FULL STORY] I thought I saved my mom—then she vanished, and now I'm terrified.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "WR2KTyLMY-U",
+      "url": "https://youtu.be/WR2KTyLMY-U",
+      "posted_at": "2026-11-22T09:40:54Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-22T21:00:00Z"
     },
     {
       "video_file": "output_1795336306_captioned_1795336306.mp4",
