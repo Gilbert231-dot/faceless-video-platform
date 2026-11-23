@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-23T10:21:47Z",
+  "generated_at": "2026-11-23T12:32:13Z",
   "total_stories": 367,
-  "unused_stories": 186,
-  "used_stories": 181,
+  "unused_stories": 185,
+  "used_stories": 182,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 93,
-  "runway_date": "2027-02-24",
+  "days_of_stories": 92,
+  "runway_date": "2027-02-23",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -32,17 +32,17 @@
       "unused": 17
     },
     {
-      "name": "AmItheAsshole",
-      "total": 16,
-      "unused": 16
-    },
-    {
       "name": "AITAH",
       "total": 15,
       "unused": 15
     },
     {
       "name": "offmychest",
+      "total": 15,
+      "unused": 15
+    },
+    {
+      "name": "AmItheAsshole",
       "total": 15,
       "unused": 15
     },
@@ -62,14 +62,19 @@
       "unused": 11
     },
     {
+      "name": "TalesFromRetail",
+      "total": 10,
+      "unused": 10
+    },
+    {
       "name": "EntitledPeople",
       "total": 10,
       "unused": 10
     },
     {
-      "name": "TalesFromRetail",
-      "total": 10,
-      "unused": 10
+      "name": "MaliciousCompliance",
+      "total": 2,
+      "unused": 2
     },
     {
       "name": "pettyrevenge",
@@ -77,9 +82,9 @@
       "unused": 2
     },
     {
-      "name": "MaliciousCompliance",
-      "total": 2,
-      "unused": 2
+      "name": "AmItheAsshole",
+      "total": 16,
+      "unused": 16
     },
     {
       "name": "offmychest",
@@ -573,19 +578,21 @@
     }
   ],
   "schedule": {
-    "next_index": 211
+    "next_index": 212
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "23:00",
       "21:00",
       "15:00",
       "03:00",
       "12:00",
-      "18:00",
-      "23:00"
+      "18:00"
     ],
     "next_publish_utc": [
+      "2026-11-23T23:00:00Z",
+      "2026-11-24T23:00:00Z",
       "2026-11-23T21:00:00Z",
       "2026-11-24T21:00:00Z",
       "2026-11-23T15:00:00Z",
@@ -595,7 +602,6 @@
       "2026-11-22T18:00:00Z",
       "2026-11-23T12:00:00Z",
       "2026-11-22T23:00:00Z",
-      "2026-11-23T23:00:00Z",
       "2026-11-22T21:00:00Z",
       "2026-11-22T15:00:00Z",
       "2026-11-22T03:00:00Z",
@@ -746,6 +752,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795436907_captioned_1795436907.mp4",
+      "title": "[FULL STORY] I hit a car—my ex‑bestfriend’s sister. Now I’m *destroyed* and *stunned*… what happens next?",
+      "subreddit": "AmItheAsshole",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1166441019373438",
+      "url": "https://www.facebook.com/1272041649331476/videos/1166441019373438",
+      "posted_at": "2026-11-23T12:32:13Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-23T23:00:00Z"
+    },
+    {
+      "video_file": "output_1795436907_captioned_1795436907.mp4",
+      "title": "[FULL STORY] I hit a car—my ex‑bestfriend’s sister. Now I’m *destroyed* and *stunned*… what happens next?",
+      "subreddit": "AmItheAsshole",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "PS6Y6h9Alnc",
+      "url": "https://youtu.be/PS6Y6h9Alnc",
+      "posted_at": "2026-11-23T12:29:29Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-23T23:00:00Z"
+    },
+    {
       "video_file": "output_1795429179_captioned_1795429179.mp4",
       "title": "[FULL STORY] My son’s silent scream exposed a family secret that shattered everything.",
       "subreddit": "offmychest",
@@ -754,18 +784,6 @@
       "video_id": "122137652409447442",
       "url": "https://www.facebook.com/reel/1295108989466048",
       "posted_at": "2026-11-23T10:21:47Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-23T21:00:00Z"
-    },
-    {
-      "video_file": "output_1795429179_captioned_1795429179.mp4",
-      "title": "[FULL STORY] My son’s silent scream exposed a family secret that shattered everything.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "LXv5fKOUUH8",
-      "url": "https://youtu.be/LXv5fKOUUH8",
-      "posted_at": "2026-11-23T10:20:33Z",
       "hook_score": 26,
       "publish_at": "2026-11-23T21:00:00Z"
     },
@@ -852,6 +870,18 @@
       "posted_at": "2026-11-21T12:24:37Z",
       "hook_score": 26,
       "publish_at": "2026-11-21T23:00:00Z"
+    },
+    {
+      "video_file": "output_1795429179_captioned_1795429179.mp4",
+      "title": "[FULL STORY] My son’s silent scream exposed a family secret that shattered everything.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "LXv5fKOUUH8",
+      "url": "https://youtu.be/LXv5fKOUUH8",
+      "posted_at": "2026-11-23T10:20:33Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-23T21:00:00Z"
     },
     {
       "video_file": "output_1795257716_captioned_1795257716.mp4",
