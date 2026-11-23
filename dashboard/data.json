@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-22T12:47:37Z",
+  "generated_at": "2026-11-23T09:05:38Z",
   "total_stories": 367,
-  "unused_stories": 188,
-  "used_stories": 179,
+  "unused_stories": 187,
+  "used_stories": 180,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 94,
+  "days_of_stories": 93,
   "runway_date": "2027-02-24",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -33,8 +33,8 @@
     },
     {
       "name": "offmychest",
-      "total": 17,
-      "unused": 17
+      "total": 16,
+      "unused": 16
     },
     {
       "name": "AmItheAsshole",
@@ -80,6 +80,11 @@
       "name": "pettyrevenge",
       "total": 3,
       "unused": 2
+    },
+    {
+      "name": "offmychest",
+      "total": 17,
+      "unused": 17
     },
     {
       "name": "TalesFromTheFrontDesk",
@@ -563,19 +568,21 @@
     }
   ],
   "schedule": {
-    "next_index": 209
+    "next_index": 210
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "12:00",
       "18:00",
       "23:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-23T15:00:00Z",
+      "2026-11-24T15:00:00Z",
       "2026-11-23T03:00:00Z",
       "2026-11-24T03:00:00Z",
       "2026-11-22T18:00:00Z",
@@ -585,7 +592,6 @@
       "2026-11-22T21:00:00Z",
       "2026-11-23T21:00:00Z",
       "2026-11-22T15:00:00Z",
-      "2026-11-23T15:00:00Z",
       "2026-11-22T03:00:00Z",
       "2026-11-21T23:00:00Z",
       "2026-11-21T18:00:00Z",
@@ -734,6 +740,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795424671_captioned_1795424671.mp4",
+      "title": "[FULL STORY] My boyfriend, the ultimate cool guy, just blushed—here’s how I made it happen.",
+      "subreddit": "offmychest",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122137638447447442",
+      "url": "https://www.facebook.com/reel/4850808041814694",
+      "posted_at": "2026-11-23T09:05:38Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-23T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795424671_captioned_1795424671.mp4",
+      "title": "[FULL STORY] My boyfriend, the ultimate cool guy, just blushed—here’s how I made it happen.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "wmEdRaaaZh0",
+      "url": "https://youtu.be/wmEdRaaaZh0",
+      "posted_at": "2026-11-23T09:05:20Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-23T15:00:00Z"
+    },
+    {
       "video_file": "output_1795351475_captioned_1795351475.mp4",
       "title": "[FULL STORY] \"Her brother’s drunk guests stole my keys—now I’m stuck, and I’m terrified.\"",
       "subreddit": "TalesFromTheFrontDesk",
@@ -742,18 +772,6 @@
       "video_id": "2871148683270800",
       "url": "https://www.facebook.com/1272041649331476/videos/2871148683270800",
       "posted_at": "2026-11-22T12:47:37Z",
-      "hook_score": 52,
-      "publish_at": "2026-11-23T03:00:00Z"
-    },
-    {
-      "video_file": "output_1795351475_captioned_1795351475.mp4",
-      "title": "[FULL STORY] \"Her brother’s drunk guests stole my keys—now I’m stuck, and I’m terrified.\"",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "vRwzALQr4j0",
-      "url": "https://youtu.be/vRwzALQr4j0",
-      "posted_at": "2026-11-22T12:45:32Z",
       "hook_score": 52,
       "publish_at": "2026-11-23T03:00:00Z"
     },
@@ -840,6 +858,18 @@
       "posted_at": "2026-11-21T09:00:11Z",
       "hook_score": 0,
       "publish_at": "2026-11-21T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795351475_captioned_1795351475.mp4",
+      "title": "[FULL STORY] \"Her brother’s drunk guests stole my keys—now I’m stuck, and I’m terrified.\"",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "vRwzALQr4j0",
+      "url": "https://youtu.be/vRwzALQr4j0",
+      "posted_at": "2026-11-22T12:45:32Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-23T03:00:00Z"
     },
     {
       "video_file": "output_1795180335_captioned_1795180335.mp4",
