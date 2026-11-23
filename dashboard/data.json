@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-23T09:05:38Z",
+  "generated_at": "2026-11-23T10:21:47Z",
   "total_stories": 367,
-  "unused_stories": 187,
-  "used_stories": 180,
+  "unused_stories": 186,
+  "used_stories": 181,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 93,
@@ -32,17 +32,17 @@
       "unused": 17
     },
     {
-      "name": "offmychest",
-      "total": 16,
-      "unused": 16
-    },
-    {
       "name": "AmItheAsshole",
       "total": 16,
       "unused": 16
     },
     {
       "name": "AITAH",
+      "total": 15,
+      "unused": 15
+    },
+    {
+      "name": "offmychest",
       "total": 15,
       "unused": 15
     },
@@ -62,14 +62,19 @@
       "unused": 11
     },
     {
+      "name": "EntitledPeople",
+      "total": 10,
+      "unused": 10
+    },
+    {
       "name": "TalesFromRetail",
       "total": 10,
       "unused": 10
     },
     {
-      "name": "EntitledPeople",
-      "total": 10,
-      "unused": 10
+      "name": "pettyrevenge",
+      "total": 3,
+      "unused": 2
     },
     {
       "name": "MaliciousCompliance",
@@ -77,9 +82,9 @@
       "unused": 2
     },
     {
-      "name": "pettyrevenge",
-      "total": 3,
-      "unused": 2
+      "name": "offmychest",
+      "total": 16,
+      "unused": 16
     },
     {
       "name": "offmychest",
@@ -568,19 +573,21 @@
     }
   ],
   "schedule": {
-    "next_index": 210
+    "next_index": 211
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "12:00",
       "18:00",
-      "23:00",
-      "21:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-23T21:00:00Z",
+      "2026-11-24T21:00:00Z",
       "2026-11-23T15:00:00Z",
       "2026-11-24T15:00:00Z",
       "2026-11-23T03:00:00Z",
@@ -590,7 +597,6 @@
       "2026-11-22T23:00:00Z",
       "2026-11-23T23:00:00Z",
       "2026-11-22T21:00:00Z",
-      "2026-11-23T21:00:00Z",
       "2026-11-22T15:00:00Z",
       "2026-11-22T03:00:00Z",
       "2026-11-21T23:00:00Z",
@@ -740,6 +746,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795429179_captioned_1795429179.mp4",
+      "title": "[FULL STORY] My son’s silent scream exposed a family secret that shattered everything.",
+      "subreddit": "offmychest",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122137652409447442",
+      "url": "https://www.facebook.com/reel/1295108989466048",
+      "posted_at": "2026-11-23T10:21:47Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-23T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795429179_captioned_1795429179.mp4",
+      "title": "[FULL STORY] My son’s silent scream exposed a family secret that shattered everything.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "LXv5fKOUUH8",
+      "url": "https://youtu.be/LXv5fKOUUH8",
+      "posted_at": "2026-11-23T10:20:33Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-23T21:00:00Z"
+    },
+    {
       "video_file": "output_1795424671_captioned_1795424671.mp4",
       "title": "[FULL STORY] My boyfriend, the ultimate cool guy, just blushed—here’s how I made it happen.",
       "subreddit": "offmychest",
@@ -748,18 +778,6 @@
       "video_id": "122137638447447442",
       "url": "https://www.facebook.com/reel/4850808041814694",
       "posted_at": "2026-11-23T09:05:38Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-23T15:00:00Z"
-    },
-    {
-      "video_file": "output_1795424671_captioned_1795424671.mp4",
-      "title": "[FULL STORY] My boyfriend, the ultimate cool guy, just blushed—here’s how I made it happen.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "wmEdRaaaZh0",
-      "url": "https://youtu.be/wmEdRaaaZh0",
-      "posted_at": "2026-11-23T09:05:20Z",
       "hook_score": 39,
       "publish_at": "2026-11-23T15:00:00Z"
     },
@@ -846,6 +864,18 @@
       "posted_at": "2026-11-21T10:44:44Z",
       "hook_score": 26,
       "publish_at": "2026-11-21T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795424671_captioned_1795424671.mp4",
+      "title": "[FULL STORY] My boyfriend, the ultimate cool guy, just blushed—here’s how I made it happen.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "wmEdRaaaZh0",
+      "url": "https://youtu.be/wmEdRaaaZh0",
+      "posted_at": "2026-11-23T09:05:20Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-23T15:00:00Z"
     },
     {
       "video_file": "output_1795251453_captioned_1795251453.mp4",
