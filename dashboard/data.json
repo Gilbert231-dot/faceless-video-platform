@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-23T13:22:49Z",
+  "generated_at": "2026-11-23T13:56:08Z",
   "total_stories": 367,
-  "unused_stories": 185,
-  "used_stories": 182,
+  "unused_stories": 184,
+  "used_stories": 183,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 92,
@@ -37,12 +37,12 @@
       "unused": 15
     },
     {
-      "name": "offmychest",
+      "name": "AmItheAsshole",
       "total": 15,
       "unused": 15
     },
     {
-      "name": "AmItheAsshole",
+      "name": "offmychest",
       "total": 15,
       "unused": 15
     },
@@ -68,8 +68,13 @@
     },
     {
       "name": "EntitledPeople",
-      "total": 10,
-      "unused": 10
+      "total": 9,
+      "unused": 9
+    },
+    {
+      "name": "pettyrevenge",
+      "total": 3,
+      "unused": 2
     },
     {
       "name": "MaliciousCompliance",
@@ -77,9 +82,9 @@
       "unused": 2
     },
     {
-      "name": "pettyrevenge",
-      "total": 3,
-      "unused": 2
+      "name": "EntitledPeople",
+      "total": 10,
+      "unused": 10
     },
     {
       "name": "AmItheAsshole",
@@ -578,19 +583,21 @@
     }
   ],
   "schedule": {
-    "next_index": 212
+    "next_index": 213
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "12:00",
       "18:00",
       "23:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-24T03:00:00Z",
+      "2026-11-25T03:00:00Z",
       "2026-11-23T18:00:00Z",
       "2026-11-24T12:00:00Z",
       "2026-11-23T23:00:00Z",
@@ -600,7 +607,6 @@
       "2026-11-23T15:00:00Z",
       "2026-11-24T15:00:00Z",
       "2026-11-23T03:00:00Z",
-      "2026-11-24T03:00:00Z",
       "2026-11-22T18:00:00Z",
       "2026-11-23T12:00:00Z",
       "2026-11-22T23:00:00Z",
@@ -753,6 +759,30 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1795442030_captioned_1795442030.mp4",
+      "title": "[FULL STORY] My mom forced the teacher to apologize—watch her face when she finally did.",
+      "subreddit": "EntitledPeople",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1335413961994168",
+      "url": "https://www.facebook.com/1272041649331476/videos/1335413961994168",
+      "posted_at": "2026-11-23T13:56:08Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-24T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795442030_captioned_1795442030.mp4",
+      "title": "[FULL STORY] My mom forced the teacher to apologize—watch her face when she finally did.",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "uplIGG87CO0",
+      "url": "https://youtu.be/uplIGG87CO0",
+      "posted_at": "2026-11-23T13:54:42Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-24T03:00:00Z"
+    },
     {
       "video_file": "output_1795436907_captioned_1795436907.mp4",
       "title": "[FULL STORY] I hit a car—my ex‑bestfriend’s sister. Now I’m *destroyed* and *stunned*… what happens next?",
