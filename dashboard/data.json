@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-11-24T13:05:41Z",
+  "generated_at": "2026-11-24T13:57:44Z",
   "total_stories": 367,
-  "unused_stories": 182,
-  "used_stories": 185,
+  "unused_stories": 181,
+  "used_stories": 186,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 91,
-  "runway_date": "2027-02-23",
+  "days_of_stories": 90,
+  "runway_date": "2027-02-22",
   "videos_per_day": 2,
   "oldest_added_at": null,
   "newest_added_at": null,
@@ -72,13 +72,18 @@
       "unused": 9
     },
     {
-      "name": "MaliciousCompliance",
-      "total": 2,
+      "name": "pettyrevenge",
+      "total": 3,
       "unused": 2
     },
     {
-      "name": "pettyrevenge",
-      "total": 3,
+      "name": "MaliciousCompliance",
+      "total": 1,
+      "unused": 1
+    },
+    {
+      "name": "MaliciousCompliance",
+      "total": 2,
       "unused": 2
     },
     {
@@ -593,19 +598,21 @@
     }
   ],
   "schedule": {
-    "next_index": 215
+    "next_index": 216
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "23:00",
       "21:00",
       "15:00",
       "03:00",
       "12:00",
-      "18:00",
-      "23:00"
+      "18:00"
     ],
     "next_publish_utc": [
+      "2026-11-24T23:00:00Z",
+      "2026-11-25T23:00:00Z",
       "2026-11-24T21:00:00Z",
       "2026-11-25T21:00:00Z",
       "2026-11-24T15:00:00Z",
@@ -615,7 +622,6 @@
       "2026-11-23T18:00:00Z",
       "2026-11-24T12:00:00Z",
       "2026-11-23T23:00:00Z",
-      "2026-11-24T23:00:00Z",
       "2026-11-23T21:00:00Z",
       "2026-11-23T15:00:00Z",
       "2026-11-23T03:00:00Z",
@@ -772,6 +778,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795528586_captioned_1795528586.mp4",
+      "title": "[FULL STORY] New hire asks about manager’s flirting, gets fired for daring question!",
+      "subreddit": "MaliciousCompliance",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122137895925447442",
+      "url": "https://www.facebook.com/reel/1123637063808397",
+      "posted_at": "2026-11-24T13:57:44Z",
+      "hook_score": 1,
+      "publish_at": "2026-11-24T23:00:00Z"
+    },
+    {
+      "video_file": "output_1795528586_captioned_1795528586.mp4",
+      "title": "[FULL STORY] New hire asks about manager’s flirting, gets fired for daring question!",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "PkkpJjO34rs",
+      "url": "https://youtu.be/PkkpJjO34rs",
+      "posted_at": "2026-11-24T13:57:29Z",
+      "hook_score": 1,
+      "publish_at": "2026-11-24T23:00:00Z"
+    },
+    {
       "video_file": "output_1795525384_captioned_1795525384.mp4",
       "title": "[FULL STORY] “Every caller screams I’m the enemy—why can’t they just book directly?”",
       "subreddit": "TalesFromTheFrontDesk",
@@ -780,18 +810,6 @@
       "video_id": "122137887471447442",
       "url": "https://www.facebook.com/reel/1155618950272258",
       "posted_at": "2026-11-24T13:05:41Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-24T21:00:00Z"
-    },
-    {
-      "video_file": "output_1795525384_captioned_1795525384.mp4",
-      "title": "[FULL STORY] “Every caller screams I’m the enemy—why can’t they just book directly?”",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "WXNB9dFOCFI",
-      "url": "https://youtu.be/WXNB9dFOCFI",
-      "posted_at": "2026-11-24T13:03:59Z",
       "hook_score": 26,
       "publish_at": "2026-11-24T21:00:00Z"
     },
@@ -878,6 +896,18 @@
       "posted_at": "2026-11-22T10:57:29Z",
       "hook_score": 13,
       "publish_at": "2026-11-22T23:00:00Z"
+    },
+    {
+      "video_file": "output_1795525384_captioned_1795525384.mp4",
+      "title": "[FULL STORY] “Every caller screams I’m the enemy—why can’t they just book directly?”",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "WXNB9dFOCFI",
+      "url": "https://youtu.be/WXNB9dFOCFI",
+      "posted_at": "2026-11-24T13:03:59Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-24T21:00:00Z"
     },
     {
       "video_file": "output_1795340403_captioned_1795340403.mp4",
