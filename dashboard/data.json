@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24T13:57:44Z",
+  "generated_at": "2026-11-24T14:02:21Z",
   "total_stories": 367,
   "unused_stories": 181,
   "used_stories": 186,
@@ -603,14 +603,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "23:00",
       "21:00",
       "15:00",
-      "03:00",
-      "12:00",
-      "18:00"
+      "03:00"
     ],
     "next_publish_utc": [
+      "2026-11-24T18:00:00Z",
+      "2026-11-25T12:00:00Z",
       "2026-11-24T23:00:00Z",
       "2026-11-25T23:00:00Z",
       "2026-11-24T21:00:00Z",
@@ -790,18 +792,6 @@
       "publish_at": "2026-11-24T23:00:00Z"
     },
     {
-      "video_file": "output_1795528586_captioned_1795528586.mp4",
-      "title": "[FULL STORY] New hire asks about manager’s flirting, gets fired for daring question!",
-      "subreddit": "MaliciousCompliance",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "PkkpJjO34rs",
-      "url": "https://youtu.be/PkkpJjO34rs",
-      "posted_at": "2026-11-24T13:57:29Z",
-      "hook_score": 1,
-      "publish_at": "2026-11-24T23:00:00Z"
-    },
-    {
       "video_file": "output_1795525384_captioned_1795525384.mp4",
       "title": "[FULL STORY] “Every caller screams I’m the enemy—why can’t they just book directly?”",
       "subreddit": "TalesFromTheFrontDesk",
@@ -898,18 +888,6 @@
       "publish_at": "2026-11-22T23:00:00Z"
     },
     {
-      "video_file": "output_1795525384_captioned_1795525384.mp4",
-      "title": "[FULL STORY] “Every caller screams I’m the enemy—why can’t they just book directly?”",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "WXNB9dFOCFI",
-      "url": "https://youtu.be/WXNB9dFOCFI",
-      "posted_at": "2026-11-24T13:03:59Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-24T21:00:00Z"
-    },
-    {
       "video_file": "output_1795340403_captioned_1795340403.mp4",
       "title": "[FULL STORY] I thought I saved my mom—then she vanished, and now I'm terrified.",
       "subreddit": "AITAH",
@@ -920,6 +898,30 @@
       "posted_at": "2026-11-22T09:41:14Z",
       "hook_score": 39,
       "publish_at": "2026-11-22T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795528586_captioned_1795528586.mp4",
+      "title": "[FULL STORY] New hire asks about manager’s flirting, gets fired for daring question!",
+      "subreddit": "MaliciousCompliance",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "PkkpJjO34rs",
+      "url": "https://youtu.be/PkkpJjO34rs",
+      "posted_at": "2026-11-24T13:57:29Z",
+      "hook_score": 1,
+      "publish_at": "2026-11-24T23:00:00Z"
+    },
+    {
+      "video_file": "output_1795525384_captioned_1795525384.mp4",
+      "title": "[FULL STORY] “Every caller screams I’m the enemy—why can’t they just book directly?”",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "WXNB9dFOCFI",
+      "url": "https://youtu.be/WXNB9dFOCFI",
+      "posted_at": "2026-11-24T13:03:59Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-24T21:00:00Z"
     },
     {
       "video_file": "output_1795519823_captioned_1795519823.mp4",
