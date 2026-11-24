@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-24T14:02:21Z",
+  "generated_at": "2026-11-24T15:42:09Z",
   "total_stories": 367,
-  "unused_stories": 181,
-  "used_stories": 186,
+  "unused_stories": 180,
+  "used_stories": 187,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 90,
@@ -28,8 +28,8 @@
     },
     {
       "name": "relationship_advice",
-      "total": 17,
-      "unused": 17
+      "total": 16,
+      "unused": 16
     },
     {
       "name": "AITAH",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "relationship_advice",
+      "total": 17,
+      "unused": 17
     },
     {
       "name": "MaliciousCompliance",
@@ -598,19 +603,21 @@
     }
   ],
   "schedule": {
-    "next_index": 216
+    "next_index": 217
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "12:00",
       "18:00",
       "23:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-25T03:00:00Z",
+      "2026-11-26T03:00:00Z",
       "2026-11-24T18:00:00Z",
       "2026-11-25T12:00:00Z",
       "2026-11-24T23:00:00Z",
@@ -620,7 +627,6 @@
       "2026-11-24T15:00:00Z",
       "2026-11-25T15:00:00Z",
       "2026-11-24T03:00:00Z",
-      "2026-11-25T03:00:00Z",
       "2026-11-23T18:00:00Z",
       "2026-11-24T12:00:00Z",
       "2026-11-23T23:00:00Z",
@@ -779,6 +785,30 @@
     ]
   },
   "videos": [
+    {
+      "video_file": "output_1795534725_captioned_1795534725.mp4",
+      "title": "[FULL STORY] My boyfriend keeps waking me up 5 hours early—what’s his sinister plan?",
+      "subreddit": "relationship_advice",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1136879512585272",
+      "url": "https://www.facebook.com/1272041649331476/videos/1136879512585272",
+      "posted_at": "2026-11-24T15:42:09Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-25T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795534725_captioned_1795534725.mp4",
+      "title": "[FULL STORY] My boyfriend keeps waking me up 5 hours early—what’s his sinister plan?",
+      "subreddit": "relationship_advice",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ohqPCBR-qBU",
+      "url": "https://youtu.be/ohqPCBR-qBU",
+      "posted_at": "2026-11-24T15:39:47Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-25T03:00:00Z"
+    },
     {
       "video_file": "output_1795528586_captioned_1795528586.mp4",
       "title": "[FULL STORY] New hire asks about manager’s flirting, gets fired for daring question!",
