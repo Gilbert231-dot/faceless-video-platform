@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-24T11:32:48Z",
+  "generated_at": "2026-11-24T13:05:41Z",
   "total_stories": 367,
-  "unused_stories": 183,
-  "used_stories": 184,
+  "unused_stories": 182,
+  "used_stories": 185,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 91,
@@ -53,8 +53,8 @@
     },
     {
       "name": "TalesFromTheFrontDesk",
-      "total": 13,
-      "unused": 13
+      "total": 12,
+      "unused": 12
     },
     {
       "name": "unpopularopinion",
@@ -80,6 +80,11 @@
       "name": "pettyrevenge",
       "total": 3,
       "unused": 2
+    },
+    {
+      "name": "TalesFromTheFrontDesk",
+      "total": 13,
+      "unused": 13
     },
     {
       "name": "TalesFromTheFrontDesk",
@@ -588,19 +593,21 @@
     }
   ],
   "schedule": {
-    "next_index": 214
+    "next_index": 215
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "12:00",
       "18:00",
-      "23:00",
-      "21:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-24T21:00:00Z",
+      "2026-11-25T21:00:00Z",
       "2026-11-24T15:00:00Z",
       "2026-11-25T15:00:00Z",
       "2026-11-24T03:00:00Z",
@@ -610,7 +617,6 @@
       "2026-11-23T23:00:00Z",
       "2026-11-24T23:00:00Z",
       "2026-11-23T21:00:00Z",
-      "2026-11-24T21:00:00Z",
       "2026-11-23T15:00:00Z",
       "2026-11-23T03:00:00Z",
       "2026-11-22T18:00:00Z",
@@ -766,6 +772,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795525384_captioned_1795525384.mp4",
+      "title": "[FULL STORY] “Every caller screams I’m the enemy—why can’t they just book directly?”",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122137887471447442",
+      "url": "https://www.facebook.com/reel/1155618950272258",
+      "posted_at": "2026-11-24T13:05:41Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-24T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795525384_captioned_1795525384.mp4",
+      "title": "[FULL STORY] “Every caller screams I’m the enemy—why can’t they just book directly?”",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "WXNB9dFOCFI",
+      "url": "https://youtu.be/WXNB9dFOCFI",
+      "posted_at": "2026-11-24T13:03:59Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-24T21:00:00Z"
+    },
+    {
       "video_file": "output_1795519823_captioned_1795519823.mp4",
       "title": "[FULL STORY] I warned every guest, then the smoking rule exposed my darkest secret.",
       "subreddit": "TalesFromTheFrontDesk",
@@ -774,18 +804,6 @@
       "video_id": "1461689466076213",
       "url": "https://www.facebook.com/1272041649331476/videos/1461689466076213",
       "posted_at": "2026-11-24T11:32:48Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-24T15:00:00Z"
-    },
-    {
-      "video_file": "output_1795519823_captioned_1795519823.mp4",
-      "title": "[FULL STORY] I warned every guest, then the smoking rule exposed my darkest secret.",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "25BjoUy9R7A",
-      "url": "https://youtu.be/25BjoUy9R7A",
-      "posted_at": "2026-11-24T11:31:30Z",
       "hook_score": 39,
       "publish_at": "2026-11-24T15:00:00Z"
     },
@@ -872,6 +890,18 @@
       "posted_at": "2026-11-22T09:41:14Z",
       "hook_score": 39,
       "publish_at": "2026-11-22T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795519823_captioned_1795519823.mp4",
+      "title": "[FULL STORY] I warned every guest, then the smoking rule exposed my darkest secret.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "25BjoUy9R7A",
+      "url": "https://youtu.be/25BjoUy9R7A",
+      "posted_at": "2026-11-24T11:31:30Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-24T15:00:00Z"
     },
     {
       "video_file": "output_1795336306_captioned_1795336306.mp4",
