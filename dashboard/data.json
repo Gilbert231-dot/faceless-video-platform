@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-23T13:56:08Z",
+  "generated_at": "2026-11-24T11:32:48Z",
   "total_stories": 367,
-  "unused_stories": 184,
-  "used_stories": 183,
+  "unused_stories": 183,
+  "used_stories": 184,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 92,
+  "days_of_stories": 91,
   "runway_date": "2027-02-23",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -37,22 +37,22 @@
       "unused": 15
     },
     {
-      "name": "AmItheAsshole",
-      "total": 15,
-      "unused": 15
-    },
-    {
       "name": "offmychest",
       "total": 15,
       "unused": 15
     },
     {
-      "name": "TalesFromTheFrontDesk",
-      "total": 14,
-      "unused": 14
+      "name": "AmItheAsshole",
+      "total": 15,
+      "unused": 15
     },
     {
       "name": "tifu",
+      "total": 13,
+      "unused": 13
+    },
+    {
+      "name": "TalesFromTheFrontDesk",
       "total": 13,
       "unused": 13
     },
@@ -72,14 +72,19 @@
       "unused": 9
     },
     {
+      "name": "MaliciousCompliance",
+      "total": 2,
+      "unused": 2
+    },
+    {
       "name": "pettyrevenge",
       "total": 3,
       "unused": 2
     },
     {
-      "name": "MaliciousCompliance",
-      "total": 2,
-      "unused": 2
+      "name": "TalesFromTheFrontDesk",
+      "total": 14,
+      "unused": 14
     },
     {
       "name": "EntitledPeople",
@@ -583,19 +588,21 @@
     }
   ],
   "schedule": {
-    "next_index": 213
+    "next_index": 214
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "12:00",
       "18:00",
       "23:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-24T15:00:00Z",
+      "2026-11-25T15:00:00Z",
       "2026-11-24T03:00:00Z",
       "2026-11-25T03:00:00Z",
       "2026-11-23T18:00:00Z",
@@ -605,7 +612,6 @@
       "2026-11-23T21:00:00Z",
       "2026-11-24T21:00:00Z",
       "2026-11-23T15:00:00Z",
-      "2026-11-24T15:00:00Z",
       "2026-11-23T03:00:00Z",
       "2026-11-22T18:00:00Z",
       "2026-11-23T12:00:00Z",
@@ -760,6 +766,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795519823_captioned_1795519823.mp4",
+      "title": "[FULL STORY] I warned every guest, then the smoking rule exposed my darkest secret.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1461689466076213",
+      "url": "https://www.facebook.com/1272041649331476/videos/1461689466076213",
+      "posted_at": "2026-11-24T11:32:48Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-24T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795519823_captioned_1795519823.mp4",
+      "title": "[FULL STORY] I warned every guest, then the smoking rule exposed my darkest secret.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "25BjoUy9R7A",
+      "url": "https://youtu.be/25BjoUy9R7A",
+      "posted_at": "2026-11-24T11:31:30Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-24T15:00:00Z"
+    },
+    {
       "video_file": "output_1795442030_captioned_1795442030.mp4",
       "title": "[FULL STORY] My mom forced the teacher to apologize—watch her face when she finally did.",
       "subreddit": "EntitledPeople",
@@ -768,18 +798,6 @@
       "video_id": "1335413961994168",
       "url": "https://www.facebook.com/1272041649331476/videos/1335413961994168",
       "posted_at": "2026-11-23T13:56:08Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-24T03:00:00Z"
-    },
-    {
-      "video_file": "output_1795442030_captioned_1795442030.mp4",
-      "title": "[FULL STORY] My mom forced the teacher to apologize—watch her face when she finally did.",
-      "subreddit": "EntitledPeople",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "uplIGG87CO0",
-      "url": "https://youtu.be/uplIGG87CO0",
-      "posted_at": "2026-11-23T13:54:42Z",
       "hook_score": 39,
       "publish_at": "2026-11-24T03:00:00Z"
     },
@@ -866,6 +884,18 @@
       "posted_at": "2026-11-22T08:33:02Z",
       "hook_score": 26,
       "publish_at": "2026-11-22T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795442030_captioned_1795442030.mp4",
+      "title": "[FULL STORY] My mom forced the teacher to apologize—watch her face when she finally did.",
+      "subreddit": "EntitledPeople",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "uplIGG87CO0",
+      "url": "https://youtu.be/uplIGG87CO0",
+      "posted_at": "2026-11-23T13:54:42Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-24T03:00:00Z"
     },
     {
       "video_file": "output_1795269289_captioned_1795269289.mp4",
