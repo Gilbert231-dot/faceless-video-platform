@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-25T10:33:48Z",
+  "generated_at": "2026-11-25T12:01:48Z",
   "total_stories": 367,
-  "unused_stories": 179,
-  "used_stories": 188,
+  "unused_stories": 178,
+  "used_stories": 189,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 89,
@@ -63,8 +63,8 @@
     },
     {
       "name": "TalesFromRetail",
-      "total": 10,
-      "unused": 10
+      "total": 9,
+      "unused": 9
     },
     {
       "name": "EntitledPeople",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 10,
+      "unused": 10
     },
     {
       "name": "TalesFromTheFrontDesk",
@@ -608,19 +613,21 @@
     }
   ],
   "schedule": {
-    "next_index": 218
+    "next_index": 219
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "12:00",
       "18:00",
-      "23:00",
-      "21:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-25T21:00:00Z",
+      "2026-11-26T21:00:00Z",
       "2026-11-25T15:00:00Z",
       "2026-11-26T15:00:00Z",
       "2026-11-25T03:00:00Z",
@@ -630,7 +637,6 @@
       "2026-11-24T23:00:00Z",
       "2026-11-25T23:00:00Z",
       "2026-11-24T21:00:00Z",
-      "2026-11-25T21:00:00Z",
       "2026-11-24T15:00:00Z",
       "2026-11-24T03:00:00Z",
       "2026-11-23T18:00:00Z",
@@ -792,6 +798,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795607883_captioned_1795607883.mp4",
+      "title": "[FULL STORY] I threatened to “female‑Me‑Up” after refusing a discount—now the truth is insane.",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1704428461302296",
+      "url": "https://www.facebook.com/1272041649331476/videos/1704428461302296",
+      "posted_at": "2026-11-25T12:01:48Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-25T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795607883_captioned_1795607883.mp4",
+      "title": "[FULL STORY] I threatened to “female‑Me‑Up” after refusing a discount—now the truth is insane.",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "7WpwGuskHuU",
+      "url": "https://youtu.be/7WpwGuskHuU",
+      "posted_at": "2026-11-25T12:00:02Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-25T21:00:00Z"
+    },
+    {
       "video_file": "output_1795602669_captioned_1795602669.mp4",
       "title": "[FULL STORY] I booked him a room, but his bank app shows a betrayal.",
       "subreddit": "TalesFromTheFrontDesk",
@@ -800,18 +830,6 @@
       "video_id": "122138414745447442",
       "url": "https://www.facebook.com/reel/2194292321475332",
       "posted_at": "2026-11-25T10:33:48Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-25T15:00:00Z"
-    },
-    {
-      "video_file": "output_1795602669_captioned_1795602669.mp4",
-      "title": "[FULL STORY] I booked him a room, but his bank app shows a betrayal.",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "Pw5doL1VoZg",
-      "url": "https://youtu.be/Pw5doL1VoZg",
-      "posted_at": "2026-11-25T10:32:13Z",
       "hook_score": 39,
       "publish_at": "2026-11-25T15:00:00Z"
     },
@@ -898,6 +916,18 @@
       "posted_at": "2026-11-23T10:21:47Z",
       "hook_score": 26,
       "publish_at": "2026-11-23T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795602669_captioned_1795602669.mp4",
+      "title": "[FULL STORY] I booked him a room, but his bank app shows a betrayal.",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Pw5doL1VoZg",
+      "url": "https://youtu.be/Pw5doL1VoZg",
+      "posted_at": "2026-11-25T10:32:13Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-25T15:00:00Z"
     },
     {
       "video_file": "output_1795424671_captioned_1795424671.mp4",
