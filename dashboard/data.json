@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-25T13:36:04Z",
+  "generated_at": "2026-11-25T15:37:48Z",
   "total_stories": 367,
-  "unused_stories": 177,
-  "used_stories": 190,
+  "unused_stories": 176,
+  "used_stories": 191,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 88,
@@ -43,8 +43,8 @@
     },
     {
       "name": "AITAH",
-      "total": 14,
-      "unused": 14
+      "total": 13,
+      "unused": 13
     },
     {
       "name": "tifu",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "AITAH",
+      "total": 14,
+      "unused": 14
     },
     {
       "name": "AITAH",
@@ -618,19 +623,21 @@
     }
   ],
   "schedule": {
-    "next_index": 220
+    "next_index": 221
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-26T03:00:00Z",
+      "2026-11-27T03:00:00Z",
       "2026-11-25T23:00:00Z",
       "2026-11-26T23:00:00Z",
       "2026-11-25T18:00:00Z",
@@ -640,7 +647,6 @@
       "2026-11-25T15:00:00Z",
       "2026-11-26T15:00:00Z",
       "2026-11-25T03:00:00Z",
-      "2026-11-26T03:00:00Z",
       "2026-11-24T18:00:00Z",
       "2026-11-25T12:00:00Z",
       "2026-11-24T23:00:00Z",
@@ -806,6 +812,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795620880_captioned_1795620880.mp4",
+      "title": "[FULL STORY] \"She thought firefighters would save her fish—my warning almost killed them.\"",
+      "subreddit": "AITAH",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1935339964490537",
+      "url": "https://www.facebook.com/1272041649331476/videos/1935339964490537",
+      "posted_at": "2026-11-25T15:37:48Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-26T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795620880_captioned_1795620880.mp4",
+      "title": "[FULL STORY] \"She thought firefighters would save her fish—my warning almost killed them.\"",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "jFiftmTlCa8",
+      "url": "https://youtu.be/jFiftmTlCa8",
+      "posted_at": "2026-11-25T15:35:44Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-26T03:00:00Z"
+    },
+    {
       "video_file": "output_1795613605_captioned_1795613605.mp4",
       "title": "[FULL STORY] I was invited, but my cousin’s mom uninvited me—now I’m torn.",
       "subreddit": "AITAH",
@@ -814,18 +844,6 @@
       "video_id": "122138460213447442",
       "url": "https://www.facebook.com/reel/1807708623781379",
       "posted_at": "2026-11-25T13:36:04Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-25T23:00:00Z"
-    },
-    {
-      "video_file": "output_1795613605_captioned_1795613605.mp4",
-      "title": "[FULL STORY] I was invited, but my cousin’s mom uninvited me—now I’m torn.",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "GNGslDPKzuk",
-      "url": "https://youtu.be/GNGslDPKzuk",
-      "posted_at": "2026-11-25T13:34:18Z",
       "hook_score": 39,
       "publish_at": "2026-11-25T23:00:00Z"
     },
@@ -912,6 +930,18 @@
       "posted_at": "2026-11-23T13:56:08Z",
       "hook_score": 39,
       "publish_at": "2026-11-24T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795613605_captioned_1795613605.mp4",
+      "title": "[FULL STORY] I was invited, but my cousin’s mom uninvited me—now I’m torn.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "GNGslDPKzuk",
+      "url": "https://youtu.be/GNGslDPKzuk",
+      "posted_at": "2026-11-25T13:34:18Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-25T23:00:00Z"
     },
     {
       "video_file": "output_1795436907_captioned_1795436907.mp4",
