@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-26T11:38:55Z",
+  "generated_at": "2026-11-26T12:56:57Z",
   "total_stories": 367,
   "unused_stories": 174,
   "used_stories": 193,
@@ -638,14 +638,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-26T18:00:00Z",
+      "2026-11-27T12:00:00Z",
       "2026-11-26T21:00:00Z",
       "2026-11-27T21:00:00Z",
       "2026-11-26T15:00:00Z",
@@ -836,18 +838,6 @@
       "publish_at": "2026-11-26T21:00:00Z"
     },
     {
-      "video_file": "output_1795692946_captioned_1795692946.mp4",
-      "title": "[FULL STORY] \"Everyone’s flocking to the same tourist traps—yet the real gems are forever hidden.\"",
-      "subreddit": "unpopularopinion",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "ta00R27h_Eg",
-      "url": "https://youtu.be/ta00R27h_Eg",
-      "posted_at": "2026-11-26T11:36:45Z",
-      "hook_score": 0,
-      "publish_at": "2026-11-26T21:00:00Z"
-    },
-    {
       "video_file": "output_1795686142_captioned_1795686142.mp4",
       "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
       "subreddit": "TalesFromTheFrontDesk",
@@ -944,18 +934,6 @@
       "publish_at": "2026-11-24T21:00:00Z"
     },
     {
-      "video_file": "output_1795686142_captioned_1795686142.mp4",
-      "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "411OiJAasPw",
-      "url": "https://youtu.be/411OiJAasPw",
-      "posted_at": "2026-11-26T09:43:34Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-26T15:00:00Z"
-    },
-    {
       "video_file": "output_1795519823_captioned_1795519823.mp4",
       "title": "[FULL STORY] I warned every guest, then the smoking rule exposed my darkest secret.",
       "subreddit": "TalesFromTheFrontDesk",
@@ -966,6 +944,30 @@
       "posted_at": "2026-11-24T11:32:48Z",
       "hook_score": 39,
       "publish_at": "2026-11-24T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795692946_captioned_1795692946.mp4",
+      "title": "[FULL STORY] \"Everyone’s flocking to the same tourist traps—yet the real gems are forever hidden.\"",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ta00R27h_Eg",
+      "url": "https://youtu.be/ta00R27h_Eg",
+      "posted_at": "2026-11-26T11:36:45Z",
+      "hook_score": 0,
+      "publish_at": "2026-11-26T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795686142_captioned_1795686142.mp4",
+      "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "411OiJAasPw",
+      "url": "https://youtu.be/411OiJAasPw",
+      "posted_at": "2026-11-26T09:43:34Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-26T15:00:00Z"
     },
     {
       "video_file": "output_1795620880_captioned_1795620880.mp4",
