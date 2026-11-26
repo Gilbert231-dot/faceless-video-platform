@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-25T15:37:48Z",
+  "generated_at": "2026-11-26T09:44:03Z",
   "total_stories": 367,
-  "unused_stories": 176,
-  "used_stories": 191,
+  "unused_stories": 175,
+  "used_stories": 192,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 88,
+  "days_of_stories": 87,
   "runway_date": "2027-02-21",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -58,8 +58,8 @@
     },
     {
       "name": "TalesFromTheFrontDesk",
-      "total": 11,
-      "unused": 11
+      "total": 10,
+      "unused": 10
     },
     {
       "name": "TalesFromRetail",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "TalesFromTheFrontDesk",
+      "total": 11,
+      "unused": 11
     },
     {
       "name": "AITAH",
@@ -623,19 +628,21 @@
     }
   ],
   "schedule": {
-    "next_index": 221
+    "next_index": 222
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-26T15:00:00Z",
+      "2026-11-27T15:00:00Z",
       "2026-11-26T03:00:00Z",
       "2026-11-27T03:00:00Z",
       "2026-11-25T23:00:00Z",
@@ -645,7 +652,6 @@
       "2026-11-25T21:00:00Z",
       "2026-11-26T21:00:00Z",
       "2026-11-25T15:00:00Z",
-      "2026-11-26T15:00:00Z",
       "2026-11-25T03:00:00Z",
       "2026-11-24T18:00:00Z",
       "2026-11-25T12:00:00Z",
@@ -812,6 +818,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795686142_captioned_1795686142.mp4",
+      "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122138576523447442",
+      "url": "https://www.facebook.com/reel/1738178611199391",
+      "posted_at": "2026-11-26T09:44:03Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-26T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795686142_captioned_1795686142.mp4",
+      "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "411OiJAasPw",
+      "url": "https://youtu.be/411OiJAasPw",
+      "posted_at": "2026-11-26T09:43:34Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-26T15:00:00Z"
+    },
+    {
       "video_file": "output_1795620880_captioned_1795620880.mp4",
       "title": "[FULL STORY] \"She thought firefighters would save her fish—my warning almost killed them.\"",
       "subreddit": "AITAH",
@@ -820,18 +850,6 @@
       "video_id": "1935339964490537",
       "url": "https://www.facebook.com/1272041649331476/videos/1935339964490537",
       "posted_at": "2026-11-25T15:37:48Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-26T03:00:00Z"
-    },
-    {
-      "video_file": "output_1795620880_captioned_1795620880.mp4",
-      "title": "[FULL STORY] \"She thought firefighters would save her fish—my warning almost killed them.\"",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "jFiftmTlCa8",
-      "url": "https://youtu.be/jFiftmTlCa8",
-      "posted_at": "2026-11-25T15:35:44Z",
       "hook_score": 26,
       "publish_at": "2026-11-26T03:00:00Z"
     },
@@ -918,6 +936,18 @@
       "posted_at": "2026-11-24T11:32:48Z",
       "hook_score": 39,
       "publish_at": "2026-11-24T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795620880_captioned_1795620880.mp4",
+      "title": "[FULL STORY] \"She thought firefighters would save her fish—my warning almost killed them.\"",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "jFiftmTlCa8",
+      "url": "https://youtu.be/jFiftmTlCa8",
+      "posted_at": "2026-11-25T15:35:44Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-26T03:00:00Z"
     },
     {
       "video_file": "output_1795442030_captioned_1795442030.mp4",
