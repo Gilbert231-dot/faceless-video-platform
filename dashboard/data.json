@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-26T09:44:03Z",
+  "generated_at": "2026-11-26T11:38:55Z",
   "total_stories": 367,
-  "unused_stories": 175,
-  "used_stories": 192,
+  "unused_stories": 174,
+  "used_stories": 193,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 87,
@@ -53,8 +53,8 @@
     },
     {
       "name": "unpopularopinion",
-      "total": 13,
-      "unused": 11
+      "total": 12,
+      "unused": 10
     },
     {
       "name": "TalesFromTheFrontDesk",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "unpopularopinion",
+      "total": 13,
+      "unused": 11
     },
     {
       "name": "TalesFromTheFrontDesk",
@@ -628,19 +633,21 @@
     }
   ],
   "schedule": {
-    "next_index": 222
+    "next_index": 223
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "23:00",
       "12:00",
-      "18:00",
-      "21:00"
+      "18:00"
     ],
     "next_publish_utc": [
+      "2026-11-26T21:00:00Z",
+      "2026-11-27T21:00:00Z",
       "2026-11-26T15:00:00Z",
       "2026-11-27T15:00:00Z",
       "2026-11-26T03:00:00Z",
@@ -650,7 +657,6 @@
       "2026-11-25T18:00:00Z",
       "2026-11-26T12:00:00Z",
       "2026-11-25T21:00:00Z",
-      "2026-11-26T21:00:00Z",
       "2026-11-25T15:00:00Z",
       "2026-11-25T03:00:00Z",
       "2026-11-24T18:00:00Z",
@@ -818,6 +824,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795692946_captioned_1795692946.mp4",
+      "title": "[FULL STORY] \"Everyone’s flocking to the same tourist traps—yet the real gems are forever hidden.\"",
+      "subreddit": "unpopularopinion",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1804379387490485",
+      "url": "https://www.facebook.com/1272041649331476/videos/1804379387490485",
+      "posted_at": "2026-11-26T11:38:55Z",
+      "hook_score": 0,
+      "publish_at": "2026-11-26T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795692946_captioned_1795692946.mp4",
+      "title": "[FULL STORY] \"Everyone’s flocking to the same tourist traps—yet the real gems are forever hidden.\"",
+      "subreddit": "unpopularopinion",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "ta00R27h_Eg",
+      "url": "https://youtu.be/ta00R27h_Eg",
+      "posted_at": "2026-11-26T11:36:45Z",
+      "hook_score": 0,
+      "publish_at": "2026-11-26T21:00:00Z"
+    },
+    {
       "video_file": "output_1795686142_captioned_1795686142.mp4",
       "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
       "subreddit": "TalesFromTheFrontDesk",
@@ -826,18 +856,6 @@
       "video_id": "122138576523447442",
       "url": "https://www.facebook.com/reel/1738178611199391",
       "posted_at": "2026-11-26T09:44:03Z",
-      "hook_score": 39,
-      "publish_at": "2026-11-26T15:00:00Z"
-    },
-    {
-      "video_file": "output_1795686142_captioned_1795686142.mp4",
-      "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
-      "subreddit": "TalesFromTheFrontDesk",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "411OiJAasPw",
-      "url": "https://youtu.be/411OiJAasPw",
-      "posted_at": "2026-11-26T09:43:34Z",
       "hook_score": 39,
       "publish_at": "2026-11-26T15:00:00Z"
     },
@@ -924,6 +942,18 @@
       "posted_at": "2026-11-24T13:05:41Z",
       "hook_score": 26,
       "publish_at": "2026-11-24T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795686142_captioned_1795686142.mp4",
+      "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
+      "subreddit": "TalesFromTheFrontDesk",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "411OiJAasPw",
+      "url": "https://youtu.be/411OiJAasPw",
+      "posted_at": "2026-11-26T09:43:34Z",
+      "hook_score": 39,
+      "publish_at": "2026-11-26T15:00:00Z"
     },
     {
       "video_file": "output_1795519823_captioned_1795519823.mp4",
