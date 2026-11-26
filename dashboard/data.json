@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-26T13:11:29Z",
+  "generated_at": "2026-11-26T14:44:48Z",
   "total_stories": 367,
-  "unused_stories": 173,
-  "used_stories": 194,
+  "unused_stories": 172,
+  "used_stories": 195,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 86,
@@ -13,8 +13,8 @@
   "subreddits": [
     {
       "name": "TrueOffMyChest",
-      "total": 23,
-      "unused": 22
+      "total": 22,
+      "unused": 21
     },
     {
       "name": "self",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "TrueOffMyChest",
+      "total": 23,
+      "unused": 22
     },
     {
       "name": "AITAH",
@@ -638,19 +643,21 @@
     }
   ],
   "schedule": {
-    "next_index": 224
+    "next_index": 225
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-27T03:00:00Z",
+      "2026-11-28T03:00:00Z",
       "2026-11-26T23:00:00Z",
       "2026-11-27T23:00:00Z",
       "2026-11-26T18:00:00Z",
@@ -660,7 +667,6 @@
       "2026-11-26T15:00:00Z",
       "2026-11-27T15:00:00Z",
       "2026-11-26T03:00:00Z",
-      "2026-11-27T03:00:00Z",
       "2026-11-25T23:00:00Z",
       "2026-11-25T18:00:00Z",
       "2026-11-26T12:00:00Z",
@@ -832,6 +838,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795704139_captioned_1795704139.mp4",
+      "title": "[FULL STORY] I finally took the pill—now I’m seeing her smile, and everything changes.",
+      "subreddit": "TrueOffMyChest",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122138618889447442",
+      "url": "https://www.facebook.com/reel/1828380114874815",
+      "posted_at": "2026-11-26T14:44:48Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-27T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795704139_captioned_1795704139.mp4",
+      "title": "[FULL STORY] I finally took the pill—now I’m seeing her smile, and everything changes.",
+      "subreddit": "TrueOffMyChest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Nktkzbqwhb4",
+      "url": "https://youtu.be/Nktkzbqwhb4",
+      "posted_at": "2026-11-26T14:43:16Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-27T03:00:00Z"
+    },
+    {
       "video_file": "output_1795698527_captioned_1795698527.mp4",
       "title": "[FULL STORY] \"After six years, I told her I’m tired—my proposal shattered everything.\"",
       "subreddit": "AITAH",
@@ -840,18 +870,6 @@
       "video_id": "122138609025447442",
       "url": "https://www.facebook.com/reel/1695120018985488",
       "posted_at": "2026-11-26T13:11:29Z",
-      "hook_score": 13,
-      "publish_at": "2026-11-26T23:00:00Z"
-    },
-    {
-      "video_file": "output_1795698527_captioned_1795698527.mp4",
-      "title": "[FULL STORY] \"After six years, I told her I’m tired—my proposal shattered everything.\"",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "vnnasTuBEew",
-      "url": "https://youtu.be/vnnasTuBEew",
-      "posted_at": "2026-11-26T13:09:50Z",
       "hook_score": 13,
       "publish_at": "2026-11-26T23:00:00Z"
     },
@@ -938,6 +956,18 @@
       "posted_at": "2026-11-24T15:42:09Z",
       "hook_score": 52,
       "publish_at": "2026-11-25T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795698527_captioned_1795698527.mp4",
+      "title": "[FULL STORY] \"After six years, I told her I’m tired—my proposal shattered everything.\"",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "vnnasTuBEew",
+      "url": "https://youtu.be/vnnasTuBEew",
+      "posted_at": "2026-11-26T13:09:50Z",
+      "hook_score": 13,
+      "publish_at": "2026-11-26T23:00:00Z"
     },
     {
       "video_file": "output_1795528586_captioned_1795528586.mp4",
