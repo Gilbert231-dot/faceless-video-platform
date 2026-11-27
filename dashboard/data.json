@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-27T12:44:42Z",
+  "generated_at": "2026-11-27T12:52:59Z",
   "total_stories": 367,
   "unused_stories": 170,
   "used_stories": 197,
@@ -658,14 +658,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-27T18:00:00Z",
+      "2026-11-28T12:00:00Z",
       "2026-11-27T21:00:00Z",
       "2026-11-28T21:00:00Z",
       "2026-11-27T15:00:00Z",
@@ -862,18 +864,6 @@
       "publish_at": "2026-11-27T21:00:00Z"
     },
     {
-      "video_file": "output_1795783394_captioned_1795783394.mp4",
-      "title": "[FULL STORY] My 640‑lb secret finally exposed—my world collapsed after one donut.",
-      "subreddit": "offmychest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "RU3vsLIVjwE",
-      "url": "https://youtu.be/RU3vsLIVjwE",
-      "posted_at": "2026-11-27T12:44:04Z",
-      "hook_score": 52,
-      "publish_at": "2026-11-27T21:00:00Z"
-    },
-    {
       "video_file": "output_1795778449_captioned_1795778449.mp4",
       "title": "[FULL STORY] I can't believe how this 10-year anniversary exposed the darkest secret behind r/TalesFromRetail…",
       "subreddit": "TalesFromRetail",
@@ -970,18 +960,6 @@
       "publish_at": "2026-11-25T21:00:00Z"
     },
     {
-      "video_file": "output_1795778449_captioned_1795778449.mp4",
-      "title": "[FULL STORY] I can't believe how this 10-year anniversary exposed the darkest secret behind r/TalesFromRetail…",
-      "subreddit": "TalesFromRetail",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "n2KcxAyK3Tc",
-      "url": "https://youtu.be/n2KcxAyK3Tc",
-      "posted_at": "2026-11-27T11:21:55Z",
-      "hook_score": 52,
-      "publish_at": "2026-11-27T15:00:00Z"
-    },
-    {
       "video_file": "output_1795602669_captioned_1795602669.mp4",
       "title": "[FULL STORY] I booked him a room, but his bank app shows a betrayal.",
       "subreddit": "TalesFromTheFrontDesk",
@@ -992,6 +970,30 @@
       "posted_at": "2026-11-25T10:33:48Z",
       "hook_score": 39,
       "publish_at": "2026-11-25T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795783394_captioned_1795783394.mp4",
+      "title": "[FULL STORY] My 640‑lb secret finally exposed—my world collapsed after one donut.",
+      "subreddit": "offmychest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "RU3vsLIVjwE",
+      "url": "https://youtu.be/RU3vsLIVjwE",
+      "posted_at": "2026-11-27T12:44:04Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-27T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795778449_captioned_1795778449.mp4",
+      "title": "[FULL STORY] I can't believe how this 10-year anniversary exposed the darkest secret behind r/TalesFromRetail…",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "n2KcxAyK3Tc",
+      "url": "https://youtu.be/n2KcxAyK3Tc",
+      "posted_at": "2026-11-27T11:21:55Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-27T15:00:00Z"
     },
     {
       "video_file": "output_1795704139_captioned_1795704139.mp4",
