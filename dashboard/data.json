@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-26T14:44:48Z",
+  "generated_at": "2026-11-27T11:25:01Z",
   "total_stories": 367,
-  "unused_stories": 172,
-  "used_stories": 195,
+  "unused_stories": 171,
+  "used_stories": 196,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 86,
+  "days_of_stories": 85,
   "runway_date": "2027-02-20",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -62,14 +62,14 @@
       "unused": 10
     },
     {
-      "name": "TalesFromRetail",
+      "name": "EntitledPeople",
       "total": 9,
       "unused": 9
     },
     {
-      "name": "EntitledPeople",
-      "total": 9,
-      "unused": 9
+      "name": "TalesFromRetail",
+      "total": 8,
+      "unused": 8
     },
     {
       "name": "pettyrevenge",
@@ -80,6 +80,11 @@
       "name": "MaliciousCompliance",
       "total": 1,
       "unused": 1
+    },
+    {
+      "name": "TalesFromRetail",
+      "total": 9,
+      "unused": 9
     },
     {
       "name": "TrueOffMyChest",
@@ -643,19 +648,21 @@
     }
   ],
   "schedule": {
-    "next_index": 225
+    "next_index": 226
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-27T15:00:00Z",
+      "2026-11-28T15:00:00Z",
       "2026-11-27T03:00:00Z",
       "2026-11-28T03:00:00Z",
       "2026-11-26T23:00:00Z",
@@ -665,7 +672,6 @@
       "2026-11-26T21:00:00Z",
       "2026-11-27T21:00:00Z",
       "2026-11-26T15:00:00Z",
-      "2026-11-27T15:00:00Z",
       "2026-11-26T03:00:00Z",
       "2026-11-25T23:00:00Z",
       "2026-11-25T18:00:00Z",
@@ -838,6 +844,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795778449_captioned_1795778449.mp4",
+      "title": "[FULL STORY] I can't believe how this 10-year anniversary exposed the darkest secret behind r/TalesFromRetail…",
+      "subreddit": "TalesFromRetail",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1893377808211934",
+      "url": "https://www.facebook.com/1272041649331476/videos/1893377808211934",
+      "posted_at": "2026-11-27T11:25:01Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-27T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795778449_captioned_1795778449.mp4",
+      "title": "[FULL STORY] I can't believe how this 10-year anniversary exposed the darkest secret behind r/TalesFromRetail…",
+      "subreddit": "TalesFromRetail",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "n2KcxAyK3Tc",
+      "url": "https://youtu.be/n2KcxAyK3Tc",
+      "posted_at": "2026-11-27T11:21:55Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-27T15:00:00Z"
+    },
+    {
       "video_file": "output_1795704139_captioned_1795704139.mp4",
       "title": "[FULL STORY] I finally took the pill—now I’m seeing her smile, and everything changes.",
       "subreddit": "TrueOffMyChest",
@@ -846,18 +876,6 @@
       "video_id": "122138618889447442",
       "url": "https://www.facebook.com/reel/1828380114874815",
       "posted_at": "2026-11-26T14:44:48Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-27T03:00:00Z"
-    },
-    {
-      "video_file": "output_1795704139_captioned_1795704139.mp4",
-      "title": "[FULL STORY] I finally took the pill—now I’m seeing her smile, and everything changes.",
-      "subreddit": "TrueOffMyChest",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "Nktkzbqwhb4",
-      "url": "https://youtu.be/Nktkzbqwhb4",
-      "posted_at": "2026-11-26T14:43:16Z",
       "hook_score": 26,
       "publish_at": "2026-11-27T03:00:00Z"
     },
@@ -944,6 +962,18 @@
       "posted_at": "2026-11-25T10:33:48Z",
       "hook_score": 39,
       "publish_at": "2026-11-25T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795704139_captioned_1795704139.mp4",
+      "title": "[FULL STORY] I finally took the pill—now I’m seeing her smile, and everything changes.",
+      "subreddit": "TrueOffMyChest",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "Nktkzbqwhb4",
+      "url": "https://youtu.be/Nktkzbqwhb4",
+      "posted_at": "2026-11-26T14:43:16Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-27T03:00:00Z"
     },
     {
       "video_file": "output_1795534725_captioned_1795534725.mp4",
