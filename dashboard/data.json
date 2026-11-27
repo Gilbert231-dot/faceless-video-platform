@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-27T13:54:12Z",
+  "generated_at": "2026-11-27T15:34:59Z",
   "total_stories": 367,
-  "unused_stories": 169,
-  "used_stories": 198,
+  "unused_stories": 168,
+  "used_stories": 199,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 84,
@@ -48,8 +48,8 @@
     },
     {
       "name": "AITAH",
-      "total": 12,
-      "unused": 12
+      "total": 11,
+      "unused": 11
     },
     {
       "name": "unpopularopinion",
@@ -80,6 +80,11 @@
       "name": "pettyrevenge",
       "total": 2,
       "unused": 1
+    },
+    {
+      "name": "AITAH",
+      "total": 12,
+      "unused": 12
     },
     {
       "name": "pettyrevenge",
@@ -658,19 +663,21 @@
     }
   ],
   "schedule": {
-    "next_index": 228
+    "next_index": 229
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "03:00",
       "23:00",
       "12:00",
       "18:00",
       "21:00",
-      "15:00",
-      "03:00"
+      "15:00"
     ],
     "next_publish_utc": [
+      "2026-11-28T03:00:00Z",
+      "2026-11-29T03:00:00Z",
       "2026-11-27T23:00:00Z",
       "2026-11-28T23:00:00Z",
       "2026-11-27T18:00:00Z",
@@ -680,7 +687,6 @@
       "2026-11-27T15:00:00Z",
       "2026-11-28T15:00:00Z",
       "2026-11-27T03:00:00Z",
-      "2026-11-28T03:00:00Z",
       "2026-11-26T23:00:00Z",
       "2026-11-26T18:00:00Z",
       "2026-11-27T12:00:00Z",
@@ -858,6 +864,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795793534_captioned_1795793534.mp4",
+      "title": "[FULL STORY] I thought I could post, but moderators ruined my plan.",
+      "subreddit": "AITAH",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122138781771447442",
+      "url": "https://www.facebook.com/reel/1154256896980899",
+      "posted_at": "2026-11-27T15:34:58Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-28T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795793534_captioned_1795793534.mp4",
+      "title": "[FULL STORY] I thought I could post, but moderators ruined my plan.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "aLj8WlWh57A",
+      "url": "https://youtu.be/aLj8WlWh57A",
+      "posted_at": "2026-11-27T15:33:09Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-28T03:00:00Z"
+    },
+    {
       "video_file": "output_1795787586_captioned_1795787586.mp4",
       "title": "[FULL STORY] \"Pat betrayed my love; I planned revenge that turned my life upside down.\"",
       "subreddit": "pettyrevenge",
@@ -866,18 +896,6 @@
       "video_id": "122138770695447442",
       "url": "https://www.facebook.com/reel/1706203677686647",
       "posted_at": "2026-11-27T13:54:12Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-27T23:00:00Z"
-    },
-    {
-      "video_file": "output_1795787586_captioned_1795787586.mp4",
-      "title": "[FULL STORY] \"Pat betrayed my love; I planned revenge that turned my life upside down.\"",
-      "subreddit": "pettyrevenge",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "uZ8h-_OOv5M",
-      "url": "https://youtu.be/uZ8h-_OOv5M",
-      "posted_at": "2026-11-27T13:53:56Z",
       "hook_score": 26,
       "publish_at": "2026-11-27T23:00:00Z"
     },
@@ -964,6 +982,18 @@
       "posted_at": "2026-11-25T15:37:48Z",
       "hook_score": 26,
       "publish_at": "2026-11-26T03:00:00Z"
+    },
+    {
+      "video_file": "output_1795787586_captioned_1795787586.mp4",
+      "title": "[FULL STORY] \"Pat betrayed my love; I planned revenge that turned my life upside down.\"",
+      "subreddit": "pettyrevenge",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "uZ8h-_OOv5M",
+      "url": "https://youtu.be/uZ8h-_OOv5M",
+      "posted_at": "2026-11-27T13:53:56Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-27T23:00:00Z"
     },
     {
       "video_file": "output_1795613605_captioned_1795613605.mp4",
