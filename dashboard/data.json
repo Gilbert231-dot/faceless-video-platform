@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-11-27T15:34:59Z",
+  "generated_at": "2026-11-28T09:45:35Z",
   "total_stories": 367,
-  "unused_stories": 168,
-  "used_stories": 199,
+  "unused_stories": 167,
+  "used_stories": 200,
   "low_bank": false,
   "threshold": 100,
-  "days_of_stories": 84,
+  "days_of_stories": 83,
   "runway_date": "2027-02-19",
   "videos_per_day": 2,
   "oldest_added_at": null,
@@ -43,8 +43,8 @@
     },
     {
       "name": "tifu",
-      "total": 13,
-      "unused": 13
+      "total": 12,
+      "unused": 12
     },
     {
       "name": "AITAH",
@@ -80,6 +80,11 @@
       "name": "pettyrevenge",
       "total": 2,
       "unused": 1
+    },
+    {
+      "name": "tifu",
+      "total": 13,
+      "unused": 13
     },
     {
       "name": "AITAH",
@@ -663,19 +668,21 @@
     }
   ],
   "schedule": {
-    "next_index": 229
+    "next_index": 230
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "15:00",
       "03:00",
       "23:00",
       "12:00",
       "18:00",
-      "21:00",
-      "15:00"
+      "21:00"
     ],
     "next_publish_utc": [
+      "2026-11-28T15:00:00Z",
+      "2026-11-29T15:00:00Z",
       "2026-11-28T03:00:00Z",
       "2026-11-29T03:00:00Z",
       "2026-11-27T23:00:00Z",
@@ -685,7 +692,6 @@
       "2026-11-27T21:00:00Z",
       "2026-11-28T21:00:00Z",
       "2026-11-27T15:00:00Z",
-      "2026-11-28T15:00:00Z",
       "2026-11-27T03:00:00Z",
       "2026-11-26T23:00:00Z",
       "2026-11-26T18:00:00Z",
@@ -864,6 +870,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795858963_captioned_1795858963.mp4",
+      "title": "[FULL STORY] \"Almost blinded myself—my eyes betrayed me after 20 years of neglect, and it got worse…\"",
+      "subreddit": "tifu",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "1864698134539025",
+      "url": "https://www.facebook.com/1272041649331476/videos/1864698134539025",
+      "posted_at": "2026-11-28T09:45:35Z",
+      "hook_score": 47,
+      "publish_at": "2026-11-28T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795858963_captioned_1795858963.mp4",
+      "title": "[FULL STORY] \"Almost blinded myself—my eyes betrayed me after 20 years of neglect, and it got worse…\"",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "eYAcftCW5dA",
+      "url": "https://youtu.be/eYAcftCW5dA",
+      "posted_at": "2026-11-28T09:43:39Z",
+      "hook_score": 47,
+      "publish_at": "2026-11-28T15:00:00Z"
+    },
+    {
       "video_file": "output_1795793534_captioned_1795793534.mp4",
       "title": "[FULL STORY] I thought I could post, but moderators ruined my plan.",
       "subreddit": "AITAH",
@@ -872,18 +902,6 @@
       "video_id": "122138781771447442",
       "url": "https://www.facebook.com/reel/1154256896980899",
       "posted_at": "2026-11-27T15:34:58Z",
-      "hook_score": 52,
-      "publish_at": "2026-11-28T03:00:00Z"
-    },
-    {
-      "video_file": "output_1795793534_captioned_1795793534.mp4",
-      "title": "[FULL STORY] I thought I could post, but moderators ruined my plan.",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "aLj8WlWh57A",
-      "url": "https://youtu.be/aLj8WlWh57A",
-      "posted_at": "2026-11-27T15:33:09Z",
       "hook_score": 52,
       "publish_at": "2026-11-28T03:00:00Z"
     },
@@ -970,6 +988,18 @@
       "posted_at": "2026-11-26T09:44:03Z",
       "hook_score": 39,
       "publish_at": "2026-11-26T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795793534_captioned_1795793534.mp4",
+      "title": "[FULL STORY] I thought I could post, but moderators ruined my plan.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "aLj8WlWh57A",
+      "url": "https://youtu.be/aLj8WlWh57A",
+      "posted_at": "2026-11-27T15:33:09Z",
+      "hook_score": 52,
+      "publish_at": "2026-11-28T03:00:00Z"
     },
     {
       "video_file": "output_1795620880_captioned_1795620880.mp4",
