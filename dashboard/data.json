@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-28T11:15:00Z",
+  "generated_at": "2026-11-28T12:04:01Z",
   "total_stories": 367,
   "unused_stories": 166,
   "used_stories": 201,
@@ -678,14 +678,16 @@
   "youtube": {
     "privacy": "public",
     "slots": [
+      "12:00",
+      "18:00",
       "21:00",
       "15:00",
       "03:00",
-      "23:00",
-      "12:00",
-      "18:00"
+      "23:00"
     ],
     "next_publish_utc": [
+      "2026-11-28T18:00:00Z",
+      "2026-11-29T12:00:00Z",
       "2026-11-28T21:00:00Z",
       "2026-11-29T21:00:00Z",
       "2026-11-28T15:00:00Z",
@@ -888,18 +890,6 @@
       "publish_at": "2026-11-28T21:00:00Z"
     },
     {
-      "video_file": "output_1795864352_captioned_1795864352.mp4",
-      "title": "[FULL STORY] I donated my guitar, now my friend demands it back—shocking twist.",
-      "subreddit": "AITAH",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "VJd1VHSSSvM",
-      "url": "https://youtu.be/VJd1VHSSSvM",
-      "posted_at": "2026-11-28T11:13:26Z",
-      "hook_score": 26,
-      "publish_at": "2026-11-28T21:00:00Z"
-    },
-    {
       "video_file": "output_1795858963_captioned_1795858963.mp4",
       "title": "[FULL STORY] \"Almost blinded myself—my eyes betrayed me after 20 years of neglect, and it got worse…\"",
       "subreddit": "tifu",
@@ -996,18 +986,6 @@
       "publish_at": "2026-11-26T21:00:00Z"
     },
     {
-      "video_file": "output_1795858963_captioned_1795858963.mp4",
-      "title": "[FULL STORY] \"Almost blinded myself—my eyes betrayed me after 20 years of neglect, and it got worse…\"",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "eYAcftCW5dA",
-      "url": "https://youtu.be/eYAcftCW5dA",
-      "posted_at": "2026-11-28T09:43:39Z",
-      "hook_score": 47,
-      "publish_at": "2026-11-28T15:00:00Z"
-    },
-    {
       "video_file": "output_1795686142_captioned_1795686142.mp4",
       "title": "[FULL STORY] I booked my sister’s hospital stay—then this shocking mistake happened!",
       "subreddit": "TalesFromTheFrontDesk",
@@ -1018,6 +996,30 @@
       "posted_at": "2026-11-26T09:44:03Z",
       "hook_score": 39,
       "publish_at": "2026-11-26T15:00:00Z"
+    },
+    {
+      "video_file": "output_1795864352_captioned_1795864352.mp4",
+      "title": "[FULL STORY] I donated my guitar, now my friend demands it back—shocking twist.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "VJd1VHSSSvM",
+      "url": "https://youtu.be/VJd1VHSSSvM",
+      "posted_at": "2026-11-28T11:13:26Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-28T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795858963_captioned_1795858963.mp4",
+      "title": "[FULL STORY] \"Almost blinded myself—my eyes betrayed me after 20 years of neglect, and it got worse…\"",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "eYAcftCW5dA",
+      "url": "https://youtu.be/eYAcftCW5dA",
+      "posted_at": "2026-11-28T09:43:39Z",
+      "hook_score": 47,
+      "publish_at": "2026-11-28T15:00:00Z"
     },
     {
       "video_file": "output_1795793534_captioned_1795793534.mp4",
