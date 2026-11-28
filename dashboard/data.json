@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-11-28T09:45:35Z",
+  "generated_at": "2026-11-28T11:15:00Z",
   "total_stories": 367,
-  "unused_stories": 167,
-  "used_stories": 200,
+  "unused_stories": 166,
+  "used_stories": 201,
   "low_bank": false,
   "threshold": 100,
   "days_of_stories": 83,
@@ -48,8 +48,8 @@
     },
     {
       "name": "AITAH",
-      "total": 11,
-      "unused": 11
+      "total": 10,
+      "unused": 10
     },
     {
       "name": "unpopularopinion",
@@ -80,6 +80,11 @@
       "name": "pettyrevenge",
       "total": 2,
       "unused": 1
+    },
+    {
+      "name": "AITAH",
+      "total": 11,
+      "unused": 11
     },
     {
       "name": "tifu",
@@ -668,19 +673,21 @@
     }
   ],
   "schedule": {
-    "next_index": 230
+    "next_index": 231
   },
   "youtube": {
     "privacy": "public",
     "slots": [
+      "21:00",
       "15:00",
       "03:00",
       "23:00",
       "12:00",
-      "18:00",
-      "21:00"
+      "18:00"
     ],
     "next_publish_utc": [
+      "2026-11-28T21:00:00Z",
+      "2026-11-29T21:00:00Z",
       "2026-11-28T15:00:00Z",
       "2026-11-29T15:00:00Z",
       "2026-11-28T03:00:00Z",
@@ -690,7 +697,6 @@
       "2026-11-27T18:00:00Z",
       "2026-11-28T12:00:00Z",
       "2026-11-27T21:00:00Z",
-      "2026-11-28T21:00:00Z",
       "2026-11-27T15:00:00Z",
       "2026-11-27T03:00:00Z",
       "2026-11-26T23:00:00Z",
@@ -870,6 +876,30 @@
   },
   "videos": [
     {
+      "video_file": "output_1795864352_captioned_1795864352.mp4",
+      "title": "[FULL STORY] I donated my guitar, now my friend demands it back—shocking twist.",
+      "subreddit": "AITAH",
+      "platform": "facebook",
+      "status": "posted",
+      "video_id": "122138911851447442",
+      "url": "https://www.facebook.com/reel/1508292247939171",
+      "posted_at": "2026-11-28T11:15:00Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-28T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795864352_captioned_1795864352.mp4",
+      "title": "[FULL STORY] I donated my guitar, now my friend demands it back—shocking twist.",
+      "subreddit": "AITAH",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "VJd1VHSSSvM",
+      "url": "https://youtu.be/VJd1VHSSSvM",
+      "posted_at": "2026-11-28T11:13:26Z",
+      "hook_score": 26,
+      "publish_at": "2026-11-28T21:00:00Z"
+    },
+    {
       "video_file": "output_1795858963_captioned_1795858963.mp4",
       "title": "[FULL STORY] \"Almost blinded myself—my eyes betrayed me after 20 years of neglect, and it got worse…\"",
       "subreddit": "tifu",
@@ -878,18 +908,6 @@
       "video_id": "1864698134539025",
       "url": "https://www.facebook.com/1272041649331476/videos/1864698134539025",
       "posted_at": "2026-11-28T09:45:35Z",
-      "hook_score": 47,
-      "publish_at": "2026-11-28T15:00:00Z"
-    },
-    {
-      "video_file": "output_1795858963_captioned_1795858963.mp4",
-      "title": "[FULL STORY] \"Almost blinded myself—my eyes betrayed me after 20 years of neglect, and it got worse…\"",
-      "subreddit": "tifu",
-      "platform": "youtube",
-      "status": "posted",
-      "video_id": "eYAcftCW5dA",
-      "url": "https://youtu.be/eYAcftCW5dA",
-      "posted_at": "2026-11-28T09:43:39Z",
       "hook_score": 47,
       "publish_at": "2026-11-28T15:00:00Z"
     },
@@ -976,6 +994,18 @@
       "posted_at": "2026-11-26T11:38:55Z",
       "hook_score": 0,
       "publish_at": "2026-11-26T21:00:00Z"
+    },
+    {
+      "video_file": "output_1795858963_captioned_1795858963.mp4",
+      "title": "[FULL STORY] \"Almost blinded myself—my eyes betrayed me after 20 years of neglect, and it got worse…\"",
+      "subreddit": "tifu",
+      "platform": "youtube",
+      "status": "posted",
+      "video_id": "eYAcftCW5dA",
+      "url": "https://youtu.be/eYAcftCW5dA",
+      "posted_at": "2026-11-28T09:43:39Z",
+      "hook_score": 47,
+      "publish_at": "2026-11-28T15:00:00Z"
     },
     {
       "video_file": "output_1795686142_captioned_1795686142.mp4",
